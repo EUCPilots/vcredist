@@ -57,5 +57,8 @@
         "VcRedist",
         "visualstudiologo"
     ],
-    "pester.autoRunOnSave": false
+    "pester.autoRunOnSave": false,
+    "powershell.scriptAnalysis.settingsPath": ".rules/PSScriptAnalyzerSettings.psd1",
+    "powershell.scriptAnalysis.enable": true,
+    "files.eol": "\n"
 }
