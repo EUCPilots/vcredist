@@ -123,6 +123,12 @@ jobs:
           ref: development
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      # Pull latest changes from validate-amd64 job
+      - name: Pull latest changes
+        shell: powershell
+        run: |
+          git pull origin development
+
       # Import GPG key so that we can sign the commit
       - name: Import GPG key
         id: import_gpg
