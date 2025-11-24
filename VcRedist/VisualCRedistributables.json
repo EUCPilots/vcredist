@@ -92,8 +92,8 @@
                       },
                       {
                           "Name":  "Microsoft Visual C++ v14 Redistributable (x64)",
-                          "ProductCode":  "{d8bbe9f9-7c5b-42c6-b715-9ee898a2e515}",
-                          "Version":  "14.44.35211.0",
+                          "ProductCode":  "{91ee571b-0e8a-4c65-9eaf-2e2f5fc60c00}",
+                          "Version":  "14.50.35719.0",
                           "URL":  "https://www.visualstudio.com/downloads/",
                           "URI":  "https://aka.ms/vc14/vc_redist.x64.exe",
                           "Release":  "2022",
@@ -107,8 +107,8 @@
                       },
                       {
                           "Name":  "Microsoft Visual C++ v14 Redistributable (x86)",
-                          "ProductCode":  "{0b5169e3-39da-4313-808e-1f9c0407f3bf}",
-                          "Version":  "14.44.35211.0",
+                          "ProductCode":  "{0e4ccf1b-d073-4cfe-8a24-e86185719b56}",
+                          "Version":  "14.50.35719.0",
                           "URL":  "https://www.visualstudio.com/downloads/",
                           "URI":  "https://aka.ms/vc14/vc_redist.x86.exe",
                           "Release":  "2022",
