@@ -39,14 +39,14 @@ jobs:
 
       # Uninstall existing VcRedists
       - name: Uninstall VcRedists
-        shell: powershell
+        shell: pwsh
         run: |
           Import-Module ${{ github.workspace }}\VcRedist -Force
           Get-InstalledVcRedist | Uninstall-VcRedist -Confirm:$False -Verbose
 
       # Validate VcRedist 2017 and update the manifest
       - name: Validate VcRedist 2017
-        shell: powershell
+        shell: pwsh
         run: |
           $Release = "2017"
           Import-Module "${{ github.workspace }}\VcRedist" -Force
@@ -61,7 +61,7 @@ jobs:
 
       # Validate VcRedist 2019 and update the manifest
       - name: Validate VcRedist 2019
-        shell: powershell
+        shell: pwsh
         run: |
           $Release = "2019"
           Import-Module "${{ github.workspace }}\VcRedist" -Force
@@ -76,7 +76,7 @@ jobs:
 
       # Validate VcRedist 2022 and update the manifest
       - name: Validate VcRedist 2022
-        shell: powershell
+        shell: pwsh
         run: |
           $Release = "2022"
           Import-Module "${{ github.workspace }}\VcRedist" -Force
@@ -92,7 +92,7 @@ jobs:
       # Format the date number for the commit message
       - name: Get date
         id: get-date
-        shell: powershell
+        shell: pwsh
         run: |
           echo "date=$(Get-Date -Format "yyyy-MM-dd")" >> $GITHUB_STATE
 
@@ -125,7 +125,7 @@ jobs:
 
       # Pull latest changes from validate-amd64 job
       - name: Pull latest changes
-        shell: powershell
+        shell: pwsh
         run: |
           git pull origin development
 
@@ -146,14 +146,14 @@ jobs:
 
       # Uninstall existing VcRedists
       - name: Uninstall VcRedists
-        shell: powershell
+        shell: pwsh
         run: |
           Import-Module ${{ github.workspace }}\VcRedist -Force
           Get-InstalledVcRedist | Uninstall-VcRedist -Confirm:$False -Verbose
 
       # Validate VcRedist 2022 and update the manifest
       - name: Validate VcRedist 2022
-        shell: powershell
+        shell: pwsh
         run: |
           $Release = "2022"
           $Architecture = "arm64"
@@ -171,7 +171,7 @@ jobs:
       # Format the date number for the commit message
       - name: Get date
         id: get-date
-        shell: powershell
+        shell: pwsh
         run: |
           echo "date=$(Get-Date -Format "yyyy-MM-dd")" >> $GITHUB_STATE
 

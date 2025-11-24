@@ -26,7 +26,7 @@ jobs:
 
       # Run Pester tests
       - name: Run Pester tests
-        shell: powershell
+        shell: pwsh
         working-directory: "${{ github.workspace }}"
         env:
           TENANT_ID: ${{ secrets.TENANT_ID }}
@@ -88,10 +88,10 @@ jobs:
         uses: potatoqualitee/psmodulecache@v6.2.1
         with:
           modules-to-cache: BuildHelpers
-          shell: powershell
+          shell: pwsh
 
       - name: Update module version
-        shell: powershell
+        shell: pwsh
         working-directory: "${{ github.workspace }}"
         run: |
           Import-Module -Name BuildHelpers

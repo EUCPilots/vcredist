@@ -23,12 +23,12 @@ jobs:
         uses: potatoqualitee/psmodulecache@v6.2.1
         with:
           modules-to-cache: MarkdownPS
-          shell: powershell
+          shell: pwsh
 
       # Update the version number in the module manifest
       - name: Update module version number
         id: update-version
-        shell: powershell
+        shell: pwsh
         run: |
             $modulePath = "${{ github.workspace }}\VcRedist"
             $manifestPath = "${{ github.workspace }}\VcRedist\VcRedist.psd1"
@@ -51,7 +51,7 @@ jobs:
       # Update the change log with the new version number
       - name: Update CHANGELOG.md
         id: update-changelog
-        shell: powershell
+        shell: pwsh
         run: |
             $changeLog = "${{ github.workspace }}\docs\changelog.md"
             $replaceString = "^## VERSION$"
@@ -66,7 +66,7 @@ jobs:
       # Update the docs with the new version number and supported VcRedists
       - name: Update VERSIONS.md
         id: update-versions
-        shell: powershell
+        shell: pwsh
         run: |
           Import-Module "${{ github.workspace }}\VcRedist" -Force
           $VcRedists = Get-Vclist -Export All | `
