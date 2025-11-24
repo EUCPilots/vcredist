@@ -7,8 +7,8 @@ function Get-VcList {
     [CmdletBinding(DefaultParameterSetName = "Manifest", HelpURI = "https://vcredist.com/get-vclist/")]
     param (
         [Parameter(Mandatory = $false, Position = 0, ParameterSetName = "Manifest")]
-        [ValidateSet("2012", "2013", "2015", "2017", "2019", "2022")]
-        [System.String[]] $Release = @("2012", "2013", "2022"),
+        [ValidateSet("2012", "2013", "2015", "2017", "2019", "14")]
+        [System.String[]] $Release = @("2012", "2013", "14"),
 
         [Parameter(Mandatory = $false, Position = 1, ParameterSetName = "Manifest")]
         [ValidateSet("x86", "x64", "ARM64")]

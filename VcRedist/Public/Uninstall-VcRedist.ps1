@@ -7,8 +7,8 @@ function Uninstall-VcRedist {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "")]
     param (
         [Parameter(Mandatory = $false, Position = 0, ParameterSetName = "Manual")]
-        [ValidateSet("2005", "2008", "2010", "2012", "2013", "2015", "2017", "2019", "2022")]
-        [System.String[]] $Release = @("2005", "2008", "2010", "2012", "2013", "2015", "2017", "2019", "2022"),
+        [ValidateSet("2005", "2008", "2010", "2012", "2013", "2015", "2017", "2019", "14")]
+        [System.String[]] $Release = @("2005", "2008", "2010", "2012", "2013", "2015", "2017", "2019", "14"),
 
         [Parameter(Mandatory = $false, Position = 1, ParameterSetName = "Manual")]
         [ValidateSet("x86", "x64", "ARM64")]

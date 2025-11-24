@@ -20,7 +20,7 @@ Import-VcMdtApplication -VcList (Get-VcList) -Path $Path -MdtPath $DeploymentSha
 New-VcMdtBundle -MdtPath $DeploymentShare
 
 $params = @{
-    VcList    = (Get-VcList -Release "2022" -Architecture "x64")
+    VcList    = (Get-VcList -Release "14" -Architecture "x64")
     Path      = "E:\Temp\Deploy"
     MdtPath   = "E:\Temp\VcRedist"
     AppFolder = "VcRedists"

@@ -8,7 +8,7 @@
 param ()
 
 BeforeDiscovery {
-    $SupportedReleases = @("2015", "2017", "2019", "2022")
+    $SupportedReleases = @("2015", "2017", "2019", "14")
 
     if ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") {
         $SkipAmd = $false
@@ -88,8 +88,8 @@ Describe -Name "ARM64 specific tests" -Skip:$SkipArm {
 
 Describe -Name "Uninstall VcRedist via the pipeline" {
     Context "Test uninstall via the pipeline" {
-        It "Uninstalls the 2022 Redistributables via the pipeline" {
-            { Get-VcList -Release "2022" | Uninstall-VcRedist -Confirm:$false } | Should -Not -Throw
+        It "Uninstalls the 14 Redistributables via the pipeline" {
+            { Get-VcList -Release "14" | Uninstall-VcRedist -Confirm:$false } | Should -Not -Throw
         }
     }
 }
