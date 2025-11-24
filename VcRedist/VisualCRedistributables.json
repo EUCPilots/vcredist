@@ -122,8 +122,8 @@
                       },
                       {
                           "Name":  "Microsoft Visual C++ v14 Redistributable (Arm64)",
-                          "ProductCode":  "{88A3EF6C-D7E4-4707-B3F5-E530B3AD6081}",
-                          "Version":  "14.44.35211.0",
+                          "ProductCode":  "{a111f0a4-679e-43e6-bdfe-25e176541c72}",
+                          "Version":  "14.50.35719.0",
                           "URL":  "https://www.visualstudio.com/downloads/",
                           "URI":  "https://aka.ms/vc14/vc_redist.arm64.exe",
                           "Release":  "2022",
