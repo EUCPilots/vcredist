@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'VcRedist/**'
+      - 'tests/**'
     branches-ignore:
       - main
   pull_request:
