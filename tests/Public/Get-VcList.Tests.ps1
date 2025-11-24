@@ -69,7 +69,7 @@ Describe -Name "Validate Get-VcList for <VcRedist.Name>" -ForEach $SupportedVcRe
 Describe -Name "Get-VcRedist parameters" {
     Context "Test Get-VcRedist parameters" {
         It "Returns the expected output for VcRedist 14" {
-            (Get-VcList -Release "14")[0].Name | Should -BeLikeExactly "Microsoft Visual C++ v14 Redistributable \((Arm64|x64|x86)\)"
+            (Get-VcList -Release "14")[0].Name | Should -BeLikeExactly "Microsoft Visual C\+\+ v14 Redistributable \((Arm64|x64|x86)\)"
         }
 
         It "Returns 1 item for x64" {
