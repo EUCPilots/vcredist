@@ -27,7 +27,7 @@ jobs:
 
       # Run Pester tests
       - name: Run Pester tests
-        shell: pwsh
+        shell: powershell
         working-directory: "${{ github.workspace }}"
         env:
           TENANT_ID: ${{ secrets.TENANT_ID }}
