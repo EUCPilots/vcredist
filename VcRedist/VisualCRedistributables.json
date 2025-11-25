@@ -91,7 +91,7 @@
                           "DetectionFile":  "%SystemRoot%\\System32\\vcruntime140.dll"
                       },
                       {
-                          "Name":  "Microsoft Visual C++ v14 Redistributable (x64)",
+                          "Name":  "Visual C++ v14 Redistributable (x64)",
                           "ProductCode":  "{91ee571b-0e8a-4c65-9eaf-2e2f5fc60c00}",
                           "Version":  "14.50.35719.0",
                           "URL":  "https://www.visualstudio.com/downloads/",
@@ -106,7 +106,7 @@
                           "DetectionFile":  "%SystemRoot%\\System32\\vcruntime140.dll"
                       },
                       {
-                          "Name":  "Microsoft Visual C++ v14 Redistributable (x86)",
+                          "Name":  "Visual C++ v14 Redistributable (x86)",
                           "ProductCode":  "{0e4ccf1b-d073-4cfe-8a24-e86185719b56}",
                           "Version":  "14.50.35719.0",
                           "URL":  "https://www.visualstudio.com/downloads/",
@@ -121,7 +121,7 @@
                           "DetectionFile":  "%SystemRoot%\\System32\\vcruntime140.dll"
                       },
                       {
-                          "Name":  "Microsoft Visual C++ v14 Redistributable (Arm64)",
+                          "Name":  "Visual C++ v14 Redistributable (Arm64)",
                           "ProductCode":  "{a111f0a4-679e-43e6-bdfe-25e176541c72}",
                           "Version":  "14.50.35719.0",
                           "URL":  "https://www.visualstudio.com/downloads/",
