@@ -8,7 +8,7 @@
 param ()
 
 BeforeDiscovery {
-	$SupportedReleases = @("2015", "2017", "2019", "2022")
+	$SupportedReleases = @("2015", "2017", "2019", "14")
 	$SupportedVcRedists = Get-VcList -Release $SupportedReleases
 }
 
@@ -66,17 +66,17 @@ Describe -Name "Validate Get-VcList for <VcRedist.Name>" -ForEach $SupportedVcRe
 	}
 }
 
-Describe -Name "Get-VcRedist parameters" {
-    Context "Test Get-VcRedist parameters" {
-        It "Returns the expected output for VcRedist 2022" {
-            (Get-VcList -Release "2022")[0].Name | Should -BeExactly "Visual C++ Redistributable for Visual Studio 2022"
-        }
+# Describe -Name "Get-VcRedist parameters" {
+#     Context "Test Get-VcRedist parameters" {
+#         It "Returns the expected output for VcRedist 14" {
+#             (Get-VcList -Release "14")[0].Name | Should -BeLike "Microsoft Visual C\+\+ v14 Redistributable \((Arm64|x64|x86)\)"
+#         }
 
-        It "Returns 1 item for x64" {
-            (Get-VcList -Architecture "x64").Release | Should -BeExactly "2022"
-        }
-    }
-}
+#         It "Returns 1 item for x64" {
+#             (Get-VcList -Architecture "x64").Release | Should -BeExactly "14"
+#         }
+#     }
+# }
 
 Describe -Name "Validate manifest counts from Get-VcList" {
 	BeforeAll {

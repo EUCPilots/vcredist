@@ -36,7 +36,6 @@ function Update-VcMdtBundle {
         if (Test-PSCore) {
             Write-Warning -Message "PowerShell Core doesn't support PSSnapins. We can't load the MicrosoftDeploymentToolkit module."
             throw [System.Management.Automation.InvalidPowerShellStateException]
-            Exit
         }
     }
 

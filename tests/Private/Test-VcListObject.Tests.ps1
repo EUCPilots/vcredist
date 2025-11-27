@@ -13,12 +13,12 @@ BeforeDiscovery {
 InModuleScope VcRedist {
 	BeforeAll {
 		$ValidObject = [PSCustomObject]@{
-			Name            = "Visual C++ Redistributable for Visual Studio 2022"
+			Name            = "Visual C++ Redistributable for Visual Studio 14"
 			ProductCode     = "{6ba9fb5e-8366-4cc4-bf65-25fe9819b2fc}"
 			Version         = "14.34.31931.0"
 			URL             = "https://www.visualstudio.com/downloads/"
 			URI             = "https://aka.ms/vs/17/release/VC_redist.x86.exe"
-			Release         = "2022"
+			Release         = "14"
 			Architecture    = "x86"
 			Install         = "/install /passive /norestart"
 			SilentInstall   = "/install /quiet /norestart"
@@ -30,7 +30,7 @@ InModuleScope VcRedist {
 		}
 
 		$InvalidObject = [PSCustomObject]@{
-			Property1 = "Visual C++ Redistributable for Visual Studio 2022"
+			Property1 = "Visual C++ Redistributable for Visual Studio 14"
 			Property2 = "{6ba9fb5e-8366-4cc4-bf65-25fe9819b2fc}"
 		}
 	}

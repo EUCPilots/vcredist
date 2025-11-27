@@ -8,8 +8,8 @@
 param ()
 
 BeforeDiscovery {
-    $ValidateReleasesAmd64 = @("2017", "2019", "2022")
-    $ValidateReleasesArm64 = @("2022")
+    $ValidateReleasesAmd64 = @("2017", "2019", "14")
+    $ValidateReleasesArm64 = @("14")
 
     if ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") {
         $SkipAmd = $false

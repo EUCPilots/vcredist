@@ -46,7 +46,7 @@ function Get-InstalledSoftware {
                 @{n = "ProductCode"; e = { $_.PSChildName } },
                 @{n = "BundleCachePath"; e = { $_.GetValue("BundleCachePath") } },
                 @{n = "Architecture"; e = { if ($_.GetValue("DisplayName") -like "*x64*") { "x64" } else { "x86" } } },
-                @{n = "Release"; e = { if ($_.GetValue("DisplayName") -match [RegEx]"(\d{4})\s+") { $matches[0].Trim(" ") } } },
+                @{n = "Release"; e = { if ($_.GetValue("DisplayName") -match [RegEx]"(\d{4})\s+") { $matches[0].Trim(" ") } elseif ($_.GetValue("DisplayName") -match [RegEx]"v(\d+)") { $matches[1].Trim(" ") } } },
                 @{n = "UninstallString"; e = { $_.GetValue("UninstallString") } },
                 @{n = "QuietUninstallString"; e = { $_.GetValue("QuietUninstallString") } },
                 @{n = "UninstallKey"; e = { $UninstallKey } }

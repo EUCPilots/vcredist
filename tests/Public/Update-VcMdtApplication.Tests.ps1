@@ -8,7 +8,7 @@
 param ()
 
 BeforeDiscovery {
-	$SupportedReleases = @("2015", "2017", "2019", "2022")
+	$SupportedReleases = @("2015", "2017", "2019", "14")
 	if ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") {
 		$Skip = $false
 	}
@@ -62,11 +62,11 @@ Describe -Name "Update-VcMdtApplication updates an existing application" -Skip:$
 		if ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") {
 			$Skip = $false
 
-			# Setup existing 2022 VcRedist applications with details that need to be updated
+			# Setup existing 14 VcRedist applications with details that need to be updated
 			$Path = $([System.IO.Path]::Combine($env:RUNNER_TEMP, "Downloads"))
 			$SaveVcRedist = Save-VcRedist -Path $Path -VcList (Get-VcList -Release "2019")
-			$Version = (Get-VcList -Release "2022" -Architecture "x64").Version
-			$VcPath = "$env:RUNNER_TEMP\Deployment\Applications\Microsoft VcRedist\2022\$Version"
+			$Version = (Get-VcList -Release "14" -Architecture "x64").Version
+			$VcPath = "$env:RUNNER_TEMP\Deployment\Applications\Microsoft VcRedist\14\$Version"
 			foreach ($Item in $SaveVcRedist) {
 				foreach ($Arch in @("x64", "x86")) {
 					Copy-Item -Path $Item.Path -Destination "$VcPath\$Arch" -Force
@@ -88,7 +88,7 @@ Describe -Name "Update-VcMdtApplication updates an existing application" -Skip:$
 				ErrorAction = "Continue"
 			}
 			foreach ($Architecture in @("x86", "x64")) {
-				$ExistingVcRedist = Get-ChildItem @gciParams | Where-Object { $_.ShortName -match "2022 $Architecture" }
+				$ExistingVcRedist = Get-ChildItem @gciParams | Where-Object { $_.ShortName -match "14 $Architecture" }
 				$params = @{
 					Path  = (Join-Path -Path $MdtTargetFolder -ChildPath $ExistingVcRedist.Name)
 					Name  = "UninstallKey"
@@ -103,9 +103,9 @@ Describe -Name "Update-VcMdtApplication updates an existing application" -Skip:$
 	}
 
 	Context "Update-VcMdtApplication updates Redistributables in the MDT share" {
-		It "Updates the 2022 x64 Redistributables in MDT OK" {
+		It "Updates the 14 x64 Redistributables in MDT OK" {
 			$params = @{
-				VcList    = $(Get-VcList -Release "2022" -Architecture "x64" | Save-VcRedist -Path $Path)
+				VcList    = $(Get-VcList -Release "14" -Architecture "x64" | Save-VcRedist -Path $Path)
 				MdtPath   = "$env:RUNNER_TEMP\Deployment"
 				AppFolder = "VcRedists"
 				Silent    = $true
@@ -115,9 +115,9 @@ Describe -Name "Update-VcMdtApplication updates an existing application" -Skip:$
 			{ Update-VcMdtApplication @params } | Should -Not -Throw
 		}
 
-		It "Updates the 2022 x86 Redistributables in MDT OK" {
+		It "Updates the 14 x86 Redistributables in MDT OK" {
 			$params = @{
-				VcList    = $(Get-VcList -Release "2022" -Architecture "x86" | Save-VcRedist -Path $Path)
+				VcList    = $(Get-VcList -Release "14" -Architecture "x86" | Save-VcRedist -Path $Path)
 				Path      = $Path
 				MdtPath   = "$env:RUNNER_TEMP\Deployment"
 				AppFolder = "VcRedists"

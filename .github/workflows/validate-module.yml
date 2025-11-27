@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'VcRedist/**'
+      - 'tests/**'
     branches-ignore:
       - main
   pull_request:
@@ -66,14 +67,14 @@ jobs:
         with:
           files: "${{ github.workspace }}//tests//TestResults-${{ matrix.os }}.xml"
 
-      - name: Upload to Codecov
-        id: codecov
-        if: always()
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./CodeCoverage-${{ matrix.os }}.xml
-          verbose: true
+      # - name: Upload to Codecov
+      #   id: codecov
+      #   if: always()
+      #   uses: codecov/codecov-action@v5
+      #   with:
+      #     token: ${{ secrets.CODECOV_TOKEN }}
+      #     files: ./CodeCoverage-${{ matrix.os }}.xml
+      #     verbose: true
 
   update-module-version:
     name: Update module version
@@ -88,10 +89,10 @@ jobs:
         uses: potatoqualitee/psmodulecache@v6.2.1
         with:
           modules-to-cache: BuildHelpers
-          shell: powershell
+          shell: pwsh
 
       - name: Update module version
-        shell: powershell
+        shell: pwsh
         working-directory: "${{ github.workspace }}"
         run: |
           Import-Module -Name BuildHelpers
