@@ -74,11 +74,11 @@ jobs:
           }
           . ${{ github.workspace }}\ci\Update-Manifest.ps1 @params
 
-      # Validate VcRedist 2022 and update the manifest
-      - name: Validate VcRedist 2022
+      # Validate VcRedist 14 and update the manifest
+      - name: Validate VcRedist 14
         shell: pwsh
         run: |
-          $Release = "2022"
+          $Release = "14"
           Import-Module "${{ github.workspace }}\VcRedist" -Force
           New-Item -Path "$env:RUNNER_TEMP\VcRedist" -ItemType "Directory" -ErrorAction "SilentlyContinue" | Out-Null
           Get-VcList -Release $Release | Save-VcRedist -Path "$env:RUNNER_TEMP\VcRedist" | Install-VcRedist
@@ -151,11 +151,11 @@ jobs:
           Import-Module ${{ github.workspace }}\VcRedist -Force
           Get-InstalledVcRedist | Uninstall-VcRedist -Confirm:$False -Verbose
 
-      # Validate VcRedist 2022 and update the manifest
-      - name: Validate VcRedist 2022
+      # Validate VcRedist 14 and update the manifest
+      - name: Validate VcRedist 14
         shell: pwsh
         run: |
-          $Release = "2022"
+          $Release = "14"
           $Architecture = "arm64"
           Import-Module "${{ github.workspace }}\VcRedist" -Force
           New-Item -Path "$env:RUNNER_TEMP\VcRedist" -ItemType "Directory" -ErrorAction "SilentlyContinue" | Out-Null
