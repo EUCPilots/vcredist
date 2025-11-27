@@ -67,14 +67,14 @@ jobs:
         with:
           files: "${{ github.workspace }}//tests//TestResults-${{ matrix.os }}.xml"
 
-      - name: Upload to Codecov
-        id: codecov
-        if: always()
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./CodeCoverage-${{ matrix.os }}.xml
-          verbose: true
+      # - name: Upload to Codecov
+      #   id: codecov
+      #   if: always()
+      #   uses: codecov/codecov-action@v5
+      #   with:
+      #     token: ${{ secrets.CODECOV_TOKEN }}
+      #     files: ./CodeCoverage-${{ matrix.os }}.xml
+      #     verbose: true
 
   update-module-version:
     name: Update module version
