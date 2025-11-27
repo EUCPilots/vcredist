@@ -1,6 +1,6 @@
 # Changelog
 
-## VERSION
+## 4.1.526
 
 * Updates 2022 Visual C++ Redistributables to latest v14
 * Changes `2022` release property to `14` to reflect latest version
