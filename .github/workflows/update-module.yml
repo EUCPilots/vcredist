@@ -36,7 +36,7 @@ jobs:
             # Importing the manifest to determine the version
             $manifest = Test-ModuleManifest -Path $manifestPath
             [System.Version]$version = $manifest.Version
-            [System.String]$newVersion = New-Object -TypeName "System.Version" -ArgumentList ($version.Major, $version.Minor, ([System.Int32]$env:GITHUB_RUN_NUMBER + [System.Int32]${{ env.BUILD_NUMBER }} ))
+            [System.String]$newVersion = New-Object -TypeName "System.Version" -ArgumentList ($version.Major, $version.Minor, ($version.Build + 1))
             Write-Host "New version is: $newVersion"
 
             # Update the manifest with the new version value and fix the weird string replace bug
