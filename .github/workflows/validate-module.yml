@@ -54,7 +54,7 @@ jobs:
       - name: Upload artifacts
         id: upload-artifacts
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: 'pester-test-results-${{ matrix.os }}'
           path: |
