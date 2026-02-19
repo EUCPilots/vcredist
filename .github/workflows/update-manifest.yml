@@ -12,9 +12,15 @@ on:
 env:
   MANIFEST_FILE: ${{ github.workspace }}\VcRedist\VisualCRedistributables.json
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   validate-amd64:
     runs-on: windows-latest
+    outputs:
+      changes_detected: ${{ steps.commit.outputs.changes_detected }}
 
     steps:
       - uses: actions/checkout@v6
@@ -94,7 +100,7 @@ jobs:
         id: get-date
         shell: pwsh
         run: |
-          echo "date=$(Get-Date -Format "yyyy-MM-dd")" >> $GITHUB_STATE
+          echo "date=$(Get-Date -Format "yyyy-MM-dd")" >> $env:GITHUB_OUTPUT
 
       # Commit changes to the manifest
       - name: Commit changes
@@ -116,6 +122,8 @@ jobs:
   validate-arm64:
     runs-on: windows-11-arm
     needs: validate-amd64
+    outputs:
+      changes_detected: ${{ steps.commit.outputs.changes_detected }}
 
     steps:
       - uses: actions/checkout@v6
@@ -173,7 +181,7 @@ jobs:
         id: get-date
         shell: pwsh
         run: |
-          echo "date=$(Get-Date -Format "yyyy-MM-dd")" >> $GITHUB_STATE
+          echo "date=$(Get-Date -Format "yyyy-MM-dd")" >> $env:GITHUB_OUTPUT
 
       # Commit changes to the manifest
       - name: Commit changes
@@ -191,3 +199,56 @@ jobs:
       - name: "Run if no changes have been detected"
         if: steps.commit.outputs.changes_detected == 'false'
         run: echo "No changes detected."
+
+  create-pull-request:
+    runs-on: ubuntu-latest
+    needs:
+      - validate-amd64
+      - validate-arm64
+    if: needs.validate-amd64.outputs.changes_detected == 'true' || needs.validate-arm64.outputs.changes_detected == 'true'
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: development
+          fetch-depth: 0
+
+      - name: Generate pull request body
+        shell: bash
+        run: |
+          git fetch origin main --depth=1
+
+          {
+            echo "## Automated manifest update"
+            echo
+            echo "This PR was created by workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo
+            echo "### Commits in development not in main"
+            if git log --oneline origin/main..HEAD | grep -q .; then
+              git log --oneline origin/main..HEAD
+            else
+              echo "No commit summary available."
+            fi
+            echo
+            echo "### Files changed (vs main)"
+            if git diff --name-status origin/main...HEAD | grep -q .; then
+              git diff --name-status origin/main...HEAD
+            else
+              echo "No file changes detected."
+            fi
+          } > pr-body.md
+
+      - name: Create or update pull request to main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          TITLE="Automated manifest update (${GITHUB_RUN_NUMBER})"
+          EXISTING_PR_NUMBER=$(gh pr list --base main --head development --state open --json number --jq '.[0].number')
+
+          if [[ -n "$EXISTING_PR_NUMBER" ]]; then
+            gh pr edit "$EXISTING_PR_NUMBER" --title "$TITLE" --body-file pr-body.md
+            echo "Updated PR #$EXISTING_PR_NUMBER"
+          else
+            gh pr create --base main --head development --title "$TITLE" --body-file pr-body.md
+          fi
