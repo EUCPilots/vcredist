@@ -13,23 +13,34 @@ function Export-VcManifest {
     )
 
     process {
-        # Get the list of VcRedists from Get-VcList
-        [System.String] $Manifest = (Join-Path -Path $MyInvocation.MyCommand.Module.ModuleBase -ChildPath "VisualCRedistributables.json")
+        [System.String] $DestinationFile = Join-Path -Path $Path -ChildPath "VisualCRedistributables.json"
 
-        # Output the manifest to supplied path
-        try {
-            Write-Verbose -Message "Copy from: '$Manifest'."
-            Write-Verbose -Message "  Copy to: '$Path'."
-            $params = @{
-                Path        = $Manifest
-                Destination = $Path
-                PassThru    = $true
-                ErrorAction = "Stop"
+        # If Get-VcList has fetched a remote manifest this session, export that; otherwise copy the bundled file
+        if ($null -ne $script:VcManifestCache) {
+            Write-Verbose -Message "Exporting cached manifest to '$DestinationFile'."
+            try {
+                $script:VcManifestCache | ConvertTo-Json -Depth 10 | Set-Content -Path $DestinationFile -Encoding "UTF8" -ErrorAction "Stop"
+                Get-Item -Path $DestinationFile -ErrorAction "Stop"
             }
-            Copy-Item @params
+            catch {
+                throw $_
+            }
         }
-        catch {
-            throw $_
+        else {
+            [System.String] $Manifest = Join-Path -Path $MyInvocation.MyCommand.Module.ModuleBase -ChildPath "VisualCRedistributables.json"
+            Write-Verbose -Message "Exporting bundled manifest to '$Path'."
+            try {
+                $params = @{
+                    Path        = $Manifest
+                    Destination = $Path
+                    PassThru    = $true
+                    ErrorAction = "Stop"
+                }
+                Copy-Item @params
+            }
+            catch {
+                throw $_
+            }
         }
     }
 }
