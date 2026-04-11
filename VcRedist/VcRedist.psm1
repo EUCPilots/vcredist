@@ -25,6 +25,11 @@ foreach ($import in @($Public + $Private)) {
 
 # Export the public functions, aliases and variables
 [System.String] $VcManifest = Join-Path -Path $PSScriptRoot -ChildPath "VisualCRedistributables.json"
+
+# Session-scoped manifest cache — populated by Get-VcList on first remote fetch
+$script:VcManifestCache = $null
+[System.String] $script:VcManifestCacheSource = $null
+
 Export-ModuleMember -Function $Public.Basename -Alias * -Variable "VcManifest"
 
 # Add the Microsoft.PowerShell.Commands.Utility type required by [Microsoft.PowerShell.Commands.PSUserAgent]::Chrome
