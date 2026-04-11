@@ -4,74 +4,115 @@ function Get-VcList {
     #>
     [Alias("Get-VcRedist")]
     [OutputType([System.Management.Automation.PSObject])]
-    [CmdletBinding(DefaultParameterSetName = "Manifest", HelpURI = "https://vcredist.com/get-vclist/")]
+    [CmdletBinding(HelpURI = "https://vcredist.com/get-vclist/")]
     param (
-        [Parameter(Mandatory = $false, Position = 0, ParameterSetName = "Manifest")]
-        [ValidateSet("2012", "2013", "2015", "2017", "2019", "14")]
-        [System.String[]] $Release = @("2012", "2013", "14"),
+        [Parameter(Mandatory = $false, Position = 0)]
+        [ValidateSet("2005", "2008", "2010", "2012", "2013", "2015", "2017", "2019", "14")]
+        [System.String[]] $Release,
 
-        [Parameter(Mandatory = $false, Position = 1, ParameterSetName = "Manifest")]
+        [Parameter(Mandatory = $false, Position = 1)]
         [ValidateSet("x86", "x64", "ARM64")]
-        [System.String[]] $Architecture = @("x86", "x64"),
+        [System.String[]] $Architecture,
 
-        [Parameter(Mandatory = $false, Position = 2, ValueFromPipeline, ParameterSetName = "Manifest")]
-        [ValidateScript( { if (Test-Path -Path $_ -PathType "Leaf") { $true } else { throw "Cannot find file $_" } })]
+        [Parameter(Mandatory = $false, Position = 2)]
+        [ValidateNotNullOrEmpty()]
+        [System.String] $Source,
+
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [Alias("Xml")]
-        [System.String] $Path = $(Join-Path -Path $MyInvocation.MyCommand.Module.ModuleBase -ChildPath "VisualCRedistributables.json"),
+        [System.String] $Path,
 
-        [Parameter(Mandatory = $false, Position = 0, ParameterSetName = "Export")]
-        [ValidateSet("Supported", "All", "Unsupported")]
-        [System.String] $Export = "Supported"
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter] $NoCache,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter] $Unsupported
     )
 
-    process {
-        try {
-            # Convert the JSON content to an object
-            Write-Verbose -Message "Reading VcRedist manifest '$Path'."
-            $params = @{
-                Path        = $Path
-                Raw         = $true
-                ErrorAction = "Stop"
-            }
-            $Content = Get-Content @params
-            Write-Verbose -Message "Converting JSON."
-            $JsonManifest = $Content | ConvertFrom-Json -ErrorAction "Continue"
+    begin {
+        [System.String] $RemoteManifestUrl = "https://vcredist.com/manifest.json"
+        [System.String] $BundledManifestPath = Join-Path -Path $MyInvocation.MyCommand.Module.ModuleBase -ChildPath "VisualCRedistributables.json"
+
+        # Map deprecated -Path to -Source
+        if ($PSBoundParameters.ContainsKey("Path") -and -not $PSBoundParameters.ContainsKey("Source")) {
+            $Source = $Path
         }
-        catch [System.Exception] {
-            Write-Warning -Message "Unable to convert manifest JSON to required object. Please validate the input manifest."
-            throw $_
+
+        # Determine the effective source: explicit > remote > fallback
+        if (-not [System.String]::IsNullOrEmpty($Source)) {
+            [System.String] $ResolvedSource = $Source
+        }
+        else {
+            [System.String] $ResolvedSource = $RemoteManifestUrl
+        }
+    }
+
+    process {
+        # Attempt to use the session cache
+        if (-not $NoCache -and $null -ne $script:VcManifestCache -and $script:VcManifestCacheSource -eq $ResolvedSource) {
+            Write-Verbose -Message "Using cached manifest from '$ResolvedSource'."
+            $JsonManifest = $script:VcManifestCache
+        }
+        else {
+            try {
+                if ($ResolvedSource -match "^https?://") {
+                    Write-Verbose -Message "Fetching remote manifest from '$ResolvedSource'."
+                    $iwrParams = @{
+                        Uri              = $ResolvedSource
+                        UseBasicParsing  = $true
+                        TimeoutSec       = 10
+                        ErrorAction      = "Stop"
+                    }
+                    $Content = (Invoke-WebRequest @iwrParams).Content
+                }
+                else {
+                    Write-Verbose -Message "Reading manifest from '$ResolvedSource'."
+                    $Content = Get-Content -Path $ResolvedSource -Raw -ErrorAction "Stop"
+                }
+
+                Write-Verbose -Message "Converting JSON."
+                $JsonManifest = $Content | ConvertFrom-Json -ErrorAction "Stop"
+                $script:VcManifestCache = $JsonManifest
+                $script:VcManifestCacheSource = $ResolvedSource
+            }
+            catch {
+                if ($ResolvedSource -eq $RemoteManifestUrl) {
+                    Write-Warning -Message "Remote manifest unavailable ('$ResolvedSource'). Falling back to bundled manifest. Error: $($_.Exception.Message)"
+                    try {
+                        $Content = Get-Content -Path $BundledManifestPath -Raw -ErrorAction "Stop"
+                        $JsonManifest = $Content | ConvertFrom-Json -ErrorAction "Stop"
+                    }
+                    catch {
+                        Write-Warning -Message "Unable to read bundled manifest. Please validate the module installation."
+                        throw $_
+                    }
+                }
+                else {
+                    Write-Warning -Message "Unable to read manifest from '$ResolvedSource'."
+                    throw $_
+                }
+            }
         }
 
         if ($null -ne $JsonManifest) {
-            if ($PSBoundParameters.ContainsKey("Export")) {
-                switch ($Export) {
-                    "All" {
-                        Write-Verbose -Message "Exporting all VcRedists."
-                        Write-Warning -Message "This list includes unsupported Visual C++ Redistributables."
-                        [System.Management.Automation.PSObject] $Output = $JsonManifest.Supported + $JsonManifest.Unsupported
-                        break
-                    }
-                    "Supported" {
-                        Write-Verbose -Message "Exporting supported VcRedists."
-                        [System.Management.Automation.PSObject] $Output = $JsonManifest.Supported
-                        break
-                    }
-                    "Unsupported" {
-                        Write-Verbose -Message "Exporting unsupported VcRedists."
-                        Write-Warning -Message "This list includes unsupported Visual C++ Redistributables."
-                        [System.Management.Automation.PSObject] $Output = $JsonManifest.Unsupported
-                        break
-                    }
-                }
+            # Filter by supported/unsupported status
+            if ($Unsupported) {
+                Write-Warning -Message "This list includes unsupported Visual C++ Redistributables."
+                [System.Management.Automation.PSObject] $Output = $JsonManifest | Where-Object { $_.Supported -eq $false }
             }
             else {
-                # Filter the list for architecture and release
-                # if ($Release -match $JsonManifest.Unsupported.Release) {
-                #     Write-Warning -Message "This list includes unsupported Visual C++ Redistributables."
-                # }
-                [System.Management.Automation.PSObject]$Output = $JsonManifest.Supported | Where-Object { $Release -contains $_.Release } | `
-                    Where-Object { $Architecture -contains $_.Architecture }
+                [System.Management.Automation.PSObject] $Output = $JsonManifest | Where-Object { $_.Supported -eq $true }
+            }
+
+            # Apply Release filter if specified
+            if ($PSBoundParameters.ContainsKey("Release")) {
+                $Output = $Output | Where-Object { $Release -contains $_.Release }
+            }
+
+            # Apply Architecture filter if specified
+            if ($PSBoundParameters.ContainsKey("Architecture")) {
+                $Output = $Output | Where-Object { $Architecture -contains $_.Architecture }
             }
 
             try {
