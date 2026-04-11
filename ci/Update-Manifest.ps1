@@ -37,7 +37,7 @@ process {
             $InstalledVcRedists = Get-InstalledVcRedist | Where-Object { $_.Name -notmatch "Debug Runtime" }
 
             # Filter the VcRedists for the target version and compare against what has been installed
-            foreach ($ManifestVcRedist in ($CurrentManifest.Supported | Where-Object { $_.Release -eq $Rls -and $_.Architecture -eq $Arch })) {
+            foreach ($ManifestVcRedist in ($CurrentManifest | Where-Object { $_.Supported -eq $true -and $_.Release -eq $Rls -and $_.Architecture -eq $Arch })) {
                 $InstalledItem = $InstalledVcRedists | Where-Object { ($_.Release -eq $ManifestVcRedist.Release) -and ($_.Architecture -eq $ManifestVcRedist.Architecture) }
 
                 # If the manifest version of the VcRedist is lower than the installed version, the manifest is out of date
@@ -47,9 +47,9 @@ process {
                     Write-Information -MessageData "$($PSStyle.Foreground.Cyan)`tManifest version:`t$($ManifestVcRedist.Version)"
 
                     # Find the index of the VcRedist in the manifest and update it's properties
-                    $Index = $CurrentManifest.Supported::IndexOf($CurrentManifest.Supported.ProductCode, $ManifestVcRedist.ProductCode)
-                    $CurrentManifest.Supported[$Index].ProductCode = $InstalledItem.ProductCode
-                    $CurrentManifest.Supported[$Index].Version = $InstalledItem.Version
+                    $Index = [array]::IndexOf($CurrentManifest, $ManifestVcRedist)
+                    $CurrentManifest[$Index].ProductCode = $InstalledItem.ProductCode
+                    $CurrentManifest[$Index].Version = $InstalledItem.Version
 
                     # Create output variable
                     # $NewVersion = $InstalledItem.Version
@@ -67,7 +67,7 @@ process {
         # Convert to JSON and export to the module manifest
         try {
             Write-Information -MessageData "$($PSStyle.Foreground.Cyan)`tUpdating module manifest for VcRedist $($Output -join ", ")."
-            $CurrentManifest | ConvertTo-Json | Set-Content -Path $VcManifest -Force
+            $CurrentManifest | ConvertTo-Json -Depth 10 | Set-Content -Path $VcManifest -Force
         }
         catch {
             throw "Failed to convert to JSON and write back to the manifest."

@@ -1,0 +1,39 @@
+name: Publish manifest to vcredist.com
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - VcRedist/VisualCRedistributables.json
+  workflow_dispatch:
+
+jobs:
+  publish-manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Checkout vcredist.com docs repo
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ vars.DOCS_REPO }}
+          token: ${{ secrets.DOCS_REPO_TOKEN }}
+          path: docs-site
+
+      - name: Copy manifest to docs site
+        run: cp VcRedist/VisualCRedistributables.json docs-site/manifest.json
+
+      - name: Create pull request in docs repo
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.DOCS_REPO_TOKEN }}
+          path: docs-site
+          commit-message: "Update manifest.json from VcRedist ${{ github.sha }}"
+          branch: update-manifest
+          title: "Update manifest.json"
+          body: |
+            Automated manifest update from [EUCPilots/vcredist@${{ github.sha }}](https://github.com/EUCPilots/vcredist/commit/${{ github.sha }}).
+
+            Updates `manifest.json` served at https://vcredist.com/manifest.json with the latest Visual C++ Redistributable versions.
+          delete-branch: true
