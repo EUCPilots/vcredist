@@ -11,7 +11,7 @@ BeforeDiscovery {
 	$SupportedReleasesAmd64 = @("2015", "2017", "2019", "14")
 	$SupportedReleasesArm64 = @("14")
 	$UnsupportedReleases = @("2008", "2010", "2012", "2013")
-	# $UnsupportedReleases = Get-VcList -Export "Unsupported"
+	# $UnsupportedReleases = Get-VcList -Unsupported
 
 	if ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") {
 		$SkipAmd = $false
@@ -48,7 +48,7 @@ Describe -Name "AMD64 specific tests" -Skip:$SkipAmd {
 		Context "Install <Release> x64 Redistributable" {
 			BeforeAll {
 				# $VcRedist = $Release | Save-VcRedist -Path $Path
-				$VcRedist = Get-VcList -Export Unsupported | `
+				$VcRedist = Get-VcList -Unsupported | `
 					Where-Object { $_.Release -eq $Release -and $_.Architecture -eq "x64" } | `
 					Save-VcRedist -Path $Path
 			}
@@ -60,7 +60,7 @@ Describe -Name "AMD64 specific tests" -Skip:$SkipAmd {
 
 		Context "Install <Release> x86 Redistributable" {
 			BeforeAll {
-				$VcRedist = Get-VcList -Export Unsupported | `
+				$VcRedist = Get-VcList -Unsupported | `
 					Where-Object { $_.Release -eq $Release -and $_.Architecture -eq "x86" } | `
 					Save-VcRedist -Path $Path
 			}

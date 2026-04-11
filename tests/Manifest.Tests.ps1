@@ -51,7 +51,7 @@ Describe -Name "AMD64 specific tests" -Skip:$SkipAmd {
                     Install-VcRedist -VcList $VcList -Silent
                     $InstalledVcRedists = Get-InstalledVcRedist
 
-                    $ManifestVcRedist = $CurrentManifest.Supported | Where-Object { $_.Release -eq $VcRedist }
+                    $ManifestVcRedist = $CurrentManifest | Where-Object { $_.Supported -eq $true -and $_.Release -eq $VcRedist }
                     $InstalledItem = $InstalledVcRedists | Where-Object { ($VcRedist -eq $ManifestVcRedist.Release) -and ($_ -eq $ManifestVcRedist.Architecture) }
                 }
 
@@ -90,7 +90,7 @@ Describe -Name "ARM64 specific tests" -Skip:$SkipArm {
                     Install-VcRedist -VcList $VcList -Silent
                     $InstalledVcRedists = Get-InstalledVcRedist
 
-                    $ManifestVcRedist = $CurrentManifest.Supported | Where-Object { $_.Release -eq $VcRedist }
+                    $ManifestVcRedist = $CurrentManifest | Where-Object { $_.Supported -eq $true -and $_.Release -eq $VcRedist }
                     $InstalledItem = $InstalledVcRedists | Where-Object { ($VcRedist -eq $ManifestVcRedist.Release) -and ($_ -eq $ManifestVcRedist.Architecture) }
                 }
 

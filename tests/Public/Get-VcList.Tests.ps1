@@ -81,7 +81,7 @@ Describe -Name "Validate Get-VcList for <VcRedist.Name>" -ForEach $SupportedVcRe
 Describe -Name "Validate manifest counts from Get-VcList" {
 	BeforeAll {
 		$VcCount = @{
-			"Default"     = 2
+			"Default"     = 9
 			"Supported"   = 9
 			"Unsupported" = 18
 			"All"         = 27
@@ -89,17 +89,11 @@ Describe -Name "Validate manifest counts from Get-VcList" {
 	}
 
 	Context "Return built-in manifest with Get-VcList" {
-		It "Given no parameters, it returns supported Visual C++ Redistributables" {
+		It "Given no parameters, it returns all supported Visual C++ Redistributables" {
 			Get-VcList | Should -HaveCount $VcCount.Default
 		}
-		It "Given valid parameter -Export All, it returns all Visual C++ Redistributables" {
-			Get-VcList -Export "All" | Should -HaveCount $VcCount.All
-		}
-		It "Given valid parameter -Export Supported, it returns all Visual C++ Redistributables" {
-			Get-VcList -Export "Supported" | Should -HaveCount $VcCount.Supported
-		}
-		It "Given valid parameter -Export Unsupported, it returns unsupported Visual C++ Redistributables" {
-			Get-VcList -Export "Unsupported" | Should -HaveCount $VcCount.Unsupported
+		It "Given -Unsupported, it returns unsupported Visual C++ Redistributables" {
+			Get-VcList -Unsupported | Should -HaveCount $VcCount.Unsupported
 		}
 	}
 }
@@ -110,7 +104,7 @@ Describe -Name "Validate manifest scenarios with Get-VcList" {
 			$Json = Export-VcManifest -Path $env:RUNNER_TEMP
 			$VcList = Get-VcList -Path $Json
 			$VcCount = @{
-				"Default"     = 2
+				"Default"     = 9
 				"Supported"   = 9
 				"Unsupported" = 18
 				"All"         = 27
