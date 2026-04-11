@@ -8,7 +8,7 @@
 param ()
 
 BeforeDiscovery {
-	$SupportedReleases = @("2015", "2017", "2019", "14")
+	$SupportedReleases = @("2017", "2019", "14")
 	if ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") {
 		$Skip = $false
 	}

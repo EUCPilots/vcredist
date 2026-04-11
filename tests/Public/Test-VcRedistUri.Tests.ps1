@@ -8,7 +8,7 @@
 param ()
 
 BeforeDiscovery {
-	$SupportedReleases = @("2015", "2017", "2019", "14")
+	$SupportedReleases = @("2017", "2019", "14")
 }
 
 Describe -Name "Test-VcRedistUri" -ForEach $SupportedReleases {

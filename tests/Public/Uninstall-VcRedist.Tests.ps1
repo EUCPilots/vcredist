@@ -8,7 +8,7 @@
 param ()
 
 BeforeDiscovery {
-    $SupportedReleases = @("2015", "2017", "2019", "14")
+    $SupportedReleases = @("2017", "2019", "14")
 
     if ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") {
         $SkipAmd = $false
@@ -21,6 +21,25 @@ BeforeDiscovery {
     }
     else {
         $SkipArm = $true
+    }
+
+    # Elevation tests only apply on Windows and only when NOT running as admin
+    $SkipElevationTest = -not $IsWindows
+    if ($IsWindows) {
+        $IsElevated = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+        $SkipElevationTest = $IsElevated
+    }
+}
+
+Describe -Name "Uninstall-VcRedist elevation requirement" -Skip:$SkipElevationTest {
+    Context "When the session is not elevated" {
+        It "Throws when called without elevation" {
+            { Uninstall-VcRedist } | Should -Throw
+        }
+
+        It "Throws a ScriptRequiresException when called without elevation" {
+            { Uninstall-VcRedist } | Should -Throw -ExceptionType ([System.Management.Automation.ScriptRequiresException])
+        }
     }
 }
 

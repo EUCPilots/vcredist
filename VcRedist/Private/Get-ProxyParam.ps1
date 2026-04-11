@@ -21,7 +21,7 @@ function Get-ProxyParam {
         $ProxyCredential = [System.Management.Automation.PSCredential]::Empty,
 
         [Parameter(Mandatory = $false)]
-        [System.Collections.Hashtable] $BoundParameters = @{}
+        [System.Collections.IDictionary] $BoundParameters = @{}
     )
 
     $params = @{}

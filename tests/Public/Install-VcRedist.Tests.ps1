@@ -8,9 +8,9 @@
 param ()
 
 BeforeDiscovery {
-	$SupportedReleasesAmd64 = @("2015", "2017", "2019", "14")
+	$SupportedReleasesAmd64 = @("2017", "2019", "14")
 	$SupportedReleasesArm64 = @("14")
-	$UnsupportedReleases = @("2008", "2010", "2012", "2013")
+	$UnsupportedReleases = @("2008", "2010", "2012", "2013", "2015")
 	# $UnsupportedReleases = Get-VcList -Unsupported
 
 	if ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") {
@@ -24,6 +24,25 @@ BeforeDiscovery {
 	}
 	else {
 		$SkipArm = $true
+	}
+
+	# Elevation tests only apply on Windows and only when NOT running as admin
+	$SkipElevationTest = -not $IsWindows
+	if ($IsWindows) {
+		$IsElevated = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+		$SkipElevationTest = $IsElevated
+	}
+}
+
+Describe -Name "Install-VcRedist elevation requirement" -Skip:$SkipElevationTest {
+	Context "When the session is not elevated" {
+		It "Throws when called without elevation" {
+			{ Install-VcRedist -VcList (Get-VcList) } | Should -Throw
+		}
+
+		It "Throws a ScriptRequiresException when called without elevation" {
+			{ Install-VcRedist -VcList (Get-VcList) } | Should -Throw -ExceptionType ([System.Management.Automation.ScriptRequiresException])
+		}
 	}
 }
 

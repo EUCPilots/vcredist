@@ -8,7 +8,7 @@
 param ()
 
 BeforeDiscovery {
-	$SupportedReleases = @("2015", "2017", "2019", "14")
+	$SupportedReleases = @("2017", "2019", "14")
 }
 
 Describe -Name "Save-VcRedist" -ForEach $SupportedReleases {
@@ -104,6 +104,42 @@ Describe -Name "Save-VcRedist pipeline" -ForEach $SupportedReleases {
 
 	AfterAll {
 		Pop-Location
+	}
+}
+
+Describe -Name "Save-VcRedist output properties" {
+	BeforeAll {
+		if ($env:Temp) {
+			$Path = Join-Path -Path $env:Temp -ChildPath "Downloads"
+		}
+		elseif ($env:TMPDIR) {
+			$Path = Join-Path -Path $env:TMPDIR -ChildPath "Downloads"
+		}
+		elseif ($env:RUNNER_TEMP) {
+			$Path = Join-Path -Path $env:RUNNER_TEMP -ChildPath "Downloads"
+		}
+		New-Item -Path $Path -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" > $Null
+	}
+
+	Context "Verify returned object has Path property" {
+		It "Returns an object with a Path property for release 14 x64" {
+			$VcRedist = Save-VcRedist -VcList (Get-VcList -Release "14" -Architecture "x64") -Path $Path
+			$VcRedist.Path | Should -Not -BeNullOrEmpty
+		}
+
+		It "Path property points to a file that exists on disk" {
+			$VcRedist = Save-VcRedist -VcList (Get-VcList -Release "14" -Architecture "x64") -Path $Path
+			$VcRedist | ForEach-Object {
+				$_.Path | Should -Exist
+			}
+		}
+
+		It "Re-running Save-VcRedist on already-downloaded files still returns objects with Path property" {
+			# Run twice; second call should still return objects with Path (file already on disk)
+			$null = Save-VcRedist -VcList (Get-VcList -Release "14" -Architecture "x64") -Path $Path
+			$VcRedist = Save-VcRedist -VcList (Get-VcList -Release "14" -Architecture "x64") -Path $Path
+			$VcRedist.Path | Should -Not -BeNullOrEmpty
+		}
 	}
 }
 
