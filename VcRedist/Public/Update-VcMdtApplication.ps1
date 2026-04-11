@@ -39,6 +39,8 @@ function Update-VcMdtApplication {
     )
 
     begin {
+        Write-Warning -Message "MDT functions in VcRedist are deprecated and will be removed in a future major version. Microsoft Deployment Toolkit is no longer actively developed by Microsoft."
+
         # If running on PowerShell Core, error and exit.
         if (Test-PSCore) {
             $Msg = "We can't load the MicrosoftDeploymentToolkit module on PowerShell Core. Please use PowerShell 5.1."

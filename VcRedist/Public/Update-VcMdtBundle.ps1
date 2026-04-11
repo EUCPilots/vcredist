@@ -28,6 +28,8 @@ function Update-VcMdtBundle {
     )
 
     begin {
+        Write-Warning -Message "MDT functions in VcRedist are deprecated and will be removed in a future major version. Microsoft Deployment Toolkit is no longer actively developed by Microsoft."
+
         # Variables
         $Applications = "Applications"
         Write-Warning -Message "Attempting to update bundle: [$Publisher $BundleName]."
