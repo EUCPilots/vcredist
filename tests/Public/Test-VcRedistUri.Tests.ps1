@@ -52,3 +52,4 @@ Describe -Name "Test-VcRedistUri" -ForEach $SupportedReleases {
 		}
 	}
 }
+

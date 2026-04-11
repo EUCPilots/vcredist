@@ -117,9 +117,26 @@ function Save-VcRedist {
                         }
                         if ($PSBoundParameters.ContainsKey("Proxy")) {
                             $iwrParams.Proxy = $Proxy
+                            if ($PSBoundParameters.ContainsKey("ProxyCredential")) {
+                                $iwrParams.ProxyCredential = $ProxyCredential
+                            }
                         }
-                        if ($PSBoundParameters.ContainsKey("ProxyCredential")) {
-                            $iwrParams.ProxyCredential = $ProxyCredential
+                        else {
+                            $RequestUri = [System.Uri]::new($VcRedist.URI)
+                            $SystemProxy = [System.Net.WebRequest]::DefaultWebProxy
+                            if ($null -ne $SystemProxy) {
+                                $ProxyUri = $SystemProxy.GetProxy($RequestUri)
+                                if (($null -ne $ProxyUri) -and ($ProxyUri.AbsoluteUri -ne $RequestUri.AbsoluteUri)) {
+                                    Write-Verbose -Message "Using system proxy '$($ProxyUri.AbsoluteUri)' for '$($VcRedist.URI)'."
+                                    $iwrParams.Proxy = $ProxyUri.AbsoluteUri
+                                    if ($PSBoundParameters.ContainsKey("ProxyCredential")) {
+                                        $iwrParams.ProxyCredential = $ProxyCredential
+                                    }
+                                    else {
+                                        $iwrParams.ProxyUseDefaultCredentials = $true
+                                    }
+                                }
+                            }
                         }
                         Invoke-WebRequest @iwrParams
                         $Downloaded = $true

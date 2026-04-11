@@ -18,6 +18,13 @@ function Get-VcList {
         [ValidateNotNullOrEmpty()]
         [System.String] $Source,
 
+        [Parameter(Mandatory = $false, Position = 3)]
+        [System.String] $Proxy,
+
+        [Parameter(Mandatory = $false, Position = 4)]
+        [System.Management.Automation.PSCredential]
+        $ProxyCredential = [System.Management.Automation.PSCredential]::Empty,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [Alias("Xml")]
@@ -63,6 +70,29 @@ function Get-VcList {
                         UseBasicParsing  = $true
                         TimeoutSec       = 10
                         ErrorAction      = "Stop"
+                    }
+                    if ($PSBoundParameters.ContainsKey("Proxy")) {
+                        $iwrParams.Proxy = $Proxy
+                        if ($PSBoundParameters.ContainsKey("ProxyCredential")) {
+                            $iwrParams.ProxyCredential = $ProxyCredential
+                        }
+                    }
+                    else {
+                        $RequestUri = [System.Uri]::new($ResolvedSource)
+                        $SystemProxy = [System.Net.WebRequest]::DefaultWebProxy
+                        if ($null -ne $SystemProxy) {
+                            $ProxyUri = $SystemProxy.GetProxy($RequestUri)
+                            if (($null -ne $ProxyUri) -and ($ProxyUri.AbsoluteUri -ne $RequestUri.AbsoluteUri)) {
+                                Write-Verbose -Message "Using system proxy '$($ProxyUri.AbsoluteUri)' for '$ResolvedSource'."
+                                $iwrParams.Proxy = $ProxyUri.AbsoluteUri
+                                if ($PSBoundParameters.ContainsKey("ProxyCredential")) {
+                                    $iwrParams.ProxyCredential = $ProxyCredential
+                                }
+                                else {
+                                    $iwrParams.ProxyUseDefaultCredentials = $true
+                                }
+                            }
+                        }
                     }
                     $Content = (Invoke-WebRequest @iwrParams).Content
                 }

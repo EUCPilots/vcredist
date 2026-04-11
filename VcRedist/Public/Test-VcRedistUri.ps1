@@ -28,10 +28,10 @@ function Test-VcRedistUri {
     begin {
         # Disable the Invoke-WebRequest progress bar for faster downloads
         if ($PSBoundParameters.ContainsKey("Verbose") -or ($PSBoundParameters.ContainsKey("ShowProgress"))) {
-            $ProgressPreference = [System.Management.Automation.ActionPreference]::Continue
+            $ProgressPreference = "Continue"
         }
         else {
-            $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
+            $ProgressPreference = "SilentlyContinue"
         }
 
         # Enable TLS 1.2
@@ -58,9 +58,26 @@ function Test-VcRedistUri {
                 }
                 if ($PSBoundParameters.ContainsKey("Proxy")) {
                     $params.Proxy = $Proxy
+                    if ($PSBoundParameters.ContainsKey("ProxyCredential")) {
+                        $params.ProxyCredential = $ProxyCredential
+                    }
                 }
-                if ($PSBoundParameters.ContainsKey("ProxyCredential")) {
-                    $params.ProxyCredential = $ProxyCredential
+                else {
+                    $RequestUri = [System.Uri]::new($Object.URI)
+                    $SystemProxy = [System.Net.WebRequest]::DefaultWebProxy
+                    if ($null -ne $SystemProxy) {
+                        $ProxyUri = $SystemProxy.GetProxy($RequestUri)
+                        if (($null -ne $ProxyUri) -and ($ProxyUri.AbsoluteUri -ne $RequestUri.AbsoluteUri)) {
+                            Write-Verbose -Message "Using system proxy '$($ProxyUri.AbsoluteUri)' for '$($Object.URI)'."
+                            $params.Proxy = $ProxyUri.AbsoluteUri
+                            if ($PSBoundParameters.ContainsKey("ProxyCredential")) {
+                                $params.ProxyCredential = $ProxyCredential
+                            }
+                            else {
+                                $params.ProxyUseDefaultCredentials = $true
+                            }
+                        }
+                    }
                 }
                 $Result = $true
                 Invoke-WebRequest @params | Out-Null
