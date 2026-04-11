@@ -25,12 +25,7 @@ function Install-VcRedist {
     )
 
     begin {
-        # Get script elevation status
-        [System.Boolean] $Elevated = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
-        if ($Elevated -eq $false) {
-            $Msg = "Installing the Visual C++ Redistributables requires elevation. The current Windows PowerShell session is not running as Administrator. Start Windows PowerShell by using the Run as Administrator option, and then try running the script again"
-            throw [System.Management.Automation.ScriptRequiresException]::New($Msg)
-        }
+        Assert-Elevation -Activity "Installing the Visual C++ Redistributables"
 
         # Get currently installed VcRedist versions
         $currentInstalled = Get-InstalledVcRedist
@@ -39,10 +34,7 @@ function Install-VcRedist {
     process {
 
         # Make sure that $VcList has the required properties
-        if ((Test-VcListObject -VcList $VcList) -ne $true) {
-            $Msg = "Required properties not found. Please ensure the output from Save-VcRedist is sent to this function. "
-            throw [System.Management.Automation.PropertyNotFoundException]::New($Msg)
-        }
+        Test-VcListObject -VcList $VcList | Out-Null
 
         # Sort $VcList by version number from oldest to newest
         foreach ($VcRedist in ($VcList | Sort-Object -Property @{ Expression = { [System.Version]$_.Version }; Descending = $false })) {

@@ -56,29 +56,7 @@ function Test-VcRedistUri {
                     UseBasicParsing = $true
                     ErrorAction     = "SilentlyContinue"
                 }
-                if ($PSBoundParameters.ContainsKey("Proxy")) {
-                    $params.Proxy = $Proxy
-                    if ($PSBoundParameters.ContainsKey("ProxyCredential")) {
-                        $params.ProxyCredential = $ProxyCredential
-                    }
-                }
-                else {
-                    $RequestUri = [System.Uri]::new($Object.URI)
-                    $SystemProxy = [System.Net.WebRequest]::DefaultWebProxy
-                    if ($null -ne $SystemProxy) {
-                        $ProxyUri = $SystemProxy.GetProxy($RequestUri)
-                        if (($null -ne $ProxyUri) -and ($ProxyUri.AbsoluteUri -ne $RequestUri.AbsoluteUri)) {
-                            Write-Verbose -Message "Using system proxy '$($ProxyUri.AbsoluteUri)' for '$($Object.URI)'."
-                            $params.Proxy = $ProxyUri.AbsoluteUri
-                            if ($PSBoundParameters.ContainsKey("ProxyCredential")) {
-                                $params.ProxyCredential = $ProxyCredential
-                            }
-                            else {
-                                $params.ProxyUseDefaultCredentials = $true
-                            }
-                        }
-                    }
-                }
+                $params += Get-ProxyParam -Uri $Object.URI -Proxy $Proxy -ProxyCredential $ProxyCredential -BoundParameters $PSBoundParameters
                 $Result = $true
                 Invoke-WebRequest @params | Out-Null
             }
@@ -96,10 +74,5 @@ function Test-VcRedistUri {
         }
     }
 
-    end {
-        if ($PSCmdlet.ShouldProcess("Remove variables")) {
-            if (Test-Path -Path Variable:params) { Remove-Variable -Name "params" -ErrorAction "SilentlyContinue" }
-            Remove-Variable -Name "OutPath", "OutFile" -ErrorAction "SilentlyContinue"
-        }
-    }
+    end { }
 }

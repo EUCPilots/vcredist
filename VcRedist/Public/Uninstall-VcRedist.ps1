@@ -25,12 +25,7 @@ function Uninstall-VcRedist {
     )
 
     begin {
-        # Get script elevation status
-        [System.Boolean] $Elevated = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
-        if ($Elevated -eq $false) {
-            $Msg = "Uninstalling the Visual C++ Redistributables requires elevation. The current Windows PowerShell session is not running as Administrator. Start Windows PowerShell by using the Run as Administrator option, and then try running the script again"
-            throw [System.Management.Automation.ScriptRequiresException]::New($Msg)
-        }
+        Assert-Elevation -Activity "Uninstalling the Visual C++ Redistributables"
     }
 
     process {

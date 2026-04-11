@@ -2,7 +2,6 @@ function Save-VcRedist {
     <#
         .EXTERNALHELP VcRedist-help.xml
     #>
-    [Alias("Get-VcRedist")]
     [CmdletBinding(SupportsShouldProcess = $true, HelpURI = "https://vcredist.com/save-vcredist/")]
     [OutputType([System.Management.Automation.PSObject])]
     param (
@@ -115,52 +114,22 @@ function Save-VcRedist {
                             UserAgent       = $UserAgent
                             ErrorAction     = "SilentlyContinue"
                         }
-                        if ($PSBoundParameters.ContainsKey("Proxy")) {
-                            $iwrParams.Proxy = $Proxy
-                            if ($PSBoundParameters.ContainsKey("ProxyCredential")) {
-                                $iwrParams.ProxyCredential = $ProxyCredential
-                            }
-                        }
-                        else {
-                            $RequestUri = [System.Uri]::new($VcRedist.URI)
-                            $SystemProxy = [System.Net.WebRequest]::DefaultWebProxy
-                            if ($null -ne $SystemProxy) {
-                                $ProxyUri = $SystemProxy.GetProxy($RequestUri)
-                                if (($null -ne $ProxyUri) -and ($ProxyUri.AbsoluteUri -ne $RequestUri.AbsoluteUri)) {
-                                    Write-Verbose -Message "Using system proxy '$($ProxyUri.AbsoluteUri)' for '$($VcRedist.URI)'."
-                                    $iwrParams.Proxy = $ProxyUri.AbsoluteUri
-                                    if ($PSBoundParameters.ContainsKey("ProxyCredential")) {
-                                        $iwrParams.ProxyCredential = $ProxyCredential
-                                    }
-                                    else {
-                                        $iwrParams.ProxyUseDefaultCredentials = $true
-                                    }
-                                }
-                            }
-                        }
+                        $iwrParams += Get-ProxyParam -Uri $VcRedist.URI -Proxy $Proxy -ProxyCredential $ProxyCredential -BoundParameters $PSBoundParameters
                         Invoke-WebRequest @iwrParams
-                        $Downloaded = $true
                     }
                     catch [System.Exception] {
-                        $Downloaded = $false
                         throw $_
-                    }
-
-                    # Return the $VcList array on the pipeline so that we can act on what was downloaded
-                    # Add the Path property pointing to the downloaded file
-                    if ($Downloaded -eq $true) {
-                        Write-Verbose -Message "Add Path property: $TargetVcRedist"
-                        $VcRedist | Add-Member -MemberType "NoteProperty" -Name "Path" -Value $TargetVcRedist
-                        Write-Output -InputObject $VcRedist
                     }
                 }
             }
             else {
-                # Return the $VcList array on the pipeline so that we can act on what was downloaded
-                # Add the Path property pointing to the downloaded file
                 Write-Verbose -Message "VcRedist exists: $TargetVcRedist."
+            }
+
+            # Return the VcRedist on the pipeline with the Path property added
+            if (Test-Path -Path $TargetVcRedist -PathType "Leaf") {
                 Write-Verbose -Message "Add Path property: $TargetVcRedist"
-                $VcRedist | Add-Member -MemberType "NoteProperty" -Name "Path" -Value $TargetVcRedist
+                $VcRedist | Add-Member -MemberType "NoteProperty" -Name "Path" -Value $TargetVcRedist -Force
                 Write-Output -InputObject $VcRedist
             }
         }

@@ -71,29 +71,7 @@ function Get-VcList {
                         TimeoutSec       = 10
                         ErrorAction      = "Stop"
                     }
-                    if ($PSBoundParameters.ContainsKey("Proxy")) {
-                        $iwrParams.Proxy = $Proxy
-                        if ($PSBoundParameters.ContainsKey("ProxyCredential")) {
-                            $iwrParams.ProxyCredential = $ProxyCredential
-                        }
-                    }
-                    else {
-                        $RequestUri = [System.Uri]::new($ResolvedSource)
-                        $SystemProxy = [System.Net.WebRequest]::DefaultWebProxy
-                        if ($null -ne $SystemProxy) {
-                            $ProxyUri = $SystemProxy.GetProxy($RequestUri)
-                            if (($null -ne $ProxyUri) -and ($ProxyUri.AbsoluteUri -ne $RequestUri.AbsoluteUri)) {
-                                Write-Verbose -Message "Using system proxy '$($ProxyUri.AbsoluteUri)' for '$ResolvedSource'."
-                                $iwrParams.Proxy = $ProxyUri.AbsoluteUri
-                                if ($PSBoundParameters.ContainsKey("ProxyCredential")) {
-                                    $iwrParams.ProxyCredential = $ProxyCredential
-                                }
-                                else {
-                                    $iwrParams.ProxyUseDefaultCredentials = $true
-                                }
-                            }
-                        }
-                    }
+                    $iwrParams += Get-ProxyParam -Uri $ResolvedSource -Proxy $Proxy -ProxyCredential $ProxyCredential -BoundParameters $PSBoundParameters
                     $Content = (Invoke-WebRequest @iwrParams).Content
                 }
                 else {
@@ -145,18 +123,9 @@ function Get-VcList {
                 $Output = $Output | Where-Object { $Architecture -contains $_.Architecture }
             }
 
-            try {
-                # Get the count of items in $Output; Because it's a PSCustomObject we can't use the .count property so need to measure the object
-                # Grab a NoteProperty and count how many of those there are to get the object count
-                $Property = $Output | Get-Member -ErrorAction "SilentlyContinue" | Where-Object { $_.MemberType -eq "NoteProperty" } | Select-Object -ExpandProperty "Name" | Select-Object -First 1
-                $Count = $Output.$Property.Count - 1
-            }
-            catch {
-                $Count = 0
-            }
-
             # Replace strings in the manifest
-            Write-Verbose -Message "Object count is: $($Output.$Property.Count)."
+            $Count = @($Output).Count - 1
+            Write-Verbose -Message "Object count is: $($Count + 1)."
             for ($i = 0; $i -le $Count; $i++) {
                 try {
                     $Output[$i].SilentUninstall = $Output[$i].SilentUninstall `
