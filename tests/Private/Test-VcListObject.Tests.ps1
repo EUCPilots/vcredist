@@ -14,6 +14,7 @@ InModuleScope VcRedist {
 	BeforeAll {
 		$ValidObject = [PSCustomObject]@{
 			Name            = "Visual C++ Redistributable for Visual Studio 14"
+			Supported		= $true
 			ProductCode     = "{6ba9fb5e-8366-4cc4-bf65-25fe9819b2fc}"
 			Version         = "14.34.31931.0"
 			URL             = "https://www.visualstudio.com/downloads/"
