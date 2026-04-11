@@ -75,11 +75,13 @@ function Import-VcIntuneApplication {
                 Write-Verbose -Message "Created IntuneWin package: $($Package.Path)."
 
                 # Requirement rule
+                # Assuming here that no one is managing an x86 machine with Intune in 2026
                 switch ($VcRedist.Architecture) {
-                    "x86" { $Architecture = "All" }
-                    "x64" { $Architecture = "x64" }
+                    "x86" { $Architecture = "AllWithARM64" }
+                    "x64" { $Architecture = "AllWithARM64" }
+                    "ARM64" { $Architecture = "arm64" }
                     default {
-                        $Architecture = "All"
+                        $Architecture = "x64x86"
                         continue
                     }
                 }
