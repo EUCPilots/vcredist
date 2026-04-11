@@ -2,7 +2,6 @@ function Export-VcManifest {
     <#
         .EXTERNALHELP VcRedist-help.xml
     #>
-    [Alias("Export-VcXml")]
     [CmdletBinding(SupportsShouldProcess = $false, HelpURI = "https://vcredist.com/export-vcmanifest/")]
     [OutputType([System.IO.FileSystemInfo])]
     param (
