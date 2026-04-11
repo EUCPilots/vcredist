@@ -8,7 +8,7 @@ function Get-VcList {
     param (
         [Parameter(Mandatory = $false, Position = 0)]
         [ValidateSet("2005", "2008", "2010", "2012", "2013", "2015", "2017", "2019", "14")]
-        [System.String[]] $Release,
+        [System.String[]] $Release = @("14"),
 
         [Parameter(Mandatory = $false, Position = 1)]
         [ValidateSet("x86", "x64", "ARM64")]
@@ -105,8 +105,8 @@ function Get-VcList {
                 [System.Management.Automation.PSObject] $Output = $JsonManifest | Where-Object { $_.Supported -eq $true }
             }
 
-            # Apply Release filter if specified
-            if ($PSBoundParameters.ContainsKey("Release")) {
+            # Apply Release filter when explicitly specified, or by default for supported output.
+            if ($PSBoundParameters.ContainsKey("Release") -or -not $Unsupported) {
                 $Output = $Output | Where-Object { $Release -contains $_.Release }
             }
 

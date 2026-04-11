@@ -89,8 +89,8 @@ Describe -Name "Validate manifest counts from Get-VcList" {
 	}
 
 	Context "Return built-in manifest with Get-VcList" {
-		It "Given no parameters, it returns all supported Visual C++ Redistributables" {
-			Get-VcList | Should -HaveCount $VcCount.Default
+		It "Given no parameters, it returns Visual C++ Redistributables for release 14" {
+			(Get-VcList | Where-Object { $_.Release -ne "14" }) | Should -BeNullOrEmpty
 		}
 		It "Given -Unsupported, it returns unsupported Visual C++ Redistributables" {
 			Get-VcList -Unsupported | Should -HaveCount $VcCount.Unsupported
