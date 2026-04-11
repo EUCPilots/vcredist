@@ -1,7 +1,7 @@
 [
     {
         "Name":  "Visual C++ 2015 Redistributable Update 3",
-        "Supported":  true,
+        "Supported":  false,
         "ProductCode":  "{d992c12e-cab2-426f-bde3-fb8c53950b0d}",
         "Version":  "14.0.24215.1",
         "URL":  "https://www.microsoft.com/en-us/download/details.aspx?id=53840",
@@ -17,7 +17,7 @@
     },
     {
         "Name":  "Visual C++ 2015 Redistributable Update 3",
-        "Supported":  true,
+        "Supported":  false,
         "ProductCode":  "{e2803110-78b3-4664-a479-3611a381656a}",
         "Version":  "14.0.24215.1",
         "URL":  "https://www.microsoft.com/en-us/download/details.aspx?id=53840",
