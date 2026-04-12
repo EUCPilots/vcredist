@@ -78,7 +78,7 @@ function Import-VcIntuneApplication {
                 # Assuming here that no one is managing an x86 machine with Intune in 2026
                 switch ($VcRedist.Architecture) {
                     "x86" { $Architecture = "AllWithARM64" }
-                    "x64" { $Architecture = "AllWithARM64" }
+                    "x64" { $Architecture = "x64" }
                     "ARM64" { $Architecture = "arm64" }
                     default {
                         $Architecture = "x64x86"
@@ -90,7 +90,7 @@ function Import-VcIntuneApplication {
                     MinimumSupportedWindowsRelease = $IntuneManifest.RequirementRule.MinimumRequiredOperatingSystem
                     MinimumFreeDiskSpaceInMB       = $IntuneManifest.RequirementRule.SizeInMBValue
                 }
-                $RequirementRule = New-IntuneWin32AppRequirementRule @params
+                $RequirementRules = New-IntuneWin32AppRequirementRule @params
 
                 # Create the detection rules for the Win32 app
                 $DetectionRules = New-IntuneWin32AppDetectionRule -VcList $VcRedist -IntuneManifest $IntuneManifest
@@ -119,7 +119,7 @@ function Import-VcIntuneApplication {
                     "InstallExperience"        = $IntuneManifest.Program.InstallExperience
                     "RestartBehavior"          = $IntuneManifest.Program.DeviceRestartBehavior
                     "DetectionRule"            = $DetectionRules
-                    "RequirementRule"          = $RequirementRule
+                    "RequirementRule"          = $RequirementRules
                     "InstallCommandLine"       = "$(Split-Path -Path $VcRedist.URI -Leaf) $($VcRedist.SilentInstall)"
                     "UninstallCommandLine"     = $VcRedist.SilentUninstall
                 }
