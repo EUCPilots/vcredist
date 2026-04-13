@@ -15,12 +15,6 @@ function Import-VcIntuneApplication {
     )
 
     begin {
-        # IntuneWin32App currently supports Windows PowerShell only
-        if (Test-PSCore) {
-            $Msg = "The IntuneWin32App module requires Windows PowerShell 5.1 and cannot be loaded on PowerShell Core. Run this function in a Windows PowerShell 5.1 session. See https://github.com/MSEndpointMgr/IntuneWin32App for details."
-            throw [System.TypeLoadException]::New($Msg)
-        }
-
         # Test for required variables
         $Modules = "IntuneWin32App"
         foreach ($Module in $Modules) {
