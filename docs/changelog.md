@@ -1,5 +1,16 @@
 # Changelog
 
+## 5.0.1-beta
+
+* Updates `Get-VcList` to support remote manifest retrieval at [https://vcredist.com/manifest.json](https://vcredist.com/manifest.json) with fallback to embedded manifest, cache-backed exports, and expanded filtering
+* Changes default release behavior to `14` and marks Visual C++ `2015` redistributables as unsupported
+* Publishes and flattens the redistributable manifest format and updates related manifest tooling
+* Adds proxy handling with system-proxy detection for web requests used by module functions
+* Adds deprecation warnings to MDT-related functions and removes the `Export-VcXml` alias from `Export-VcManifest`
+* Updates Intune import behavior and detection configuration for imported packages
+* Disables MDT-focused tests in CI and updates Pester tests for manifest and `Get-VcList` API changes
+* Introduces session-scoped manifest caching to reduce repeated remote manifest requests
+
 ## 4.1.526
 
 * Updates 2022 Visual C++ Redistributables to latest v14
