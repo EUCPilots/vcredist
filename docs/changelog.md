@@ -1,5 +1,9 @@
 # Changelog
 
+## VERSION
+
+* Update Visual C++ Redistributables to `14.51.36247.0`
+
 ## 4.1.526
 
 * Updates 2022 Visual C++ Redistributables to latest v14
