@@ -8,14 +8,14 @@
 [CmdletBinding()]
 param (
     [System.String[]] $Release,
-    [System.String[]] $Architecture = @("x64", "x86"),
+    [System.String[]] $Architecture = @("x64", "x86", "arm64"),
     [System.String] $Path,
     [System.String] $VcManifest
 )
 
 begin {
     $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
-    $InformationPreference = [System.Management.Automation.ActionPreference]::Continue
+    $InformationPreference = [System.Management.Automation.ActionPreference]::continue
     $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
 }
@@ -24,7 +24,7 @@ process {
 
     # Get an array of VcRedists from the current manifest and the installed VcRedists
     Write-Information -MessageData "$($PSStyle.Foreground.Cyan)`tGetting manifest from: $VcManifest."
-    $CurrentManifest = Get-Content -Path $VcManifest | ConvertFrom-Json
+    $CurrentManifest = Get-Content -Path $VcManifest -Raw | ConvertFrom-Json
     $InstalledVcRedists = Get-InstalledVcRedist
 
     $Output = @()
@@ -32,13 +32,30 @@ process {
     foreach ($Arch in $Architecture) {
         foreach ($Rls in $Release) {
 
-            Write-Information -MessageData "$($PSStyle.Foreground.Cyan)`tInstalling VcRedist $Rls."
-            Get-VcList -Release $Rls -Architecture $Arch | Save-VcRedist -Path $Path | Install-VcRedist -Silent
+            Write-Information -MessageData "$($PSStyle.Foreground.Cyan)`tInstalling VcRedist $Rls $Arch."
+            $VcList = Get-VcList -Release $Rls -Architecture $Arch | Save-VcRedist -Path $Path | Install-VcRedist -Silent
             $InstalledVcRedists = Get-InstalledVcRedist | Where-Object { $_.Name -notmatch "Debug Runtime" }
 
             # Filter the VcRedists for the target version and compare against what has been installed
-            foreach ($ManifestVcRedist in ($CurrentManifest.Supported | Where-Object { $_.Release -eq $Rls -and $_.Architecture -eq $Arch })) {
-                $InstalledItem = $InstalledVcRedists | Where-Object { ($_.Release -eq $ManifestVcRedist.Release) -and ($_.Architecture -eq $ManifestVcRedist.Architecture) }
+            foreach ($ManifestVcRedist in ($CurrentManifest.Supported | `
+                        Where-Object { $_.Release -eq $Rls -and $_.Architecture -eq $Arch })) {
+
+                if ($Arch -eq "arm64" -and $Rls -eq "14") {
+                    $InstalledItem = $InstalledVcRedists | `
+                        Sort-Object -Property { [System.Version]$_.Version } -Descending | `
+                        Where-Object { $_.Architecture -eq $ManifestVcRedist.Architecture } | `
+                        Where-Object { $_.Release -eq 2022 } | `
+                        Select-Object -First 1
+                }
+                else {
+                    $InstalledItem = $InstalledVcRedists | `
+                        Sort-Object -Property { [System.Version]$_.Version } -Descending | `
+                        Where-Object { $_.Architecture -eq $ManifestVcRedist.Architecture } | `
+                        Where-Object { $_.Release -eq $ManifestVcRedist.Release }
+                }
+
+                Write-Information -MessageData "$($PSStyle.Foreground.Cyan)`t$($InstalledItem.Version)"
+                Write-Information -MessageData "$($PSStyle.Foreground.Cyan)`t$($ManifestVcRedist.Version)"
 
                 # If the manifest version of the VcRedist is lower than the installed version, the manifest is out of date
                 if ([System.Version]$InstalledItem.Version -gt [System.Version]$ManifestVcRedist.Version) {
@@ -56,6 +73,7 @@ process {
                     $FoundNewVersion = $true
                     $Output += $Rls
                 }
+                Write-Information -MessageData ""
             }
         }
     }
