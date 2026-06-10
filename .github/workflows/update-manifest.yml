@@ -119,6 +119,13 @@ jobs:
         if: steps.commit.outputs.changes_detected == 'false'
         run: echo "No changes detected."
 
+      - name: Upload manifest for ARM64 validation
+        uses: actions/upload-artifact@v4
+        with:
+          name: visualcredist-manifest
+          path: ${{ env.MANIFEST_FILE }}
+          if-no-files-found: error
+
   validate-arm64:
     runs-on: windows-11-arm
     needs: validate-amd64
@@ -136,6 +143,13 @@ jobs:
         shell: pwsh
         run: |
           git pull origin development
+
+      # Restore the manifest updated by validate-amd64 before applying ARM64 changes
+      - name: Download manifest from AMD64 validation
+        uses: actions/download-artifact@v5
+        with:
+          name: visualcredist-manifest
+          path: ${{ github.workspace }}\VcRedist
 
       # Import GPG key so that we can sign the commit
       - name: Import GPG key
