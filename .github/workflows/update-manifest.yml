@@ -217,6 +217,11 @@ jobs:
         shell: bash
         run: |
           git fetch origin main:refs/remotes/origin/main
+          DIFF_RANGE="origin/main...HEAD"
+
+          if ! git merge-base origin/main HEAD >/dev/null; then
+            DIFF_RANGE="origin/main..HEAD"
+          fi
 
           {
             echo "## Automated manifest update"
@@ -231,8 +236,8 @@ jobs:
             fi
             echo
             echo "### Files changed (vs main)"
-            if git diff --name-status origin/main...HEAD | grep -q .; then
-              git diff --name-status origin/main...HEAD
+            if git diff --name-status "$DIFF_RANGE" | grep -q .; then
+              git diff --name-status "$DIFF_RANGE"
             else
               echo "No file changes detected."
             fi
