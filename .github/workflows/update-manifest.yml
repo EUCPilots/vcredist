@@ -61,7 +61,7 @@ jobs:
         shell: pwsh
         run: |
           $Release = "14"
-          $Architecture = "arm64"
+          $Architecture = "x86", "x64","arm64"
           Import-Module "${{ github.workspace }}\VcRedist" -Force
           New-Item -Path "$env:RUNNER_TEMP\VcRedist" -ItemType "Directory" -ErrorAction "SilentlyContinue" | Out-Null
           Get-VcList -Release $Release -Architecture $Architecture | Save-VcRedist -Path "$env:RUNNER_TEMP\VcRedist" | Install-VcRedist
