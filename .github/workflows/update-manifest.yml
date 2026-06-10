@@ -258,5 +258,5 @@ jobs:
           elif [[ -n "$PR_CREATE_TOKEN" ]]; then
             GH_TOKEN="$PR_CREATE_TOKEN" gh pr create --base main --head development --title "$TITLE" --body-file pr-body.md
           else
-            echo "::warning::No open pull request exists from development to main, and repository secret PAT is not configured. GitHub Actions is not permitted to create pull requests with GITHUB_TOKEN in this repository."
+            echo "::warning::No open pull request exists from development to main, and repository secret PAT is not configured. GitHub Actions is not permitted to create pull requests with GITHUB_TOKEN in this repository. To enable automatic PR creation, configure a PAT secret named PAT with permissions to create pull requests."
           fi
