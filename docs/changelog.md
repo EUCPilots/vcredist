@@ -1,6 +1,6 @@
 # Changelog
 
-## VERSION
+## 4.1.527
 
 * Update Visual C++ Redistributables to `14.51.36247.0`
 
