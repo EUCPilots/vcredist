@@ -216,7 +216,12 @@ jobs:
       - name: Generate pull request body
         shell: bash
         run: |
-          git fetch origin main --depth=1
+          git fetch origin main:refs/remotes/origin/main
+          DIFF_RANGE="origin/main...HEAD"
+
+          if ! git merge-base origin/main HEAD >/dev/null; then
+            DIFF_RANGE="origin/main..HEAD"
+          fi
 
           {
             echo "## Automated manifest update"
@@ -231,8 +236,8 @@ jobs:
             fi
             echo
             echo "### Files changed (vs main)"
-            if git diff --name-status origin/main...HEAD | grep -q .; then
-              git diff --name-status origin/main...HEAD
+            if git diff --name-status "$DIFF_RANGE" | grep -q .; then
+              git diff --name-status "$DIFF_RANGE"
             else
               echo "No file changes detected."
             fi
@@ -241,6 +246,7 @@ jobs:
       - name: Create or update pull request to main
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_CREATE_TOKEN: ${{ secrets.PAT }}
         shell: bash
         run: |
           TITLE="Automated manifest update (${GITHUB_RUN_NUMBER})"
@@ -249,6 +255,8 @@ jobs:
           if [[ -n "$EXISTING_PR_NUMBER" ]]; then
             gh pr edit "$EXISTING_PR_NUMBER" --title "$TITLE" --body-file pr-body.md
             echo "Updated PR #$EXISTING_PR_NUMBER"
+          elif [[ -n "$PR_CREATE_TOKEN" ]]; then
+            GH_TOKEN="$PR_CREATE_TOKEN" gh pr create --base main --head development --title "$TITLE" --body-file pr-body.md
           else
-            gh pr create --base main --head development --title "$TITLE" --body-file pr-body.md
+            echo "::warning::No open pull request exists from development to main, and repository secret PAT is not configured. GitHub Actions is not permitted to create pull requests with GITHUB_TOKEN in this repository. To enable automatic PR creation, configure a PAT secret named PAT with repository contents and pull request write access."
           fi
