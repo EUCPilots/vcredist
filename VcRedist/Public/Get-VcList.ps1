@@ -65,14 +65,14 @@ function Get-VcList {
             try {
                 if ($ResolvedSource -match "^https?://") {
                     Write-Verbose -Message "Fetching remote manifest from '$ResolvedSource'."
-                    $iwrParams = @{
+                    $params = @{
                         Uri              = $ResolvedSource
                         UseBasicParsing  = $true
                         TimeoutSec       = 10
                         ErrorAction      = "Stop"
                     }
-                    $iwrParams += Get-ProxyParam -Uri $ResolvedSource -Proxy $Proxy -ProxyCredential $ProxyCredential -BoundParameters $PSBoundParameters
-                    $Content = (Invoke-WebRequest @iwrParams).Content
+                    $params += Get-ProxyParam -Uri $ResolvedSource -Proxy $Proxy -ProxyCredential $ProxyCredential -BoundParameters $PSBoundParameters
+                    $Content = (Invoke-WebRequest @params).Content
                 }
                 else {
                     Write-Verbose -Message "Reading manifest from '$ResolvedSource'."

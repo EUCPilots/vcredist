@@ -91,14 +91,14 @@ function Update-VcMdtBundle {
 
             if ($PSCmdlet.ShouldProcess($bundle.PSPath, "Update dependencies")) {
                 try {
-                    $sipParams = @{
+                    $params = @{
                         Path        = ($bundle.PSPath.Replace($bundle.PSProvider, "")).Trim(":")
                         Name        = "Dependency"
                         Value       = $dependencies
                         ErrorAction = "SilentlyContinue"
                         Force       = $true
                     }
-                    Set-ItemProperty @sipParams > $null
+                    Set-ItemProperty @params > $null
                 }
                 catch [System.Exception] {
                     Write-Warning -Message "Error updating VcRedist bundle dependencies."
@@ -107,14 +107,14 @@ function Update-VcMdtBundle {
             }
             if ($PSCmdlet.ShouldProcess($bundle.PSPath, "Update version")) {
                 try {
-                    $sipParams = @{
+                    $params = @{
                         Path        = $($bundle.PSPath.Replace($bundle.PSProvider, "")).Trim(":")
                         Name        = "Version"
                         Value       = $(Get-Date -Format (([System.Globalization.CultureInfo]::CurrentUICulture.DateTimeFormat).ShortDatePattern))
                         ErrorAction = "SilentlyContinue"
                         Force       = $true
                     }
-                    Set-ItemProperty @sipParams > $null
+                    Set-ItemProperty @params > $null
                 }
                 catch [System.Exception] {
                     Write-Warning -Message "Error updating VcRedist bundle version."

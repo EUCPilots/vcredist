@@ -107,15 +107,15 @@ function Save-VcRedist {
                     try {
                         # Download the file
                         Write-Verbose -Message "Download VcRedist: '$($VcRedist.Name) $($VcRedist.Version) $($VcRedist.Architecture)'"
-                        $iwrParams = @{
+                        $params = @{
                             Uri             = $VcRedist.URI
                             OutFile         = $TargetVcRedist
                             UseBasicParsing = $true
                             UserAgent       = $UserAgent
                             ErrorAction     = "SilentlyContinue"
                         }
-                        $iwrParams += Get-ProxyParam -Uri $VcRedist.URI -Proxy $Proxy -ProxyCredential $ProxyCredential -BoundParameters $PSBoundParameters
-                        Invoke-WebRequest @iwrParams
+                        $params += Get-ProxyParam -Uri $VcRedist.URI -Proxy $Proxy -ProxyCredential $ProxyCredential -BoundParameters $PSBoundParameters
+                        Invoke-WebRequest @params
                     }
                     catch [System.Exception] {
                         throw $_

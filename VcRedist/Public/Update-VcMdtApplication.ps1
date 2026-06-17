@@ -136,49 +136,49 @@ function Update-VcMdtApplication {
 
                             # Update ProductCode
                             if ($PSCmdlet.ShouldProcess($ExistingVcRedist.PSPath, "Update UninstallKey")) {
-                                $sipParams = @{
+                                $params = @{
                                     Path  = (Join-Path -Path $MdtTargetFolder -ChildPath $ExistingVcRedist.Name)
                                     Name  = "UninstallKey"
                                     Value = $VcRedist.ProductCode
                                 }
-                                Set-ItemProperty @sipParams > $null
+                                Set-ItemProperty @params > $null
                             }
 
                             # Update Version number
                             if ($PSCmdlet.ShouldProcess($ExistingVcRedist.PSPath, "Update Version")) {
-                                $sipParams = @{
+                                $params = @{
                                     Path  = (Join-Path -Path $MdtTargetFolder -ChildPath $ExistingVcRedist.Name)
                                     Name  = "Version"
                                     Value = $VcRedist.Version
                                 }
-                                Set-ItemProperty @sipParams > $null
+                                Set-ItemProperty @params > $null
                             }
 
                             if ($PSCmdlet.ShouldProcess($ExistingVcRedist.PSPath, "Update Source")) {
-                                $sipParams = @{
+                                $params = @{
                                     Path  = (Join-Path -Path $MdtTargetFolder -ChildPath $ExistingVcRedist.Name)
                                     Name  = "Source"
                                     Value = $ExistingVcRedist.Source -replace "(\d+(\.\d+){1,4})", $VcRedist.Version
                                 }
-                                Set-ItemProperty @sipParams > $null
+                                Set-ItemProperty @params > $null
                             }
 
                             if ($PSCmdlet.ShouldProcess($ExistingVcRedist.PSPath, "Update WorkingDirectory")) {
-                                $sipParams = @{
+                                $params = @{
                                     Path  = (Join-Path -Path $MdtTargetFolder -ChildPath $ExistingVcRedist.Name)
                                     Name  = "WorkingDirectory"
                                     Value = $ExistingVcRedist.WorkingDirectory -replace "(\d+(\.\d+){1,4})", $VcRedist.Version
                                 }
-                                Set-ItemProperty @sipParams > $null
+                                Set-ItemProperty @params > $null
                             }
 
                             if ($PSCmdlet.ShouldProcess($ExistingVcRedist.PSPath, "Update Name")) {
-                                $sipParams = @{
+                                $params = @{
                                     Path  = (Join-Path -Path $MdtTargetFolder -ChildPath $ExistingVcRedist.Name)
                                     Name  = "Name"
                                     Value = $ExistingVcRedist.Name -replace "(\d+(\.\d+){1,4})", $VcRedist.Version
                                 }
-                                Set-ItemProperty @sipParams > $null
+                                Set-ItemProperty @params > $null
                             }
                         }
                     }
