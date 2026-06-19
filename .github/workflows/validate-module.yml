@@ -23,7 +23,7 @@ jobs:
         os: [windows-2025, windows-11-arm]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # Run Pester tests
       - name: Run Pester tests
@@ -82,7 +82,7 @@ jobs:
     runs-on: 'windows-latest'
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Install and cache PowerShell modules
         id: psmodulecache
