@@ -23,7 +23,7 @@ jobs:
       changes_detected: ${{ steps.commit.outputs.changes_detected }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: development
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -104,7 +104,7 @@ jobs:
     if: needs.validate-arm64.outputs.changes_detected == 'true'
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: development
           fetch-depth: 0
