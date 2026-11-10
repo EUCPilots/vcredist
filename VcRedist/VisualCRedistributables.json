@@ -92,8 +92,8 @@
     },
     {
       "Name": "Visual C++ v14 Redistributable (x64)",
-      "ProductCode": "{0e3bb569-69d6-4c34-bff9-c2f81db5e5f0}",
-      "Version": "14.51.36247.0",
+      "ProductCode": "{be2c4202-8de2-4274-95c7-ef71b2bfdcad}",
+      "Version": "14.52.37029.0",
       "URL": "https://www.visualstudio.com/downloads/",
       "URI": "https://aka.ms/vc14/vc_redist.x64.exe",
       "Release": "14",
@@ -107,8 +107,8 @@
     },
     {
       "Name": "Visual C++ v14 Redistributable (x86)",
-      "ProductCode": "{9a6ce18d-11c0-4452-aa35-9f2b8437c686}",
-      "Version": "14.51.36247.0",
+      "ProductCode": "{a88f8d56-9d66-4c09-a714-3c6d83981361}",
+      "Version": "14.52.37029.0",
       "URL": "https://www.visualstudio.com/downloads/",
       "URI": "https://aka.ms/vc14/vc_redist.x86.exe",
       "Release": "14",
@@ -122,8 +122,8 @@
     },
     {
       "Name": "Visual C++ v14 Redistributable (Arm64)",
-      "ProductCode": "{2a5d8513-1ed9-4e11-83b5-8424fbf1221e}",
-      "Version": "14.51.36247.0",
+      "ProductCode": "{f3c64e2f-0e60-4973-bfbb-bde56fc107e1}",
+      "Version": "14.52.37029.0",
       "URL": "https://www.visualstudio.com/downloads/",
       "URI": "https://aka.ms/vc14/vc_redist.arm64.exe",
       "Release": "14",
