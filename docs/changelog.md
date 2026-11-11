@@ -21,6 +21,7 @@
 * `Import-VcIntuneApplication` and `Export-VcManifest` support `-WhatIf`
 * `Save-VcRedist` creates the `-Path` folder if it does not exist and fails before downloading if it cannot (#219)
 * Web requests use a `VcRedist/<version> (...)` user agent instead of the Chrome browser user agent
+* Fixes `Import-VcIntuneApplication` requirement rule architecture: `All` is no longer valid, x86 packages now use `x64x86`, and ARM64 packages use `arm64` (#207)
 * Fixes `New-VcMdtBundle` and `Update-VcMdtBundle` `-WhatIf` target, and the ConfigMgr location restore in `Import-VcConfigMgrApplication`
 * MDT tests now use stubs and mocks; `tests/Install-Mdt.ps1` is removed
 

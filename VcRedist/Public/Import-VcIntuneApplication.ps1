@@ -79,16 +79,8 @@ function Import-VcIntuneApplication {
                 Write-Verbose -Message "Created IntuneWin package: $($Package.Path)."
 
                 # Requirement rule
-                switch ($VcRedist.Architecture) {
-                    "x86" { $Architecture = "All" }
-                    "x64" { $Architecture = "x64" }
-                    default {
-                        $Architecture = "All"
-                        continue
-                    }
-                }
                 $params = @{
-                    Architecture                   = $Architecture
+                    Architecture                   = Get-IntuneRequirementArchitecture -Architecture $VcRedist.Architecture
                     MinimumSupportedWindowsRelease = $IntuneManifest.RequirementRule.MinimumRequiredOperatingSystem
                     MinimumFreeDiskSpaceInMB       = $IntuneManifest.RequirementRule.SizeInMBValue
                 }
