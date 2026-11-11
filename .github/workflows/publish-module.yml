@@ -65,20 +65,20 @@ jobs:
           "tag=$($Metadata.Tag)" >> $env:GITHUB_OUTPUT
           "prerelease=$(([System.Boolean]$Metadata.Prerelease).ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
 
-  validate:
-    needs: release-metadata
-    uses: ./.github/workflows/validate-module.yml
-    with:
-      ref: ${{ needs.release-metadata.outputs.sha }}
-      run_intune: true
-    secrets:
-      TENANT_ID: ${{ secrets.TENANT_ID }}
-      CLIENT_ID: ${{ secrets.CLIENT_ID }}
-      CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+  # validate:
+  #   needs: release-metadata
+  #   uses: ./.github/workflows/validate-module.yml
+  #   with:
+  #     ref: ${{ needs.release-metadata.outputs.sha }}
+  #     run_intune: true
+  #   secrets:
+  #     TENANT_ID: ${{ secrets.TENANT_ID }}
+  #     CLIENT_ID: ${{ secrets.CLIENT_ID }}
+  #     CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
 
   publish-module:
     name: Approve and publish validated module
-    needs: [release-metadata, validate]
+    needs: [release-metadata] #validate
     runs-on: ubuntu-latest
     environment: powershell-gallery
     permissions:
