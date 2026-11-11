@@ -25,7 +25,7 @@ function Get-InstalledSoftware {
 
     process {
         $UninstallKeys = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall", "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
-        $null = New-PSDrive -Name "HKU" -PSProvider "Registry" -Root "Registry::HKEY_USERS"
+        $null = New-PSDrive -Name "HKU" -PSProvider "Registry" -Root "Registry::HKEY_USERS" -ErrorAction "SilentlyContinue"
 
         $UninstallKeys += Get-ChildItem -Path "HKU:" -ErrorAction "SilentlyContinue" | `
             Where-Object { $_.Name -match "S-\d-\d+-(\d+-){1,14}\d+$" } | `

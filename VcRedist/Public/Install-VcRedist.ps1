@@ -59,29 +59,33 @@ function Install-VcRedist {
                 }
                 else {
 
-                    if (Test-Path -Path $VcRedist.Path) {
+                    if (Test-Path -LiteralPath $VcRedist.Path -PathType "Leaf") {
                         Write-Verbose -Message "Install VcRedist: '$($VcRedist.Name) $($VcRedist.Version) $($VcRedist.Architecture)'"
                         if ($PSCmdlet.ShouldProcess("$($VcRedist.Path) $($VcRedist.Install)", "Install")) {
 
-                            try {
-                                # Create parameters with -ArgumentList set based on Install/SilentInstall properties in the manifest
-                                $params = @{
-                                    FilePath     = $VcRedist.Path
-                                    ArgumentList = if ($Silent) { $VcRedist.SilentInstall } else { $VcRedist.Install }
-                                    PassThru     = $true
-                                    Wait         = $true
-                                    NoNewWindow  = $true
-                                    Verbose      = $VerbosePreference
-                                    ErrorAction  = "Continue"
+                            # Only run installers with a valid Microsoft signature
+                            Assert-VcSignature -Path $VcRedist.Path | Out-Null
+
+                            # Create parameters with -ArgumentList set based on Install/SilentInstall properties in the manifest
+                            $params = @{
+                                FilePath     = $VcRedist.Path
+                                ArgumentList = if ($Silent) { $VcRedist.SilentInstall } else { $VcRedist.Install }
+                                PassThru     = $true
+                                Wait         = $true
+                                NoNewWindow  = $true
+                                ErrorAction  = "Stop"
+                            }
+                            $Result = Start-Process @params
+
+                            # 3010: reboot required; 1641: reboot initiated; 1638: another version already installed
+                            if (@(0, 1638, 1641, 3010) -contains $Result.ExitCode) {
+                                Write-Verbose -Message "Installed: '$($VcRedist.Name) $($VcRedist.Version) $($VcRedist.Architecture)'; ExitCode: $($Result.ExitCode)"
+                                if (@(1641, 3010) -contains $Result.ExitCode) {
+                                    Write-Warning -Message "A restart is required to complete installation of '$($VcRedist.Name) $($VcRedist.Architecture)'."
                                 }
-                                $Result = Start-Process @params
                             }
-                            catch {
-                                throw $_
-                            }
-                            $Installed = Get-InstalledVcRedist | Where-Object { $_.ProductCode -eq $VcRedist.ProductCode }
-                            if ($Installed) {
-                                Write-Verbose -Message "Installed successfully: '$($VcRedist.Name) $($VcRedist.Version) $($VcRedist.Architecture)'; ExitCode: $($Result.ExitCode)"
+                            else {
+                                Write-Error -Message "Installation of '$($VcRedist.Name) $($VcRedist.Version) $($VcRedist.Architecture)' failed with exit code $($Result.ExitCode)."
                             }
                         }
                     }

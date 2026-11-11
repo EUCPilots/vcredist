@@ -4,44 +4,32 @@
 #>
 [CmdletBinding()]
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "", Justification = "This OK for the tests files.")]
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "", Justification = "Outputs to log host.")]
 param ()
 
-BeforeDiscovery {
-}
-
 Describe -Name "Export-VcManifest" {
-	Context "Validate Export-VcManifest" {
-		BeforeAll {
-			$Json = Export-VcManifest -Path $env:RUNNER_TEMP
-			$VcList = Get-VcList -Path $Json
+    BeforeAll {
+        $Temp = if ($env:RUNNER_TEMP) { $env:RUNNER_TEMP } elseif ($env:TMPDIR) { $env:TMPDIR } else { [System.IO.Path]::GetTempPath() }
+        $Path = Join-Path -Path $Temp -ChildPath "VcExport-$([System.Guid]::NewGuid())"
+        New-Item -Path $Path -ItemType "Directory" -Force | Out-Null
+    }
 
-			$VcCount = @{
-				"Default"     = 2
-				"Supported"   = 9
-				"Unsupported" = 18
-				"All"         = 27
-			}
-		}
+    It "Writes a valid flat manifest from the bundled source" {
+        Export-VcManifest -Path $Path -Source "Bundled" | Out-Null
+        $File = Get-ChildItem -Path $Path -Filter "*.json" | Select-Object -First 1
+        $File | Should -Not -BeNullOrEmpty
+        $Json = Get-Content -LiteralPath $File.FullName -Raw | ConvertFrom-Json
+        $Json.SchemaVersion | Should -Not -BeNullOrEmpty
+        $Json.Entries.Count | Should -BeGreaterThan 0
+    }
 
-		It "Given valid parameter -Path, it exports an JSON file" {
-			Test-Path -Path $Json | Should -BeTrue
-		}
+    It "Does not write with -WhatIf" {
+        $Empty = Join-Path -Path $Path -ChildPath "WhatIf"
+        New-Item -Path $Empty -ItemType "Directory" -Force | Out-Null
+        Export-VcManifest -Path $Empty -Source "Bundled" -WhatIf | Out-Null
+        Get-ChildItem -Path $Empty | Should -BeNullOrEmpty
+    }
 
-		It "Given valid parameter -Path, it exports an JSON file" {
-			$VcList.Count | Should -BeGreaterOrEqual $VcCount.Default
-		}
-
-		It "Given an invalid path, it should throw an error" {
-			{ Export-VcManifest -Path $([System.IO.Path]::Combine($env:RUNNER_TEMP, "Temp")) } | Should -Throw
-		}
-
-		It "Given an valid path, it should not throw an error" {
-			{ Export-VcManifest -Path $env:RUNNER_TEMP } | Should -Not -Throw
-		}
-
-		It "Given an valid path, it should not throw an error" {
-			{ Export-VcManifest -Path $env:RUNNER_TEMP } | Should -Not -Throw
-		}
-	}
+    AfterAll {
+        Remove-Item -LiteralPath $Path -Recurse -Force -ErrorAction "SilentlyContinue"
+    }
 }

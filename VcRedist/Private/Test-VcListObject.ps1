@@ -31,28 +31,18 @@ function Test-VcListObject {
     )
 
     process {
+        $Result = $true
         foreach ($Item in $VcList) {
             $Members = Get-Member -InputObject $Item -MemberType "NoteProperty"
-            $params = @{
-                ReferenceObject  = $RequiredProperties
-                DifferenceObject = $Members.Name
-                PassThru         = $true
-                ErrorAction      = "Stop"
-            }
-            $MissingProperties = Compare-Object @params
-
-            if (-not($missingProperties)) {
-                $Result = $true
-            }
-            else {
-                $MissingProperties | ForEach-Object {
-                    throw [System.Management.Automation.ValidationMetadataException] "Property: '$_' missing."
-                }
+            $MissingProperties = $RequiredProperties | Where-Object { $Members.Name -notcontains $_ }
+            foreach ($Property in $MissingProperties) {
+                throw [System.Management.Automation.ValidationMetadataException] "Property: '$Property' missing."
             }
 
-            $Item.PSObject.Properties | ForEach-Object {
-                if (([System.String]::IsNullOrEmpty($_.Value))) {
-                    throw [System.Management.Automation.ValidationMetadataException] "Property '$($_.Name)' is null or empty."
+            # Only the required properties must have a value; optional properties can be empty
+            foreach ($Property in $RequiredProperties) {
+                if ([System.String]::IsNullOrEmpty($Item.$Property)) {
+                    throw [System.Management.Automation.ValidationMetadataException] "Property '$Property' is null or empty."
                 }
             }
         }

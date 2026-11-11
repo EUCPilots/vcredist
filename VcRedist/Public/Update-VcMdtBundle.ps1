@@ -28,6 +28,7 @@ function Update-VcMdtBundle {
     )
 
     begin {
+        Write-Warning -Message "MDT is no longer supported by Microsoft. This function is deprecated and will be removed in a future release of VcRedist."
         # Variables
         $Applications = "Applications"
         Write-Warning -Message "Attempting to update bundle: [$Publisher $BundleName]."
@@ -42,7 +43,7 @@ function Update-VcMdtBundle {
     process {
         # Import the MDT module and create a PS drive to MdtPath
         if (Import-MdtModule) {
-            if ($PSCmdlet.ShouldProcess($Path, "Mapping")) {
+            if ($PSCmdlet.ShouldProcess($MdtPath, "Mapping")) {
                 try {
                     $params = @{
                         Drive       = $MdtDrive
