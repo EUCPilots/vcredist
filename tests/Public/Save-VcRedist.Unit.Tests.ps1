@@ -45,6 +45,32 @@ Describe -Name "Save-VcRedist unit tests" {
         }
     }
 
+    It "Creates a missing target path before downloading" {
+        InModuleScope VcRedist -Parameters @{ Item = $Item; Dir = (Join-Path -Path $TestDrive -ChildPath "new/nested") } {
+            Mock Invoke-VcWebRequest { Set-Content -LiteralPath $OutFile -Value "x" }
+            Mock Assert-VcSignature { $true }
+            $Dir | Should -Not -Exist
+            ($Item | Save-VcRedist -Path $Dir).Path | Should -Exist
+        }
+    }
+
+    It "Throws before downloading when the path cannot be created" {
+        InModuleScope VcRedist -Parameters @{ Item = $Item; Dir = $TestDrive } {
+            Mock Invoke-VcWebRequest { }
+            Mock New-Item { throw "denied" }
+            { $Item | Save-VcRedist -Path (Join-Path -Path $Dir -ChildPath "nope") } | Should -Throw "*Unable to create*"
+            Should -Invoke Invoke-VcWebRequest -Times 0
+        }
+    }
+
+    It "Throws when the path is an existing file" {
+        InModuleScope VcRedist -Parameters @{ Item = $Item; Dir = $TestDrive } {
+            $File = Join-Path -Path $Dir -ChildPath "file.txt"
+            Set-Content -LiteralPath $File -Value "x"
+            { $Item | Save-VcRedist -Path $File } | Should -Throw "*is a file*"
+        }
+    }
+
     It "Rejects a URI that is not on the allowed host list" {
         InModuleScope VcRedist -Parameters @{ Dir = (New-Item -Path "$TestDrive/h" -ItemType "Directory").FullName } {
             Mock Invoke-VcWebRequest { }

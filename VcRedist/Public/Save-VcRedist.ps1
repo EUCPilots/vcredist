@@ -15,17 +15,8 @@ function Save-VcRedist {
         [System.Management.Automation.PSObject] $VcList,
 
         [Parameter(Mandatory = $false, Position = 1)]
-        [ValidateScript( { if (Test-Path -LiteralPath $_ -PathType "Container") { $true } else { throw "Cannot find path $_" } })]
+        [ValidateNotNullOrEmpty()]
         [System.String] $Path = (Resolve-Path -LiteralPath $PWD),
-
-        [Parameter(Mandatory = $false)]
-        [System.ObsoleteAttribute("This parameter should no longer be used. Invoke-WebRequest is used for all download operations.")]
-        [System.Management.Automation.SwitchParameter] $ForceWebRequest,
-
-        [Parameter(Mandatory = $false)]
-        [System.ObsoleteAttribute("This parameter should no longer be used. Invoke-WebRequest is used for all download operations.")]
-        [ValidateSet("Foreground", "High", "Normal", "Low")]
-        [System.String] $Priority = "Foreground",
 
         [Parameter(Mandatory = $false, Position = 3)]
         [System.String] $Proxy,
@@ -45,6 +36,22 @@ function Save-VcRedist {
     begin {
         $DownloadTimeout = [System.Int32](Get-VcConfig).Download.TimeoutSeconds
         $ShowProgressBar = $PSBoundParameters.ContainsKey("Verbose") -or $PSBoundParameters.ContainsKey("ShowProgress")
+
+        # Create the target path if it does not exist; fail before any download if it is not a usable folder
+        $FullPath = $PSCmdlet.GetUnresolvedProviderPathFromPSPath($Path)
+        if (Test-Path -LiteralPath $FullPath -PathType "Leaf") {
+            throw [System.IO.IOException]::New("The path '$FullPath' is a file, not a folder.")
+        }
+        if (-not (Test-Path -LiteralPath $FullPath -PathType "Container")) {
+            if ($PSCmdlet.ShouldProcess($FullPath, "Create")) {
+                try {
+                    New-Item -Path $FullPath -ItemType "Directory" -Force -ErrorAction "Stop" > $null
+                }
+                catch {
+                    throw [System.IO.DirectoryNotFoundException]::New("Unable to create the path '$FullPath': $($_.Exception.Message)")
+                }
+            }
+        }
     }
 
     process {
@@ -55,7 +62,7 @@ function Save-VcRedist {
             }
 
             # Build the path to save the VcRedist into; Create the folder to store the downloaded file. Skip if it exists
-            $TargetDirectory = [System.IO.Path]::Combine((Resolve-Path -LiteralPath $Path).Path, $VcRedist.Release, $VcRedist.Version, $VcRedist.Architecture)
+            $TargetDirectory = [System.IO.Path]::Combine($FullPath, $VcRedist.Release, $VcRedist.Version, $VcRedist.Architecture)
             Write-Verbose -Message "Test directory exists: $TargetDirectory."
             if (Test-Path -LiteralPath $TargetDirectory) {
                 Write-Verbose -Message "Directory exists: $TargetDirectory. Skipping."

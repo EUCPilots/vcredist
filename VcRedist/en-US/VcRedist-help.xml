@@ -2296,7 +2296,7 @@ Remove-VcIntuneApplication -VcList $VcList -Confirm:$false</dev:code>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
           <maml:name>Path</maml:name>
           <maml:description>
-            <maml:para>Specify a target folder to download the Redistributables to, otherwise use the current folder.</maml:para>
+            <maml:para>Specify a target folder to download the Redistributables to, otherwise use the current folder. The folder is created if it does not exist; an error is returned before any download if it cannot be created.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -2431,7 +2431,7 @@ Remove-VcIntuneApplication -VcList $VcList -Confirm:$false</dev:code>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
         <maml:name>Path</maml:name>
         <maml:description>
-          <maml:para>Specify a target folder to download the Redistributables to, otherwise use the current folder.</maml:para>
+          <maml:para>Specify a target folder to download the Redistributables to, otherwise use the current folder. The folder is created if it does not exist; an error is returned before any download if it cannot be created.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>

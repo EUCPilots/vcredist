@@ -19,6 +19,7 @@
 * `Install-VcRedist` and `Uninstall-VcRedist` check installer exit codes; `Uninstall-VcRedist` expands environment variables in uninstall commands
 * `Invoke-Process` fails on unexpected exit codes
 * `Import-VcIntuneApplication` and `Export-VcManifest` support `-WhatIf`
+* `Save-VcRedist` creates the `-Path` folder if it does not exist and fails before downloading if it cannot (#219)
 * Fixes `New-VcMdtBundle` and `Update-VcMdtBundle` `-WhatIf` target, and the ConfigMgr location restore in `Import-VcConfigMgrApplication`
 * MDT tests now use stubs and mocks; `tests/Install-Mdt.ps1` is removed
 

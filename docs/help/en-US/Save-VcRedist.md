@@ -84,7 +84,7 @@ Accept wildcard characters: False
 ```
 
 ### -Path
-Specify a target folder to download the Redistributables to, otherwise use the current folder.
+Specify a target folder to download the Redistributables to, otherwise use the current folder. The folder is created if it does not exist; an error is returned before any download if it cannot be created.
 
 ```yaml
 Type: String

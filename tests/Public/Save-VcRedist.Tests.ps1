@@ -106,11 +106,3 @@ Describe -Name "Save-VcRedist pipeline" -ForEach $SupportedReleases {
 		Pop-Location
 	}
 }
-
-Describe -Name "Save-VcRedist fail scenarios" {
-	Context "Test fail scenarios" {
-		It "Given an invalid path, it should throw an error" {
-			{ Save-VcRedist -Path ([System.IO.Path]::Combine($Path, "Temp")) } | Should -Throw
-		}
-	}
-}
