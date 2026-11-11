@@ -13,7 +13,7 @@ Packages the Microsoft Visual C++ Redistributable installers into intunewin form
 ## SYNTAX
 
 ```
-Import-VcIntuneApplication [-VcList] <PSObject> [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm]
+Import-VcIntuneApplication [-VcList] <PSObject> [-ImportAsUpdate] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm]
  [<CommonParameters>]
 ```
 
@@ -26,6 +26,8 @@ An application package will be created for each Visual C++ Redistributable with 
 
 This function requires the IntuneWin32App PowerShell module and supported Windows PowerShell only.
 Before using this function to import the Redistributables into an Intune tenant, authenticate first with Connect-MSIntuneGraph.
+
+Use `-ImportAsUpdate` to add a file-version requirement based on each package's `DetectionFile`. The app is applicable only when the architecture-specific file exists and is older than the package version. It is not applicable to clean installs or devices with the same or a newer version. This does not change existing Intune apps or their assignments. Verify the detection file and version on target devices, particularly for older, unsupported redistributables that may use side-by-side assemblies. A remote manifest can provide different detection paths from the bundled manifest.
 
 ## EXAMPLES
 
@@ -46,7 +48,29 @@ Get-VcList | Save-VcRedist -Path "C:\Temp\VcRedist" | Import-VcIntuneApplication
 
 Description: Authenticates to the specified tenant using an Azure AD app registration for non-interactive authentication, retrieves the supported list of Visual C++ Redistributables, downloads them to C:\Temp\VcRedist and imports each Redistributable into the target Intune tenant as separate application.
 
+### EXAMPLE 3
+```
+Get-VcList -Release "14" | Save-VcRedist -Path "C:\Temp\VcRedist" | Import-VcIntuneApplication -ImportAsUpdate
+```
+
+Imports v14 applications that apply only to devices with an older installed runtime.
+
 ## PARAMETERS
+
+### -ImportAsUpdate
+Adds a requirement that the package's `DetectionFile` exists and has a file version lower than the package version.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
 
 ### -VcList
 An array containing details of the Visual C++ Redistributables from Save-VcRedist.
@@ -123,4 +147,3 @@ Author: Aaron Parker
 ## RELATED LINKS
 
 [Import Redistributables into MDT](https://vcredist.com/import-vcmdtapplication/)
-

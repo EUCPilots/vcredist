@@ -437,7 +437,7 @@
             "SilentUninstall": "\"%ProgramData%\\Package Cache\\#ProductCode\\#Installer\" /uninstall /quiet /norestart",
             "UninstallKey": "32",
             "PackageId": "c68a99dc-004c-49ad-99e4-5b267070fa03",
-            "DetectionFile": "%SystemRoot%\\System32\\vcruntime140.dll",
+            "DetectionFile": "%SystemRoot%\\System32\\msvcr120.dll",
             "Supported": false
         },
         {
@@ -458,7 +458,7 @@
             "SilentUninstall": "\"%ProgramData%\\Package Cache\\#ProductCode\\#Installer\" /uninstall /quiet /norestart",
             "UninstallKey": "32",
             "PackageId": "d52dccb3-ac9d-4e5a-a924-1c5b640d3c28",
-            "DetectionFile": "%SystemRoot%\\System32\\vcruntime140.dll",
+            "DetectionFile": "%SystemRoot%\\System32\\msvcr120.dll",
             "Supported": false
         },
         {
@@ -477,7 +477,7 @@
             "SilentUninstall": "\"%ProgramData%\\Package Cache\\#ProductCode\\#Installer\" /uninstall /quiet /norestart",
             "UninstallKey": "32",
             "PackageId": "7979c838-d45e-4bd3-a3b5-02379021f594",
-            "DetectionFile": "%SystemRoot%\\System32\\vcruntime110.dll",
+            "DetectionFile": "%SystemRoot%\\System32\\msvcr110.dll",
             "Supported": false
         },
         {
@@ -498,7 +498,7 @@
             "SilentUninstall": "\"%ProgramData%\\Package Cache\\#ProductCode\\#Installer\" /uninstall /quiet /norestart",
             "UninstallKey": "32",
             "PackageId": "450e2589-17df-4cd3-881d-5a033014180c",
-            "DetectionFile": "%SystemRoot%\\System32\\vcruntime110.dll",
+            "DetectionFile": "%SystemRoot%\\System32\\msvcr110.dll",
             "Supported": false
         },
         {
@@ -517,7 +517,7 @@
             "SilentUninstall": "\"%ProgramData%\\Package Cache\\#ProductCode\\#Installer\" /uninstall /quiet /norestart",
             "UninstallKey": "32",
             "PackageId": "7c440ba0-f23d-4e36-a037-85115cba9fa9",
-            "DetectionFile": "%SystemRoot%\\System32\\vcruntime140.dll",
+            "DetectionFile": "%SystemRoot%\\System32\\msvcr120.dll",
             "Supported": false
         },
         {
@@ -538,7 +538,7 @@
             "SilentUninstall": "\"%ProgramData%\\Package Cache\\#ProductCode\\#Installer\" /uninstall /quiet /norestart",
             "UninstallKey": "32",
             "PackageId": "62119009-c911-4854-81c1-0815749af061",
-            "DetectionFile": "%SystemRoot%\\System32\\vcruntime140.dll",
+            "DetectionFile": "%SystemRoot%\\System32\\msvcr120.dll",
             "Supported": false
         }
     ]

@@ -11,7 +11,10 @@ function Import-VcIntuneApplication {
             ValueFromPipeline,
             HelpMessage = "Pass a VcList object from Save-VcRedist.")]
         [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.PSObject] $VcList
+        [System.Management.Automation.PSObject] $VcList,
+
+        [Parameter()]
+        [System.Management.Automation.SwitchParameter] $ImportAsUpdate
     )
 
     begin {
@@ -68,6 +71,18 @@ function Import-VcIntuneApplication {
             $ImportRequired = ($null -eq $AppDetails -or $AppDetails.UpdateRequired -eq $true)
             if ($ImportRequired -and $PSCmdlet.ShouldProcess("$($VcRedist.Name) $($VcRedist.Version) $($VcRedist.Architecture)", "Import Intune Win32 app")) {
 
+                if ($ImportAsUpdate) {
+                    $AdditionalRequirementArgs = @{
+                        Version              = $true
+                        Path                 = Split-Path -Path $VcRedist.DetectionFile -Parent
+                        FileOrFolder         = Split-Path -Path $VcRedist.DetectionFile -Leaf
+                        Operator             = "lessThan"
+                        VersionValue         = $VcRedist.Version
+                        Check32BitOn64System = ($VcRedist.Architecture -eq "x86")
+                    }
+                    $AdditionalRequirementRule = @(New-IntuneWin32AppRequirementRuleFile @AdditionalRequirementArgs)
+                }
+
                 # Package MSI as .intunewin file
                 $OutputFolder = New-TemporaryFolder
                 $params = @{
@@ -119,6 +134,9 @@ function Import-VcIntuneApplication {
                 }
                 if ($null -ne $Icon) {
                     $Win32AppArgs.Add("Icon", $Icon)
+                }
+                if ($ImportAsUpdate) {
+                    $Win32AppArgs.Add("AdditionalRequirementRule", $AdditionalRequirementRule)
                 }
                 $Application = Add-IntuneWin32App @Win32AppArgs
                 if ($null -ne $Application) {

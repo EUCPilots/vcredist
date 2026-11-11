@@ -1066,6 +1066,7 @@ Import-VcConfigMgrApplication -VcList $VcList -CMPath "\\server\share\VcRedist" 
       <maml:para>Use Get-VcList and Save-VcRedist to download the Redistributables and create the array for importing into Microsoft Intune.</maml:para>
       <maml:para>An application package will be created for each Visual C++ Redistributable with properties including Name, Description, Publisher, App Version, Information URL, Privacy URL, Notes, Logo, Install command, Uninstall command, Install behavior, Operating system architecture, Minimum operating system, and Detection rules.</maml:para>
       <maml:para>This function requires the IntuneWin32App PowerShell module and supported Windows PowerShell only. Before using this function to import the Redistributables into an Intune tenant, authenticate first with Connect-MSIntuneGraph.</maml:para>
+      <maml:para>Use -ImportAsUpdate to add a file-version requirement based on each package's DetectionFile. The app is applicable only when the architecture-specific file exists and is older than the package version. It is not applicable to clean installs or devices with the same or a newer version. This does not change existing Intune apps or their assignments. Verify the detection file and version on target devices, particularly for older, unsupported redistributables that may use side-by-side assemblies. A remote manifest can provide different detection paths from the bundled manifest.</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
@@ -1081,6 +1082,17 @@ Import-VcConfigMgrApplication -VcList $VcList -CMPath "\\server\share\VcRedist" 
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>ImportAsUpdate</maml:name>
+          <maml:description>
+            <maml:para>Adds a requirement that the package's DetectionFile exists and has a file version lower than the package version.</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf">
           <maml:name>Confirm</maml:name>
@@ -1130,6 +1142,18 @@ Import-VcConfigMgrApplication -VcList $VcList -CMPath "\\server\share\VcRedist" 
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>ImportAsUpdate</maml:name>
+        <maml:description>
+          <maml:para>Adds a requirement that the package's DetectionFile exists and has a file version lower than the package version.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf">
         <maml:name>Confirm</maml:name>
@@ -1200,6 +1224,13 @@ Import-VcIntuneApplication -VcList $VcList</dev:code>
 Get-VcList | Save-VcRedist -Path "C:\Temp\VcRedist" | Import-VcIntuneApplication</dev:code>
         <dev:remarks>
           <maml:para>Description: Authenticates to the specified tenant using an Azure AD app registration for non-interactive authentication, retrieves the supported list of Visual C++ Redistributables, downloads them to C:\Temp\VcRedist and imports each Redistributable into the target Intune tenant as separate application.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 3 --------------------------</maml:title>
+        <dev:code>Get-VcList -Release "14" | Save-VcRedist -Path "C:\Temp\VcRedist" | Import-VcIntuneApplication -ImportAsUpdate</dev:code>
+        <dev:remarks>
+          <maml:para>Imports v14 applications that apply only to devices with an older installed runtime.</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>

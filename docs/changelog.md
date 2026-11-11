@@ -24,6 +24,8 @@
 * `Install-VcRedist` and `Uninstall-VcRedist` check installer exit codes; `Uninstall-VcRedist` expands environment variables in uninstall commands
 * `Invoke-Process` fails on unexpected exit codes
 * `Import-VcIntuneApplication` and `Export-VcManifest` support `-WhatIf`
+* `Import-VcIntuneApplication -ImportAsUpdate` adds an older-runtime file-version requirement based on each package's detection file (#204)
+* Corrects the bundled detection file names for the 2012 and 2013 redistributables
 * `Save-VcRedist` creates the `-Path` folder if it does not exist and fails before downloading if it cannot (#219)
 * Web requests use a `VcRedist/<version> (...)` user agent instead of the Chrome browser user agent
 * Fixes `Import-VcIntuneApplication` requirement rule architecture: `All` is no longer valid, x86 packages now use `x64x86`, and ARM64 packages use `arm64` (#207)
