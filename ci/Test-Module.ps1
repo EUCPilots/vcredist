@@ -44,12 +44,14 @@ else {
 $Result = Invoke-Pester -Configuration $Config
 if ($Result.PassedCount -eq 0) { throw "No tests passed; check discovery and filters." }
 if (-not $Intune) {
-    $ModuleContainer = $Result.Containers | Where-Object { $_.Type -eq "File" -and $_.Item -like "*Module.Tests.ps1" }
+    $ModuleTestPath = [System.IO.Path]::GetFullPath((Join-Path -Path $Root -ChildPath "tests/Module.Tests.ps1"))
+    $ModuleContainer = @($Result.Containers | Where-Object { $_.Name -ieq $ModuleTestPath })
     $ModulePath = Join-Path -Path $Root -ChildPath "VcRedist"
     $ScriptCount = @(Get-ChildItem -Path $ModulePath -Recurse -Include "*.ps1", "*.psm1", "*.psd1").Count
     $FunctionCount = @(Get-ChildItem -Path $ModulePath -Recurse -Filter "*.ps1").Count
     $ExpectedCount = (2 * $ScriptCount) + (2 * $FunctionCount) + 2
-    if ($null -eq $ModuleContainer -or $ModuleContainer.PassedCount -lt $ExpectedCount) {
-        throw "Module validation cases were not discovered or did not pass."
+    if ($ModuleContainer.Count -ne 1 -or $ModuleContainer[0].PassedCount -lt $ExpectedCount) {
+        $PassedCount = if ($ModuleContainer.Count -eq 1) { $ModuleContainer[0].PassedCount } else { 0 }
+        throw "Module validation cases were not discovered or did not pass: expected at least $ExpectedCount passed cases, found $PassedCount in $($ModuleContainer.Count) matching test containers."
     }
 }
