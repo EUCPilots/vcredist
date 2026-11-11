@@ -66,7 +66,8 @@ function Measure-LowercaseKeyword {
                 }
 
                 # Check keywords (check text content directly to be more reliable)
-                if ($Keywords -contains $LowerTokenText -and $TokenText -cne $LowerTokenText) {
+                if (($Token.TokenFlags -band [System.Management.Automation.Language.TokenFlags]::Keyword) -and
+                    $Keywords -contains $LowerTokenText -and $TokenText -cne $LowerTokenText) {
                     $Results += [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord]@{
                         Message  = "Keyword '$TokenText' should be lowercase ('$LowerTokenText')."
                         Extent   = $Token.Extent

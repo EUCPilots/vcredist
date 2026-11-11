@@ -1,26 +1,16 @@
 <#
-    Install the latest version of Pester
+    .SYNOPSIS
+        Installs the pinned Pester version used in CI.
 #>
+[CmdletBinding()]
+param ()
 
-# Trust the PSGallery for modules
+$ErrorActionPreference = "Stop"
 [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-Install-PackageProvider -Name "NuGet" -MinimumVersion "2.8.5.208" -ErrorAction "SilentlyContinue"
-Install-PackageProvider -Name "PowerShellGet" -MinimumVersion "2.2.5" -ErrorAction "SilentlyContinue"
-if (Get-PSRepository | Where-Object { $_.Name -eq $Repository -and $_.InstallationPolicy -ne "Trusted" }) {
-    Set-PSRepository -Name $Repository -InstallationPolicy "Trusted"
+if ($PSVersionTable.PSVersion.Major -le 5) {
+    Install-PackageProvider -Name "NuGet" -MinimumVersion "2.8.5.208" -Force -Scope "CurrentUser" | Out-Null
 }
-
-foreach ($module in "Pester") {
-    $installedModule = Get-Module -Name $module -ListAvailable -ErrorAction "SilentlyContinue" | `
-        Sort-Object -Property @{ Expression = { [System.Version]$_.Version }; Descending = $true } -ErrorAction "SilentlyContinue" | `
-        Select-Object -First 1
-    $publishedModule = Find-Module -Name $module -ErrorAction "SilentlyContinue"
-    if (($null -eq $installedModule) -or ([System.Version]$publishedModule.Version -gt [System.Version]$installedModule.Version)) {
-        $params = @{
-            Name               = $module
-            SkipPublisherCheck = $true
-            ErrorAction        = "Stop"
-        }
-        Install-Module @params
-    }
+if (-not (Get-Module -Name "Pester" -ListAvailable | Where-Object Version -EQ "5.7.1")) {
+    Install-Module -Name "Pester" -RequiredVersion "5.7.1" -Repository "PSGallery" -Scope "CurrentUser" -Force -SkipPublisherCheck
 }
+Import-Module -Name "Pester" -RequiredVersion "5.7.1" -Force

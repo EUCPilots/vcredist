@@ -2,52 +2,154 @@ name: Publish module to PowerShell Gallery
 
 on:
   push:
-    tags:
-      - "v*.*.*"
+    tags: ['v*']
   workflow_dispatch:
+    inputs:
+      tag:
+        description: Exact release tag, including any prerelease label (for example v5.0.0-beta1)
+        required: true
+        type: string
+      commit:
+        description: Full main commit SHA; leave empty to use the selected main commit
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-module
+  cancel-in-progress: false
 
 jobs:
-  publish-module:
+  release-metadata:
+    name: Verify release commit
     runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.release.outputs.sha }}
+      tag: ${{ steps.release.outputs.tag }}
+      prerelease: ${{ steps.release.outputs.prerelease }}
     steps:
-      - uses: actions/checkout@v7
-
-      - name: Install and cache PowerShell modules
-        id: psmodulecache
-        uses: potatoqualitee/psmodulecache@v6.3
-        with:
-          modules-to-cache: PowerShellGet
-          shell: pwsh
-
-      # Import GPG key so that we can sign the commit
-      - name: Import GPG key
-        id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v7
-        with:
-          gpg_private_key: ${{ secrets.GPGKEY }}
-          passphrase: ${{ secrets.GPGPASSPHRASE }}
-          git_user_signingkey: true
-          git_commit_gpgsign: true
-          git_config_global: true
-          git_tag_gpgsign: true
-          git_push_gpgsign: false
-          git_committer_name: ${{ secrets.COMMIT_NAME }}
-          git_committer_email: ${{ secrets.COMMIT_EMAIL }}
-
-      # Create release
-      - name: Create release
-        uses: softprops/action-gh-release@v3
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          prerelease: false
-
-      # Push the updated module to the PowerShell Gallery
-      - name: Push module to PowerShell Gallery
+      - name: Check dispatch inputs
         shell: pwsh
+        env:
+          COMMIT: ${{ inputs.commit }}
         run: |
-          $params = @{
-              Path        = "${{ github.workspace }}/VcRedist"
-              NuGetApiKey = "${{ secrets.NUGETAPIKEY }}"
-              ErrorAction = "Stop"
+          if ($env:GITHUB_EVENT_NAME -eq "workflow_dispatch" -and $env:GITHUB_REF -ne "refs/heads/main") {
+              throw "Dispatch publishing from main, not a development branch."
           }
-          Publish-Module @params
+          if ($env:COMMIT -and $env:COMMIT -notmatch "^[a-fA-F0-9]{40}$") { throw "Commit must be a full SHA." }
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.commit || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate version, ancestry, tag and documentation
+        id: release
+        shell: pwsh
+        env:
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          git merge-base --is-ancestor HEAD origin/main
+          if ($LASTEXITCODE -ne 0) { throw "The release commit is not part of main." }
+          $Metadata = ./ci/Get-ReleaseMetadata.ps1 -Tag $env:TAG -RequireDocumentation
+          $Sha = git rev-parse HEAD
+          if ($LASTEXITCODE -ne 0) { throw "Could not determine release SHA." }
+          $ExistingTag = git tag --list $Metadata.Tag
+          if ($ExistingTag) {
+              $TaggedSha = git rev-parse "$($Metadata.Tag)^{commit}"
+              if ($LASTEXITCODE -ne 0 -or $TaggedSha -ne $Sha) { throw "The release tag already points to a different commit." }
+          }
+          "sha=$Sha" >> $env:GITHUB_OUTPUT
+          "tag=$($Metadata.Tag)" >> $env:GITHUB_OUTPUT
+          "prerelease=$(([System.Boolean]$Metadata.Prerelease).ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+
+  validate:
+    needs: release-metadata
+    uses: ./.github/workflows/validate-module.yml
+    with:
+      ref: ${{ needs.release-metadata.outputs.sha }}
+      run_intune: true
+    secrets:
+      TENANT_ID: ${{ secrets.TENANT_ID }}
+      CLIENT_ID: ${{ secrets.CLIENT_ID }}
+      CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+
+  publish-module:
+    name: Approve and publish validated module
+    needs: [release-metadata, validate]
+    runs-on: ubuntu-latest
+    environment: powershell-gallery
+    permissions:
+      contents: write
+    steps:
+      - name: Require publishing credential
+        shell: pwsh
+        env:
+          NUGETAPIKEY: ${{ secrets.NUGETAPIKEY }}
+        run: |
+          if (-not $env:NUGETAPIKEY) { throw "Configure NUGETAPIKEY in the powershell-gallery environment before publishing." }
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.release-metadata.outputs.sha }}
+          fetch-depth: 0
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-candidate
+          path: staged/VcRedist/
+      - name: Validate staged package
+        shell: pwsh
+        env:
+          TAG: ${{ needs.release-metadata.outputs.tag }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          New-Item -Path ./staged/docs -ItemType Directory -Force | Out-Null
+          Copy-Item ./docs/changelog.md, ./docs/versions.md ./staged/docs/
+          ./ci/Get-ReleaseMetadata.ps1 -Root "$env:GITHUB_WORKSPACE/staged" -Tag $env:TAG -RequireDocumentation
+          Test-ModuleManifest ./staged/VcRedist/VcRedist.psd1 -ErrorAction "Stop" | Out-Null
+      - name: Create exact release tag and draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.release-metadata.outputs.tag }}
+          SHA: ${{ needs.release-metadata.outputs.sha }}
+          PRERELEASE: ${{ needs.release-metadata.outputs.prerelease }}
+        run: |
+          git fetch origin main --tags
+          git merge-base --is-ancestor "$SHA" origin/main
+          if git show-ref --verify --quiet "refs/tags/$TAG"; then
+            test "$(git rev-parse "$TAG^{commit}")" = "$SHA"
+          else
+            git tag "$TAG" "$SHA"
+            git push origin "refs/tags/$TAG"
+          fi
+          if RESPONSE=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --include 2>&1); then
+            echo "Release already exists; preserving its current draft state until Gallery verification."
+          elif printf '%s\n' "$RESPONSE" | grep -Eq '^HTTP/[0-9.]+ 404'; then
+            gh release create "$TAG" --verify-tag --draft --prerelease="$PRERELEASE" \
+              --title "VcRedist $TAG" --notes "Validated commit: $SHA. Gallery publication pending."
+          else
+            printf '%s\n' "$RESPONSE" >&2
+            exit 1
+          fi
+      - name: Publish and verify Gallery contents
+        shell: pwsh
+        env:
+          NUGETAPIKEY: ${{ secrets.NUGETAPIKEY }}
+          TAG: ${{ needs.release-metadata.outputs.tag }}
+        run: ./ci/Publish-Release.ps1 -Root "$env:GITHUB_WORKSPACE/staged" -Tag $env:TAG
+      - name: Finalize GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.release-metadata.outputs.tag }}
+          SHA: ${{ needs.release-metadata.outputs.sha }}
+          PRERELEASE: ${{ needs.release-metadata.outputs.prerelease }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          $Metadata = ./ci/Get-ReleaseMetadata.ps1 -Root "$env:GITHUB_WORKSPACE/staged" -Tag $env:TAG -RequireDocumentation
+          $NotesPath = Join-Path $env:RUNNER_TEMP "release-notes.md"
+          "$($Metadata.Notes)`n`nValidated commit: $env:SHA`nValidation run: $env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID" |
+              Set-Content -LiteralPath $NotesPath -Encoding "utf8"
+          gh release edit $env:TAG --draft=false "--prerelease=$env:PRERELEASE" --notes-file $NotesPath
+          if ($LASTEXITCODE -ne 0) { throw "Gallery contents are verified, but GitHub release finalization failed. Rerun this workflow." }
