@@ -28,7 +28,7 @@ function Update-VcMdtBundle {
     )
 
     begin {
-        Write-Warning -Message "MDT is no longer supported by Microsoft. This function is deprecated and will be removed in a future release of VcRedist."
+        Write-Warning -Message "MDT is no longer supported by Microsoft. This function is deprecated and may be removed in a future release of VcRedist."
         # Variables
         $Applications = "Applications"
         Write-Warning -Message "Attempting to update bundle: [$Publisher $BundleName]."

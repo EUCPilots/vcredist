@@ -39,7 +39,7 @@ function Update-VcMdtApplication {
     )
 
     begin {
-        Write-Warning -Message "MDT is no longer supported by Microsoft. This function is deprecated and will be removed in a future release of VcRedist."
+        Write-Warning -Message "MDT is no longer supported by Microsoft. This function is deprecated and may be removed in a future release of VcRedist."
 
         # If running on PowerShell Core, error and exit.
         if (Test-PSCore) {
