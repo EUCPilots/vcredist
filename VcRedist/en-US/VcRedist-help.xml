@@ -2306,6 +2306,7 @@ Remove-VcIntuneApplication -VcList $VcList -Confirm:$false</dev:code>
     </command:details>
     <maml:description>
       <maml:para>Downloads the Visual C++ Redistributables from an manifest returned by Get-VcList into a folder structure that represents release, version and processor architecture. If the redistributable exists in the specified path, it will not be re-downloaded.</maml:para>
+      <maml:para>By default, downloaded and reused installers are checked for a valid Microsoft Authenticode signature. On macOS and Linux, use -SkipAuthenticodeValidation to download without that check. This also skips publisher verification, so only use it when the risks are acceptable. HTTPS and the allowed host list are still enforced.</maml:para>
       <maml:para>For example, the following folder structure will be created when downloading the 2010, 2012, 2013 and 2019 Redistributables to C:\VcRedist:</maml:para>
       <maml:para>C:\VcRedist\2010\10.0.40219.325\x64 C:\VcRedist\2010\10.0.40219.325\x86 C:\VcRedist\2012\11.0.61030.0\x64 C:\VcRedist\2012\11.0.61030.0\x86 C:\VcRedist\2013\12.0.40664.0\x64 C:\VcRedist\2013\12.0.40664.0\x86 C:\VcRedist\2019\14.28.29913.0\x64 C:\VcRedist\2019\14.28.29913.0\x86</maml:para>
     </maml:description>
@@ -2409,6 +2410,17 @@ Remove-VcIntuneApplication -VcList $VcList -Confirm:$false</dev:code>
           <maml:name>ShowProgress</maml:name>
           <maml:description>
             <maml:para>Instructs Invoke-WebRequest used by this function to display progress.</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>SkipAuthenticodeValidation</maml:name>
+          <maml:description>
+            <maml:para>Skips Authenticode signature and publisher validation for downloaded and existing installers. Use on macOS or Linux where Authenticode validation is unavailable. This reduces security; HTTPS and allowed-host checks remain enabled.</maml:para>
           </maml:description>
           <dev:type>
             <maml:name>SwitchParameter</maml:name>
@@ -2554,6 +2566,18 @@ Remove-VcIntuneApplication -VcList $VcList -Confirm:$false</dev:code>
         <dev:defaultValue>False</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>SkipAuthenticodeValidation</maml:name>
+        <maml:description>
+          <maml:para>Skips Authenticode signature and publisher validation for downloaded and existing installers. Use on macOS or Linux where Authenticode validation is unavailable. This reduces security; HTTPS and allowed-host checks remain enabled.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
         <maml:name>UserAgent</maml:name>
         <maml:description>
           <maml:para>Specifies a user agent string for the web request.</maml:para>
@@ -2631,6 +2655,13 @@ Save-VcRedist -VcList $VcList -Path C:\Redist</dev:code>
         <dev:code>Save-VcRedist -VcList (Get-VcList -Release 2010, 2012, 2013, 2019) -Path C:\Redist -Proxy proxy.domain.local</dev:code>
         <dev:remarks>
           <maml:para>Description: Downloads the 2010, 2012, 2013, and 2019 Visual C++ Redistributables to C:\Redist using the proxy server 'proxy.domain.local'</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 6 --------------------------</maml:title>
+        <dev:code>Get-VcList | Save-VcRedist -Path ./Redist -SkipAuthenticodeValidation</dev:code>
+        <dev:remarks>
+          <maml:para>Description: Downloads the Redistributables on macOS or Linux without verifying their Authenticode signatures or publisher.</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>

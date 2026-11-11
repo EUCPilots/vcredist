@@ -16,13 +16,16 @@ This output can then be passed to other functions that require the downloaded in
 
 ```
 Save-VcRedist [-VcList] <PSObject> [[-Path] <String>] [-ForceWebRequest] [-Priority <String>]
- [[-Proxy] <String>] [[-ProxyCredential] <PSCredential>] [-UserAgent <String>] [-ShowProgress]
+ [[-Proxy] <String>] [[-ProxyCredential] <PSCredential>] [-UserAgent <String>] [-ShowProgress] [-SkipAuthenticodeValidation]
  [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 Downloads the Visual C++ Redistributables from an manifest returned by Get-VcList into a folder structure that represents release, version and processor architecture.
 If the redistributable exists in the specified path, it will not be re-downloaded.
+
+By default, downloaded and reused installers are checked for a valid Microsoft Authenticode signature.
+On macOS and Linux, use -SkipAuthenticodeValidation to download without that check. This also skips publisher verification, so only use it when the risks are acceptable. HTTPS and the allowed host list are still enforced.
 
 For example, the following folder structure will be created when downloading the 2010, 2012, 2013 and 2019 Redistributables to C:\VcRedist:
 
@@ -65,6 +68,13 @@ Save-VcRedist -VcList (Get-VcList -Release 2010, 2012, 2013, 2019) -Path C:\Redi
 ```
 
 Description: Downloads the 2010, 2012, 2013, and 2019 Visual C++ Redistributables to C:\Redist using the proxy server 'proxy.domain.local'
+
+### EXAMPLE 6
+```
+Get-VcList | Save-VcRedist -Path ./Redist -SkipAuthenticodeValidation
+```
+
+Description: Downloads the Redistributables on macOS or Linux without verifying their Authenticode signatures or publisher.
 
 ## PARAMETERS
 
@@ -208,6 +218,21 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -SkipAuthenticodeValidation
+Skips Authenticode signature and publisher validation for downloaded and existing installers. Use on macOS or Linux where Authenticode validation is unavailable. This reduces security; HTTPS and allowed-host checks remain enabled.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -UserAgent
 Specifies a user agent string for the web request.
 
@@ -256,4 +281,3 @@ Author: Aaron Parker
 ## RELATED LINKS
 
 [Download the Redistributables:](https://vcredist.com/save-vcredist/)
-
