@@ -8,11 +8,11 @@ function Get-VcList {
     param (
         [Parameter(Mandatory = $false, Position = 0, ParameterSetName = "Manifest")]
         [ValidatePattern("^[0-9]{2,4}$")]
-        [System.String[]] $Release = @("2012", "2013", "14"),
+        [System.String[]] $Release = @("14"),
 
         [Parameter(Mandatory = $false, Position = 1, ParameterSetName = "Manifest")]
-        [ValidateSet("x86", "x64", "ARM64")]
-        [System.String[]] $Architecture = @("x86", "x64"),
+        [ValidateSet("x86", "x64", "arm64")]
+        [System.String[]] $Architecture = @("x86", "x64", "arm64"),
 
         [Parameter(Mandatory = $false, Position = 0, ParameterSetName = "Export")]
         [ValidateSet("Supported", "All", "Unsupported")]

@@ -10,6 +10,9 @@
             "URI": "https://download.microsoft.com/download/6/A/A/6AA4EDFF-645B-48C5-81CC-ED5963AEAD48/vc_redist.x64.exe",
             "Release": "2015",
             "Architecture": "x64",
+            "SupportedArchitecture": [
+                "AMD64"
+            ],
             "Install": "/install /passive /norestart",
             "SilentInstall": "/install /quiet /norestart",
             "SilentUninstall": "\"%ProgramData%\\Package Cache\\#ProductCode\\#Installer\" /uninstall /quiet /norestart",
@@ -26,6 +29,11 @@
             "URI": "https://download.microsoft.com/download/6/A/A/6AA4EDFF-645B-48C5-81CC-ED5963AEAD48/vc_redist.x86.exe",
             "Release": "2015",
             "Architecture": "x86",
+            "SupportedArchitecture": [
+                "x86",
+                "AMD64",
+                "ARM64"
+            ],
             "Install": "/install /passive /norestart",
             "SilentInstall": "/install /quiet /norestart",
             "SilentUninstall": "\"%ProgramData%\\Package Cache\\#ProductCode\\#Installer\" /uninstall /quiet /norestart",
@@ -42,6 +50,9 @@
             "URI": "https://aka.ms/vs/15/release/vc_redist.x64.exe",
             "Release": "2017",
             "Architecture": "x64",
+            "SupportedArchitecture": [
+                "AMD64"
+            ],
             "Install": "/install /passive /norestart",
             "SilentInstall": "/install /quiet /norestart",
             "SilentUninstall": "\"%ProgramData%\\Package Cache\\#ProductCode\\#Installer\" /uninstall /quiet /norestart",
@@ -58,6 +69,11 @@
             "URI": "https://aka.ms/vs/15/release/vc_redist.x86.exe",
             "Release": "2017",
             "Architecture": "x86",
+            "SupportedArchitecture": [
+                "x86",
+                "AMD64",
+                "ARM64"
+            ],
             "Install": "/install /passive /norestart",
             "SilentInstall": "/install /quiet /norestart",
             "SilentUninstall": "\"%ProgramData%\\Package Cache\\#ProductCode\\#Installer\" /uninstall /quiet /norestart",
@@ -74,6 +90,9 @@
             "URI": "https://aka.ms/vs/16/release/VC_redist.x64.exe",
             "Release": "2019",
             "Architecture": "x64",
+            "SupportedArchitecture": [
+                "AMD64"
+            ],
             "Install": "/install /passive /norestart",
             "SilentInstall": "/install /quiet /norestart",
             "SilentUninstall": "\"%ProgramData%\\Package Cache\\#ProductCode\\#Installer\" /uninstall /quiet /norestart",
@@ -90,6 +109,11 @@
             "URI": "https://aka.ms/vs/16/release/VC_redist.x86.exe",
             "Release": "2019",
             "Architecture": "x86",
+            "SupportedArchitecture": [
+                "x86",
+                "AMD64",
+                "ARM64"
+            ],
             "Install": "/install /passive /norestart",
             "SilentInstall": "/install /quiet /norestart",
             "SilentUninstall": "\"%ProgramData%\\Package Cache\\#ProductCode\\#Installer\" /uninstall /quiet /norestart",
@@ -106,6 +130,9 @@
             "URI": "https://aka.ms/vc14/vc_redist.x64.exe",
             "Release": "14",
             "Architecture": "x64",
+            "SupportedArchitecture": [
+                "AMD64"
+            ],
             "Install": "/install /passive /norestart",
             "SilentInstall": "/install /quiet /norestart",
             "SilentUninstall": "\"%ProgramData%\\Package Cache\\#ProductCode\\#Installer\" /uninstall /quiet /norestart",
@@ -122,6 +149,11 @@
             "URI": "https://aka.ms/vc14/vc_redist.x86.exe",
             "Release": "14",
             "Architecture": "x86",
+            "SupportedArchitecture": [
+                "x86",
+                "AMD64",
+                "ARM64"
+            ],
             "Install": "/install /passive /norestart",
             "SilentInstall": "/install /quiet /norestart",
             "SilentUninstall": "\"%ProgramData%\\Package Cache\\#ProductCode\\#Installer\" /uninstall /quiet /norestart",
@@ -137,7 +169,10 @@
             "URL": "https://www.visualstudio.com/downloads/",
             "URI": "https://aka.ms/vc14/vc_redist.arm64.exe",
             "Release": "14",
-            "Architecture": "ARM64",
+            "Architecture": "arm64",
+            "SupportedArchitecture": [
+                "ARM64"
+            ],
             "Install": "/install /passive /norestart",
             "SilentInstall": "/install /quiet /norestart",
             "SilentUninstall": "\"%ProgramData%\\Package Cache\\#ProductCode\\#Installer\" /uninstall /quiet /norestart",
@@ -154,6 +189,9 @@
             "URI": "https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x64.exe",
             "Release": "2008",
             "Architecture": "x64",
+            "SupportedArchitecture": [
+                "AMD64"
+            ],
             "Install": "/Q",
             "SilentInstall": "/Q",
             "SilentUninstall": "MsiExec.exe /X#ProductCode /QB-",
@@ -170,6 +208,11 @@
             "URI": "https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe",
             "Release": "2008",
             "Architecture": "x86",
+            "SupportedArchitecture": [
+                "x86",
+                "AMD64",
+                "ARM64"
+            ],
             "Install": "/Q",
             "SilentInstall": "/Q",
             "SilentUninstall": "MsiExec.exe /X#ProductCode /QB-",
@@ -186,6 +229,9 @@
             "URI": "https://download.microsoft.com/download/8/B/4/8B42259F-5D70-43F4-AC2E-4B208FD8D66A/vcredist_x64.EXE",
             "Release": "2005",
             "Architecture": "x64",
+            "SupportedArchitecture": [
+                "AMD64"
+            ],
             "Install": "/Q",
             "SilentInstall": "/Q",
             "SilentUninstall": "MsiExec.exe /X#ProductCode /QB-",
@@ -202,6 +248,9 @@
             "URI": "https://download.microsoft.com/download/6/B/B/6BB661D6-A8AE-4819-B79F-236472F6070C/vcredist_x64.exe",
             "Release": "2005",
             "Architecture": "x64",
+            "SupportedArchitecture": [
+                "AMD64"
+            ],
             "Install": "/Q",
             "SilentInstall": "/Q",
             "SilentUninstall": "MsiExec.exe /X#ProductCode /QB-",
@@ -218,6 +267,11 @@
             "URI": "https://download.microsoft.com/download/8/B/4/8B42259F-5D70-43F4-AC2E-4B208FD8D66A/vcredist_x86.EXE",
             "Release": "2005",
             "Architecture": "x86",
+            "SupportedArchitecture": [
+                "x86",
+                "AMD64",
+                "ARM64"
+            ],
             "Install": "/Q",
             "SilentInstall": "/Q",
             "SilentUninstall": "MsiExec.exe /X#ProductCode /QB-",
@@ -234,6 +288,11 @@
             "URI": "https://download.microsoft.com/download/6/B/B/6BB661D6-A8AE-4819-B79F-236472F6070C/vcredist_x86.exe",
             "Release": "2005",
             "Architecture": "x86",
+            "SupportedArchitecture": [
+                "x86",
+                "AMD64",
+                "ARM64"
+            ],
             "Install": "/Q",
             "SilentInstall": "/Q",
             "SilentUninstall": "MsiExec.exe /X#ProductCode /QB-",
@@ -250,6 +309,9 @@
             "URI": "https://download.microsoft.com/download/A/5/3/A53B40CA-F75C-4678-852A-3C15EA82F186/vcredist_x64.exe",
             "Release": "2008",
             "Architecture": "x64",
+            "SupportedArchitecture": [
+                "AMD64"
+            ],
             "Install": "/Q",
             "SilentInstall": "/Q",
             "SilentUninstall": "MsiExec.exe /X#ProductCode /QB-",
@@ -266,6 +328,9 @@
             "URI": "https://download.microsoft.com/download/9/7/7/977B481A-7BA6-4E30-AC40-ED51EB2028F2/vcredist_x64.exe",
             "Release": "2008",
             "Architecture": "x64",
+            "SupportedArchitecture": [
+                "AMD64"
+            ],
             "Install": "/Q",
             "SilentInstall": "/Q",
             "SilentUninstall": "MsiExec.exe /X#ProductCode /QB-",
@@ -282,6 +347,11 @@
             "URI": "https://download.microsoft.com/download/A/5/3/A53B40CA-F75C-4678-852A-3C15EA82F186/vcredist_x86.exe",
             "Release": "2008",
             "Architecture": "x86",
+            "SupportedArchitecture": [
+                "x86",
+                "AMD64",
+                "ARM64"
+            ],
             "Install": "/Q",
             "SilentInstall": "/Q",
             "SilentUninstall": "MsiExec.exe /X#ProductCode /QB-",
@@ -298,6 +368,11 @@
             "URI": "https://download.microsoft.com/download/9/7/7/977B481A-7BA6-4E30-AC40-ED51EB2028F2/vcredist_x86.exe",
             "Release": "2008",
             "Architecture": "x86",
+            "SupportedArchitecture": [
+                "x86",
+                "AMD64",
+                "ARM64"
+            ],
             "Install": "/Q",
             "SilentInstall": "/Q",
             "SilentUninstall": "MsiExec.exe /X#ProductCode /QB-",
@@ -314,6 +389,9 @@
             "URI": "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x64.exe",
             "Release": "2010",
             "Architecture": "x64",
+            "SupportedArchitecture": [
+                "AMD64"
+            ],
             "Install": "/passive /norestart",
             "SilentInstall": "/quiet /norestart",
             "SilentUninstall": "MsiExec.exe /X#ProductCode /QB-",
@@ -330,6 +408,11 @@
             "URI": "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x86.exe",
             "Release": "2010",
             "Architecture": "x86",
+            "SupportedArchitecture": [
+                "x86",
+                "AMD64",
+                "ARM64"
+            ],
             "Install": "/passive /norestart",
             "SilentInstall": "/quiet /norestart",
             "SilentUninstall": "MsiExec.exe /X#ProductCode /QB-",
@@ -346,6 +429,9 @@
             "URI": "https://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe",
             "Release": "2013",
             "Architecture": "x64",
+            "SupportedArchitecture": [
+                "AMD64"
+            ],
             "Install": "/install /passive /norestart",
             "SilentInstall": "/install /quiet /norestart",
             "SilentUninstall": "\"%ProgramData%\\Package Cache\\#ProductCode\\#Installer\" /uninstall /quiet /norestart",
@@ -362,6 +448,11 @@
             "URI": "https://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x86.exe",
             "Release": "2013",
             "Architecture": "x86",
+            "SupportedArchitecture": [
+                "x86",
+                "AMD64",
+                "ARM64"
+            ],
             "Install": "/install /passive /norestart",
             "SilentInstall": "/install /quiet /norestart",
             "SilentUninstall": "\"%ProgramData%\\Package Cache\\#ProductCode\\#Installer\" /uninstall /quiet /norestart",
@@ -378,6 +469,9 @@
             "URI": "https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe",
             "Release": "2012",
             "Architecture": "x64",
+            "SupportedArchitecture": [
+                "AMD64"
+            ],
             "Install": "/install /passive /norestart",
             "SilentInstall": "/quiet /norestart",
             "SilentUninstall": "\"%ProgramData%\\Package Cache\\#ProductCode\\#Installer\" /uninstall /quiet /norestart",
@@ -394,6 +488,11 @@
             "URI": "https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x86.exe",
             "Release": "2012",
             "Architecture": "x86",
+            "SupportedArchitecture": [
+                "x86",
+                "AMD64",
+                "ARM64"
+            ],
             "Install": "/install /passive /norestart",
             "SilentInstall": "/install /quiet /norestart",
             "SilentUninstall": "\"%ProgramData%\\Package Cache\\#ProductCode\\#Installer\" /uninstall /quiet /norestart",
@@ -410,6 +509,9 @@
             "URI": "https://download.visualstudio.microsoft.com/download/pr/10912041/cee5d6bca2ddbcd039da727bf4acb48a/vcredist_x64.exe",
             "Release": "2013",
             "Architecture": "x64",
+            "SupportedArchitecture": [
+                "AMD64"
+            ],
             "Install": "/install /passive /norestart",
             "SilentInstall": "/install /quiet /norestart",
             "SilentUninstall": "\"%ProgramData%\\Package Cache\\#ProductCode\\#Installer\" /uninstall /quiet /norestart",
@@ -426,6 +528,11 @@
             "URI": "https://download.visualstudio.microsoft.com/download/pr/10912113/5da66ddebb0ad32ebd4b922fd82e8e25/vcredist_x86.exe",
             "Release": "2013",
             "Architecture": "x86",
+            "SupportedArchitecture": [
+                "x86",
+                "AMD64",
+                "ARM64"
+            ],
             "Install": "/install /passive /norestart",
             "SilentInstall": "/install /quiet /norestart",
             "SilentUninstall": "\"%ProgramData%\\Package Cache\\#ProductCode\\#Installer\" /uninstall /quiet /norestart",
