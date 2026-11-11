@@ -52,6 +52,11 @@ InModuleScope VcRedist {
             Should -Invoke Add-CMScriptDeploymentType -Times 1
         }
 
+        It "Passes ReleaseDate to ConfigMgr as a DateTime value" {
+            Import-VcConfigMgrApplication @Params | Out-Null
+            Should -Invoke New-CMApplication -Times 1 -ParameterFilter { $ReleaseDate -is [System.DateTime] }
+        }
+
         It "Restores the original location" {
             $Before = Get-Location
             Import-VcConfigMgrApplication @Params | Out-Null
