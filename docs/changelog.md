@@ -20,6 +20,7 @@
 * `Invoke-Process` fails on unexpected exit codes
 * `Import-VcIntuneApplication` and `Export-VcManifest` support `-WhatIf`
 * `Save-VcRedist` creates the `-Path` folder if it does not exist and fails before downloading if it cannot (#219)
+* Web requests use a `VcRedist/<version> (...)` user agent instead of the Chrome browser user agent
 * Fixes `New-VcMdtBundle` and `Update-VcMdtBundle` `-WhatIf` target, and the ConfigMgr location restore in `Import-VcConfigMgrApplication`
 * MDT tests now use stubs and mocks; `tests/Install-Mdt.ps1` is removed
 

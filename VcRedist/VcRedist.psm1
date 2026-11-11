@@ -24,6 +24,3 @@ foreach ($import in @($Public + $Private)) {
 
 # Export the public functions and aliases
 Export-ModuleMember -Function $Public.Basename -Alias *
-
-# Add the Microsoft.PowerShell.Commands.Utility type required by [Microsoft.PowerShell.Commands.PSUserAgent]::Chrome
-Add-Type -AssemblyName "Microsoft.PowerShell.Commands.Utility" -ErrorAction "SilentlyContinue"

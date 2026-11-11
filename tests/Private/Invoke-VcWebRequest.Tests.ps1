@@ -43,5 +43,15 @@ InModuleScope VcRedist {
 			Invoke-VcWebRequest -Uri "https://example.com/a" | Out-Null
 			[System.Net.ServicePointManager]::SecurityProtocol | Should -Be $Before
 		}
+
+		It "Sends the VcRedist user agent by default" {
+			Invoke-VcWebRequest -Uri "https://example.com/a" | Out-Null
+			Should -Invoke Invoke-WebRequest -Times 1 -Exactly -ParameterFilter { $UserAgent -like "VcRedist/* (https://github.com/EUCPilots/vcredist; PowerShell *" }
+		}
+
+		It "Uses a caller-supplied user agent" {
+			Invoke-VcWebRequest -Uri "https://example.com/a" -UserAgent "Custom/1.0" | Out-Null
+			Should -Invoke Invoke-WebRequest -Times 1 -Exactly -ParameterFilter { $UserAgent -eq "Custom/1.0" }
+		}
 	}
 }

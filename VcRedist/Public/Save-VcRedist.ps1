@@ -27,7 +27,7 @@ function Save-VcRedist {
 
         [Parameter(Mandatory = $false, Position = 5)]
         [ValidateNotNullOrEmpty()]
-        [System.String] $UserAgent = [Microsoft.PowerShell.Commands.PSUserAgent]::Chrome,
+        [System.String] $UserAgent = (Get-VcUserAgent),
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter] $ShowProgress

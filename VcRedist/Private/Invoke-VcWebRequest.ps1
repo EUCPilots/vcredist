@@ -47,7 +47,7 @@ function Invoke-VcWebRequest {
         ErrorAction     = "Stop"
     }
     if ($PSBoundParameters.ContainsKey("OutFile")) { $params.OutFile = $OutFile }
-    if ($PSBoundParameters.ContainsKey("UserAgent")) { $params.UserAgent = $UserAgent }
+    $params.UserAgent = if ($PSBoundParameters.ContainsKey("UserAgent")) { $UserAgent } else { Get-VcUserAgent }
     if ($PSBoundParameters.ContainsKey("Proxy") -and -not [System.String]::IsNullOrEmpty($Proxy)) {
         $params.Proxy = $Proxy
         if ($PSBoundParameters.ContainsKey("ProxyCredential") -and $ProxyCredential -ne [System.Management.Automation.PSCredential]::Empty) {
