@@ -1,160 +1,108 @@
-name: Update module version
+name: Prepare module release
 
-on:  
+on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: Three-component version (for example 5.0.0)
+        required: true
+        type: string
+      prerelease:
+        description: Optional lowercase prerelease label (for example beta1)
+        type: string
+        default: ''
+      issue:
+        description: Open issue number describing this release
+        required: true
+        type: string
 
-env:
-  BUILD_NUMBER: "483"
+permissions:
+  contents: read
+
+concurrency:
+  group: prepare-module-release
+  cancel-in-progress: false
 
 jobs:
-  update-module:
-    runs-on: windows-latest
-    outputs:
-      output1: ${{ steps.commit.outputs.changes_detected }}
-
+  prepare-release:
+    runs-on: windows-2025
     steps:
+      - name: Require automation token and open issue
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.PAT }}
+          ISSUE: ${{ inputs.issue }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          if ($env:GITHUB_REF -ne "refs/heads/main") { throw "Dispatch release preparation from main." }
+          if (-not $env:GH_TOKEN) { throw "Configure PAT with contents and pull request write access so release PR checks are triggered." }
+          if ($env:ISSUE -notmatch "^[1-9][0-9]*$") { throw "Issue must be an open issue number." }
+          $State = gh issue view $env:ISSUE --repo "$env:GITHUB_REPOSITORY" --json state --jq .state
+          if ($LASTEXITCODE -ne 0 -or $State -ne "OPEN") { throw "The release must reference an open issue." }
       - uses: actions/checkout@v7
         with:
           ref: main
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Install and cache PowerShell modules
-        id: psmodulecache
-        uses: potatoqualitee/psmodulecache@v6.3
-        with:
-          modules-to-cache: MarkdownPS
-          shell: pwsh
-
-      # Update the version number in the module manifest
-      - name: Update module version number
-        id: update-version
+          token: ${{ secrets.PAT }}
+          fetch-depth: 0
+      - name: Prepare release metadata
+        id: release
+        shell: pwsh
+        env:
+          VERSION: ${{ inputs.version }}
+          PRERELEASE: ${{ inputs.prerelease }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          $Metadata = ./ci/Update-Release.ps1 -Version $env:VERSION -Prerelease $env:PRERELEASE
+          "version=$($Metadata.FullVersion)" >> $env:GITHUB_OUTPUT
+          "branch=release/$($Metadata.FullVersion)" >> $env:GITHUB_OUTPUT
+      - name: Validate release preparation
         shell: pwsh
         run: |
-            $modulePath = "${{ github.workspace }}\VcRedist"
-            $manifestPath = "${{ github.workspace }}\VcRedist\VcRedist.psd1"
-
-            # Importing the manifest to determine the version
-            $manifest = Test-ModuleManifest -Path $manifestPath
-            [System.Version]$version = $manifest.Version
-            [System.String]$newVersion = New-Object -TypeName "System.Version" -ArgumentList ($version.Major, $version.Minor, ($version.Build + 1))
-            Write-Host "New version is: $newVersion"
-
-            # Update the manifest with the new version value and fix the weird string replace bug
-            $functionList = ((Get-ChildItem -Path (Join-Path -Path $modulePath -ChildPath "Public")).BaseName)
-            Update-ModuleManifest -Path $manifestPath -ModuleVersion $newVersion -FunctionsToExport $functionList
-            (Get-Content -Path $manifestPath) -replace 'PSGet_$module', $module | Set-Content -Path $manifestPath
-            (Get-Content -Path $manifestPath) -replace 'NewManifest', $module | Set-Content -Path $manifestPath
-            (Get-Content -Path $manifestPath) -replace 'FunctionsToExport = ','FunctionsToExport = @(' | Set-Content -Path $manifestPath -Force
-            (Get-Content -Path $manifestPath) -replace "$($functionList[-1])'", "$($functionList[-1])')" | Set-Content -Path $manifestPath -Force
-            echo "::set-output name=newversion::$($newVersion)"
-
-      # Update the change log with the new version number
-      - name: Update CHANGELOG.md
-        id: update-changelog
-        shell: pwsh
-        run: |
-            $changeLog = "${{ github.workspace }}\docs\changelog.md"
-            $replaceString = "^## VERSION$"
-            $content = Get-Content -Path $changeLog
-            if ($content -match $replaceString) {
-                $content -replace $replaceString, "## ${{steps.update-version.outputs.newversion}}" | Set-Content -Path $changeLog
-            }
-            else {
-                Write-Host "No match in $changeLog for '## VERSION'. Manual update of CHANGELOG required." -ForegroundColor Cyan
-            }
-
-      # Update the docs with the new version number and supported VcRedists
-      - name: Update VERSIONS.md
-        id: update-versions
-        shell: pwsh
-        run: |
-          Import-Module "${{ github.workspace }}\VcRedist" -Force
-          $VcRedists = Get-Vclist -Export All | `
-            Sort-Object -Property @{ Expression = { [System.Version]$_.Version }; Descending = $true } | `
-            Select-Object Version, Architecture, Name
-          $OutFile = "${{ github.workspace }}\docs\versions.md"
-          $markdown = New-MDHeader -Text "Included Redistributables" -Level 1
-          $markdown += "`n"
-          $line = "VcRedist " + '`' + "${{steps.update-version.outputs.newversion}}" + '`' + " includes the following Redistributables (supported and unsupported):"
-          $markdown += $line
-          $markdown += "`n`n"
-          $markdown += $VcRedists | New-MDTable
-          ($markdown.TrimEnd("`n")) | Out-File -FilePath $OutFile -Force -Encoding "Utf8"
-
-      # Import GPG key so that we can sign the commit
-      - name: Import GPG key
-        id: import_gpg
+          $ErrorActionPreference = "Stop"
+          ./tests/Install-Pester.ps1
+          Import-Module ./VcRedist/VcRedist.psd1 -Force
+          $Config = New-PesterConfiguration
+          $Config.Run.Path = @("./tests/Module.Tests.ps1", "./tests/CI")
+          $Config.Run.Throw = $true
+          Invoke-Pester -Configuration $Config
+      - name: Import signing key
         uses: crazy-max/ghaction-import-gpg@v7
         with:
           gpg_private_key: ${{ secrets.GPGKEY }}
           passphrase: ${{ secrets.GPGPASSPHRASE }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-          git_config_global: true
-          git_tag_gpgsign: true
-          git_push_gpgsign: false
           git_committer_name: ${{ secrets.COMMIT_NAME }}
           git_committer_email: ${{ secrets.COMMIT_EMAIL }}
-
-      - name: Commit changes
-        id: commit
-        uses: stefanzweifel/git-auto-commit-action@v7
-        with:
-          commit_message: "Update module ${{steps.update-version.outputs.newversion}}"
-          commit_user_name: ${{ secrets.COMMIT_NAME }}
-          commit_user_email: ${{ secrets.COMMIT_EMAIL }}
-
-      - name: "Run if changes have been detected"
-        if: steps.commit.outputs.changes_detected == 'true'
-        run: echo "Changes committed."
-
-      - name: "Run if no changes have been detected"
-        if: steps.commit.outputs.changes_detected == 'false'
-        run: echo "No changes detected."
-
-  # tag-repo:
-  #   needs: update-module
-  #   if: needs.update-module.outputs.output1 == 'true'
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v7
-  #       with:
-  #         token: ${{ secrets.PAT }}
-  #         repository: aaronparker/vcredist
-
-  #     - name: Git pull
-  #       id: pull
-  #       shell: pwsh
-  #       run: |
-  #           git pull origin main
-
-  #     - name: Get module version number
-  #       id: get-version
-  #       shell: pwsh
-  #       run: |
-  #           $manifestPath = "${{ github.workspace }}/VcRedist/VcRedist.psd1"
-  #           $manifest = Test-ModuleManifest -Path $manifestPath
-  #           Write-Host "Found version: $($manifest.Version)"
-  #           echo "::set-output name=version::$($manifest.Version)"
-
-  #     # Import GPG key so that we can sign the commit
-  #     - name: Import GPG key
-  #       id: import_gpg
-  #       uses: crazy-max/ghaction-import-gpg@v7
-  #       with:
-  #         gpg_private_key: ${{ secrets.GPGKEY }}
-  #         passphrase: ${{ secrets.GPGPASSPHRASE }}
-  #         git_user_signingkey: true
-  #         git_commit_gpgsign: true
-  #         git_config_global: true
-  #         git_tag_gpgsign: true
-  #         git_push_gpgsign: false
-  #         git_committer_name: ${{ secrets.COMMIT_NAME }}
-  #         git_committer_email: ${{ secrets.COMMIT_EMAIL }}
-
-  #     # Push tag
-  #     - name: Push tag
-  #       shell: bash
-  #       run: |
-  #         git tag -a "v${{steps.get-version.outputs.version}}" -m "v${{steps.get-version.outputs.version}}"
-  #         git push origin "v${{steps.get-version.outputs.version}}"
+      - name: Commit release branch and open pull request
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.PAT }}
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+          RELEASE_BRANCH: ${{ steps.release.outputs.branch }}
+          ISSUE: ${{ inputs.issue }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          git switch -c $env:RELEASE_BRANCH
+          if ($LASTEXITCODE -ne 0) { throw "Could not create the release branch." }
+          git add VcRedist/VcRedist.psd1 docs/changelog.md docs/versions.md
+          git commit -m "Prepare VcRedist $env:RELEASE_VERSION" -m "Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+          if ($LASTEXITCODE -ne 0) { throw "Could not commit release changes." }
+          git push --set-upstream origin $env:RELEASE_BRANCH
+          if ($LASTEXITCODE -ne 0) { throw "Could not push release branch. If it already exists, use its PR instead of rerunning preparation." }
+          $Body = Get-Content ./.github/PULL_REQUEST_TEMPLATE.md -Raw
+          $Body = $Body.Replace("Please describe your pull request in detail.", "Prepare VcRedist $env:RELEASE_VERSION with matching manifest, changelog and bundled redistributable documentation.")
+          $Body = $Body.Replace("_Please link to the issue here_", "Related to #$env:ISSUE")
+          $Body = $Body.Replace("Why is this change required? What problem does it solve?", "Separate version preparation from development validation and require release validation before publishing.")
+          $Body += "`n`nPreparation validation: ``Invoke-Pester -Configuration `$Config`` passed on Windows PowerShell 7, selecting ``tests/Module.Tests.ps1`` and ``tests/CI`` with ``Run.Throw = `$true``. Full CI is pending; merge only after Validation gate passes.`n"
+          $BodyPath = Join-Path $env:RUNNER_TEMP "release-pr-body.md"
+          Set-Content -LiteralPath $BodyPath -Value $Body -Encoding "utf8"
+          $Existing = gh pr list --repo "$env:GITHUB_REPOSITORY" --head $env:RELEASE_BRANCH --base main --state open --json number --jq '.[0].number'
+          if ($LASTEXITCODE -ne 0) { throw "Could not find existing release PRs." }
+          if ($Existing) {
+              gh pr edit $Existing --repo "$env:GITHUB_REPOSITORY" --body-file $BodyPath
+          }
+          else {
+              gh pr create --repo "$env:GITHUB_REPOSITORY" --base main --head $env:RELEASE_BRANCH --title "Release VcRedist $env:RELEASE_VERSION" --body-file $BodyPath
+          }
+          if ($LASTEXITCODE -ne 0) { throw "Release branch was pushed but the PR could not be created or updated. Open it manually." }

@@ -2,121 +2,142 @@ name: Validate module
 
 on:
   push:
-    paths:
-      - 'VcRedist/**'
-      - 'tests/**'
-    branches-ignore:
-      - main
+    branches: ['**']
   pull_request:
-    branches:
-      - main
-    paths:
-      - 'VcRedist/**'
+    branches: [main]
   workflow_dispatch:
+    inputs:
+      run_intune:
+        description: Run live Intune integration tests (requires tenant credentials)
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        default: ''
+      run_intune:
+        type: boolean
+        default: false
+    secrets:
+      TENANT_ID:
+        required: false
+      CLIENT_ID:
+        required: false
+      CLIENT_SECRET:
+        required: false
+
+permissions:
+  contents: read
 
 jobs:
-  run-pester:
-    name: Test with Pester
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [windows-2025, windows-11-arm]
-
+  stage-module:
+    name: Stage module
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          persist-credentials: false
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-candidate
+          path: VcRedist/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
 
-      # Run Pester tests
+  run-pester:
+    name: Pester (${{ matrix.os }}, ${{ matrix.shell }})
+    needs: stage-module
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      checks: write
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2025, windows-11-arm]
+        shell: [powershell, pwsh]
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-candidate
+          path: VcRedist/
       - name: Run Pester tests
-        shell: powershell
-        working-directory: "${{ github.workspace }}"
+        run: ./ci/Test-Module.ps1 -ResultName "${{ matrix.os }}-${{ matrix.shell }}"
+      - name: Upload test results and coverage
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: pester-test-results-${{ matrix.os }}-${{ matrix.shell }}
+          path: |
+            TestResults-${{ matrix.os }}-${{ matrix.shell }}.xml
+            CodeCoverage-${{ matrix.os }}-${{ matrix.shell }}.xml
+          if-no-files-found: warn
+      - name: Publish Pester test results
+        uses: EnricoMi/publish-unit-test-result-action/windows@v2
+        if: always() && matrix.os == 'windows-2025' && matrix.shell == 'powershell' && github.event_name != 'pull_request'
+        with:
+          files: TestResults-${{ matrix.os }}-${{ matrix.shell }}.xml
+
+  analyzer:
+    needs: stage-module
+    uses: ./.github/workflows/analyzer.yml
+    with:
+      ref: ${{ inputs.ref || github.sha }}
+
+  intune:
+    name: Live Intune tests
+    if: inputs.run_intune == true && github.event_name != 'pull_request'
+    needs: [run-pester, analyzer]
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-candidate
+          path: VcRedist/
+      - name: Run live Intune tests
+        shell: pwsh
         env:
           TENANT_ID: ${{ secrets.TENANT_ID }}
           CLIENT_ID: ${{ secrets.CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
-        run: |
-          .\tests\Install-Pester.ps1
-          Import-Module -Name "Pester" -Force -ErrorAction "Stop"
-          Import-Module -Name "$env:GITHUB_WORKSPACE\VcRedist" -Force
-
-          $Config = New-PesterConfiguration
-          $Config.Run.Path = "$env:GITHUB_WORKSPACE\tests"
-          $Config.Run.PassThru = $True
-          $Config.CodeCoverage.Enabled = $True
-          $Config.CodeCoverage.Path = "$env:GITHUB_WORKSPACE\VcRedist"
-          $Config.CodeCoverage.OutputFormat = "JaCoCo"
-          $Config.CodeCoverage.OutputPath = "$env:GITHUB_WORKSPACE\CodeCoverage-${{ matrix.os }}.xml"
-          $Config.TestResult.Enabled = $True
-          $Config.TestResult.OutputFormat = "NUnitXml"
-          $Config.TestResult.OutputPath = "$env:GITHUB_WORKSPACE\tests\TestResults-${{ matrix.os }}.xml"
-          $Config.Output.Verbosity = "Detailed"
-          Invoke-Pester -Configuration $Config
-
-      - name: Upload artifacts
-        id: upload-artifacts
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: 'pester-test-results-${{ matrix.os }}'
-          path: |
-            ${{ github.workspace }}\tests\TestResults-${{ matrix.os }}.xml
-
-      # Publish Pester test results
-      - name: Publish Pester test results
-        uses: EnricoMi/publish-unit-test-result-action/windows@v2
+        run: ./ci/Test-Module.ps1 -Intune -ResultName "intune"
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
-          files: "${{ github.workspace }}//tests//TestResults-${{ matrix.os }}.xml"
+          name: pester-test-results-intune
+          path: TestResults-intune.xml
 
-      # - name: Upload to Codecov
-      #   id: codecov
-      #   if: always()
-      #   uses: codecov/codecov-action@v5
-      #   with:
-      #     token: ${{ secrets.CODECOV_TOKEN }}
-      #     files: ./CodeCoverage-${{ matrix.os }}.xml
-      #     verbose: true
-
-  update-module-version:
-    name: Update module version
-    needs: [run-pester]
-    runs-on: 'windows-latest'
-
+  validation-gate:
+    name: Validation gate
+    if: always()
+    needs: [stage-module, run-pester, analyzer, intune]
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-
-      - name: Install and cache PowerShell modules
-        id: psmodulecache
-        uses: potatoqualitee/psmodulecache@v6.3
-        with:
-          modules-to-cache: BuildHelpers
-          shell: pwsh
-
-      - name: Update module version
-        shell: pwsh
-        working-directory: "${{ github.workspace }}"
+      - name: Require successful validation
+        env:
+          STAGE: ${{ needs.stage-module.result }}
+          TESTS: ${{ needs.run-pester.result }}
+          ANALYZER: ${{ needs.analyzer.result }}
+          INTUNE: ${{ needs.intune.result }}
+          RUN_INTUNE: ${{ inputs.run_intune || false }}
         run: |
-          Import-Module -Name BuildHelpers
-          Step-ModuleVersion -Path .\VcRedist\VcRedist.psd1 -By Build
-
-      # Import GPG key so that we can sign the commit
-      - name: Import GPG key
-        id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v7
-        with:
-          gpg_private_key: ${{ secrets.GPGKEY }}
-          passphrase: ${{ secrets.GPGPASSPHRASE }}
-          git_user_signingkey: true
-          git_commit_gpgsign: true
-          git_config_global: true
-          git_tag_gpgsign: true
-          git_push_gpgsign: false
-          git_committer_name: ${{ secrets.COMMIT_NAME }}
-          git_committer_email: ${{ secrets.COMMIT_EMAIL }}
-
-      - name: Commit changes
-        id: commit
-        uses: stefanzweifel/git-auto-commit-action@v7
-        with:
-          commit_message: "Update module version"
-          commit_user_name: ${{ secrets.COMMIT_NAME }}
-          commit_user_email: ${{ secrets.COMMIT_EMAIL }}
+          test "$STAGE" = success
+          test "$TESTS" = success
+          test "$ANALYZER" = success
+          if [ "$RUN_INTUNE" = true ]; then
+            test "$INTUNE" = success
+          fi
