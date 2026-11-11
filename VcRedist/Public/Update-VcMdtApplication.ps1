@@ -39,6 +39,8 @@ function Update-VcMdtApplication {
     )
 
     begin {
+        Write-Warning -Message "MDT is no longer supported by Microsoft. This function is deprecated and will be removed in a future release of VcRedist."
+
         # If running on PowerShell Core, error and exit.
         if (Test-PSCore) {
             $Msg = "We can't load the MicrosoftDeploymentToolkit module on PowerShell Core. Please use PowerShell 5.1."
@@ -110,6 +112,7 @@ function Update-VcMdtApplication {
                                 $params = @{
                                     FilePath     = "$env:SystemRoot\System32\robocopy.exe"
                                     ArgumentList = "*.exe `"$SourceFolder`" `"$ContentLocation`" /S /XJ /R:1 /W:1 /NP /NJH /NJS /NFL /NDL"
+                                    SuccessExitCodes = 0..7
                                 }
                                 $result = Invoke-Process @params
                             }

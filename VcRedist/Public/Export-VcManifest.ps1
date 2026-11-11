@@ -3,33 +3,43 @@ function Export-VcManifest {
         .EXTERNALHELP VcRedist-help.xml
     #>
     [Alias("Export-VcXml")]
-    [CmdletBinding(SupportsShouldProcess = $false, HelpURI = "https://vcredist.com/export-vcmanifest/")]
+    [CmdletBinding(SupportsShouldProcess = $true, HelpURI = "https://vcredist.com/export-vcmanifest/")]
     [OutputType([System.IO.FileSystemInfo])]
     param (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline)]
         [ValidateNotNullOrEmpty()]
-        [ValidateScript( { if (Test-Path -Path $_ -PathType "Container") { $true } else { throw [System.IO.DirectoryNotFoundException]::New("Cannot find path: $_") } })]
-        [System.String] $Path
+        [ValidateScript( { if (Test-Path -LiteralPath $_ -PathType "Container") { $true } else { throw [System.IO.DirectoryNotFoundException]::New("Cannot find path: $_") } })]
+        [System.String] $Path,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet("Auto", "Remote", "Bundled")]
+        [System.String] $Source = "Auto",
+
+        [Parameter(Mandatory = $false)]
+        [System.String] $Proxy,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.PSCredential]
+        $ProxyCredential = [System.Management.Automation.PSCredential]::Empty
     )
 
     process {
-        # Get the list of VcRedists from Get-VcList
-        [System.String] $Manifest = (Join-Path -Path $MyInvocation.MyCommand.Module.ModuleBase -ChildPath "VisualCRedistributables.json")
+        $params = @{ Source = $Source }
+        if ($PSBoundParameters.ContainsKey("Proxy")) { $params.Proxy = $Proxy }
+        if ($PSBoundParameters.ContainsKey("ProxyCredential")) { $params.ProxyCredential = $ProxyCredential }
+        $Manifest = Get-VcManifest @params
 
-        # Output the manifest to supplied path
-        try {
-            Write-Verbose -Message "Copy from: '$Manifest'."
-            Write-Verbose -Message "  Copy to: '$Path'."
-            $params = @{
-                Path        = $Manifest
-                Destination = $Path
-                PassThru    = $true
-                ErrorAction = "Stop"
-            }
-            Copy-Item @params
+        # Write only the manifest schema, without the Source property added by the resolver
+        $Output = [ordered]@{
+            SchemaVersion = $Manifest.SchemaVersion
+            Updated       = ([System.DateTime]$Manifest.Updated).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+            Entries       = @($Manifest.Entries)
         }
-        catch {
-            throw $_
+        $Target = Join-Path -Path (Resolve-Path -LiteralPath $Path).Path -ChildPath "VisualCRedistributables.json"
+        if ($PSCmdlet.ShouldProcess($Target, "Export $($Manifest.Source) manifest")) {
+            Write-Verbose -Message "Writing $($Manifest.Source) manifest to: '$Target'."
+            $Output | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $Target -Encoding "UTF8" -Force -ErrorAction "Stop"
+            Get-Item -LiteralPath $Target
         }
     }
 }

@@ -2,7 +2,6 @@
     .SYNOPSIS
         VcRedist script to initiate the module
 #>
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "", Justification = "Variable VcManifest is used internally by the module.")]
 [CmdletBinding()]
 param ()
 
@@ -23,9 +22,5 @@ foreach ($import in @($Public + $Private)) {
     }
 }
 
-# Export the public functions, aliases and variables
-[System.String] $VcManifest = Join-Path -Path $PSScriptRoot -ChildPath "VisualCRedistributables.json"
-Export-ModuleMember -Function $Public.Basename -Alias * -Variable "VcManifest"
-
-# Add the Microsoft.PowerShell.Commands.Utility type required by [Microsoft.PowerShell.Commands.PSUserAgent]::Chrome
-Add-Type -AssemblyName "Microsoft.PowerShell.Commands.Utility" -ErrorAction "SilentlyContinue"
+# Export the public functions and aliases
+Export-ModuleMember -Function $Public.Basename -Alias *

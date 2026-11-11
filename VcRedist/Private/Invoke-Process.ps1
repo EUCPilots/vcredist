@@ -24,40 +24,41 @@ function Invoke-Process {
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [System.String] $ArgumentList
+        [System.String] $ArgumentList,
+
+        # Exit codes treated as success. Some tools (e.g. robocopy) use non-zero codes for success
+        [Parameter()]
+        [System.Int32[]] $SuccessExitCodes = @(0)
     )
 
     $ErrorActionPreference = "Stop"
+    $stdOutTempFile = $null
+    $stdErrTempFile = $null
     try {
-        $stdOutTempFile = "$env:TEMP\$((New-Guid).Guid)"
-        $stdErrTempFile = "$env:TEMP\$((New-Guid).Guid)"
-
-        $startProcessParams = @{
-            FilePath               = $FilePath
-            ArgumentList           = $ArgumentList
-            RedirectStandardError  = $stdErrTempFile
-            RedirectStandardOutput = $stdOutTempFile
-            Wait                   = $true
-            PassThru               = $true
-            NoNewWindow            = $true
-        }
         if ($PSCmdlet.ShouldProcess("Process [$($FilePath)]", "Run with args: [$($ArgumentList)]")) {
+            $TempPath = [System.IO.Path]::GetTempPath()
+            $stdOutTempFile = Join-Path -Path $TempPath -ChildPath ([System.Guid]::NewGuid().Guid)
+            $stdErrTempFile = Join-Path -Path $TempPath -ChildPath ([System.Guid]::NewGuid().Guid)
+
+            $startProcessParams = @{
+                FilePath               = $FilePath
+                RedirectStandardError  = $stdErrTempFile
+                RedirectStandardOutput = $stdOutTempFile
+                Wait                   = $true
+                PassThru               = $true
+                NoNewWindow            = $true
+            }
+            if ($PSBoundParameters.ContainsKey("ArgumentList")) { $startProcessParams.ArgumentList = $ArgumentList }
             $cmd = Start-Process @startProcessParams
 
-            $cmdOutput = Get-Content -Path $stdOutTempFile -Raw
-            $cmdError = Get-Content -Path $stdErrTempFile -Raw
-            if ($cmd.ExitCode -ne 0) {
-                if ($cmdError) {
-                    throw $cmdError.Trim()
-                }
-                if ($cmdOutput) {
-                    throw $cmdOutput.Trim()
-                }
+            $cmdOutput = Get-Content -LiteralPath $stdOutTempFile -Raw -ErrorAction "SilentlyContinue"
+            $cmdError = Get-Content -LiteralPath $stdErrTempFile -Raw -ErrorAction "SilentlyContinue"
+            if ($SuccessExitCodes -notcontains $cmd.ExitCode) {
+                $Detail = if ($cmdError) { $cmdError.Trim() } elseif ($cmdOutput) { $cmdOutput.Trim() } else { "No output captured." }
+                throw "Process '$FilePath' exited with code $($cmd.ExitCode). $Detail"
             }
-            else {
-                if ([System.String]::IsNullOrEmpty($cmdOutput) -eq $false) {
-                    Write-Output -InputObject $cmdOutput
-                }
+            if ([System.String]::IsNullOrEmpty($cmdOutput) -eq $false) {
+                Write-Output -InputObject $cmdOutput
             }
         }
     }
@@ -65,6 +66,8 @@ function Invoke-Process {
         $PSCmdlet.ThrowTerminatingError($_)
     }
     finally {
-        Remove-Item -Path $stdOutTempFile, $stdErrTempFile -Force -ErrorAction "Ignore"
+        foreach ($TempFile in $stdOutTempFile, $stdErrTempFile) {
+            if ($TempFile) { Remove-Item -LiteralPath $TempFile -Force -ErrorAction "Ignore" }
+        }
     }
 }

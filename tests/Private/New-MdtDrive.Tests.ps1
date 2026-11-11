@@ -1,43 +1,31 @@
 <#
 	.SYNOPSIS
-		Public Pester function tests.
+		Private Pester function tests. MDT cmdlets are stubbed; no MDT installation is required.
 #>
 [CmdletBinding()]
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "", Justification = "This OK for the tests files.")]
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "", Justification = "Outputs to log host.")]
 param ()
 
-InModuleScope -ModuleName "VcRedist" {
-    BeforeDiscovery {
-        if ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") {
-            $Skip = $false
-        }
-        else {
-            $Skip = $true
-        }
-    }
-
-    BeforeAll {
-    }
-
-    Describe -Name "New-MdtDrive" -Skip:$Skip {
+InModuleScope VcRedist {
+    Describe -Name "New-MdtDrive" {
         BeforeAll {
-            # Install the MDT Workbench
-            & "$env:GITHUB_WORKSPACE\tests\Install-Mdt.ps1"
-            Import-Module -Name "$Env:ProgramFiles\Microsoft Deployment Toolkit\Bin\MicrosoftDeploymentToolkit.psd1"
+            function Add-MDTPersistentDrive { param ([Parameter(ValueFromPipeline)] $InputObject) process { $InputObject } }
+            function Get-MdtPersistentDrive { }
         }
 
-        Context "Creates a new MDT drive" {
-            It "Does not throw when connecting to an MDT share" {
-                $Path = "$Env:RUNNER_TEMP\Deployment"
-                { $Drive = New-MdtDrive -Drive "DS020" -Path $Path } | Should -Not -Throw
-            }
+        BeforeEach {
+            Mock New-PSDrive { [PSCustomObject]@{ Name = "DS020" } }
+            Mock Add-MDTPersistentDrive { }
+            Mock Get-MdtPersistentDrive { [PSCustomObject]@{ Name = "DS020"; Path = "/deploy" } }
+        }
 
-            It "Returns the expected MDT drive name" {
-                Remove-PSDrive -Name "DS020" -ErrorAction "SilentlyContinue"
-                $Path = "$Env:RUNNER_TEMP\Deployment"
-                New-MdtDrive -Drive "DS020" -Path $Path | Should -Be "DS020"
-            }
+        It "Returns the expected MDT drive name" {
+            New-MdtDrive -Drive "DS020" -Path "/deploy" | Should -Be "DS020"
+        }
+
+        It "Does not map a drive with -WhatIf" {
+            New-MdtDrive -Drive "DS020" -Path "/deploy" -WhatIf | Should -BeNullOrEmpty
+            Should -Invoke New-PSDrive -Times 0
         }
     }
 }

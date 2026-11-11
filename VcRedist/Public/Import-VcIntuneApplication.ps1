@@ -2,7 +2,7 @@ function Import-VcIntuneApplication {
     <#
         .EXTERNALHELP VcRedist-help.xml
     #>
-    [CmdletBinding(SupportsShouldProcess = $false, HelpURI = "https://vcredist.com/import-vcintuneapplication/")]
+    [CmdletBinding(SupportsShouldProcess = $true, HelpURI = "https://vcredist.com/import-vcintuneapplication/")]
     [OutputType([System.String])]
     param (
         [Parameter(
@@ -40,12 +40,12 @@ function Import-VcIntuneApplication {
         }
 
         # Get the Intune app manifest
-        $IntuneManifest = Get-Content -Path $(Join-Path -Path $MyInvocation.MyCommand.Module.ModuleBase -ChildPath "Intune.json") | ConvertFrom-Json -ErrorAction "Stop"
+        $IntuneManifest = Get-Content -LiteralPath $(Join-Path -Path $MyInvocation.MyCommand.Module.ModuleBase -ChildPath "Intune.json") | ConvertFrom-Json -ErrorAction "Stop"
         Write-Verbose -Message "Loaded Intune app manifest."
 
         # Create the icon object for the app
         $IconPath = [System.IO.Path]::Combine($MyInvocation.MyCommand.Module.ModuleBase, "img", "vcredist.png")
-        if (Test-Path -Path $IconPath) {
+        if (Test-Path -LiteralPath $IconPath) {
             Write-Verbose -Message "Using icon image from path: $IconPath."
             $Icon = New-IntuneWin32AppIcon -FilePath $IconPath
         }
@@ -65,7 +65,8 @@ function Import-VcIntuneApplication {
 
             # Check if the package already exists in Intune
             $AppDetails = Get-RequiredVcRedistUpdatesFromIntune -VcList $VcRedist
-            if ($null -eq $AppDetails -or $AppDetails.UpdateRequired -eq $true) {
+            $ImportRequired = ($null -eq $AppDetails -or $AppDetails.UpdateRequired -eq $true)
+            if ($ImportRequired -and $PSCmdlet.ShouldProcess("$($VcRedist.Name) $($VcRedist.Version) $($VcRedist.Architecture)", "Import Intune Win32 app")) {
 
                 # Package MSI as .intunewin file
                 $OutputFolder = New-TemporaryFolder
@@ -78,16 +79,8 @@ function Import-VcIntuneApplication {
                 Write-Verbose -Message "Created IntuneWin package: $($Package.Path)."
 
                 # Requirement rule
-                switch ($VcRedist.Architecture) {
-                    "x86" { $Architecture = "All" }
-                    "x64" { $Architecture = "x64" }
-                    default {
-                        $Architecture = "All"
-                        continue
-                    }
-                }
                 $params = @{
-                    Architecture                   = $Architecture
+                    Architecture                   = Get-IntuneRequirementArchitecture -Architecture $VcRedist.Architecture
                     MinimumSupportedWindowsRelease = $IntuneManifest.RequirementRule.MinimumRequiredOperatingSystem
                     MinimumFreeDiskSpaceInMB       = $IntuneManifest.RequirementRule.SizeInMBValue
                 }
@@ -135,9 +128,9 @@ function Import-VcIntuneApplication {
 
                 # Clean up the temporary intunewin package
                 Write-Verbose -Message "Removing temporary output folder: $OutputFolder."
-                Remove-Item -Path $OutputFolder -Recurse -Force -ErrorAction "SilentlyContinue"
+                Remove-Item -LiteralPath $OutputFolder -Recurse -Force -ErrorAction "SilentlyContinue"
             }
-            else {
+            elseif (-not $ImportRequired) {
                 Write-Verbose -Message "No update required for $($VcRedist.Name) $($VcRedist.Version) $($VcRedist.Architecture)."
             }
         }

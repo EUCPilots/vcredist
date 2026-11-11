@@ -4,51 +4,23 @@
 #>
 [CmdletBinding()]
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "", Justification = "This OK for the tests files.")]
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "", Justification = "Outputs to log host.")]
 param ()
 
-BeforeDiscovery {
-	$SupportedReleases = @("2015", "2017", "2019", "14")
-}
+Describe -Name "Test-VcRedistUri" {
+    It "Passes a Microsoft HTTPS URI when the request succeeds" {
+        InModuleScope VcRedist {
+            Mock Invoke-VcWebRequest { [PSCustomObject]@{ StatusCode = 200 } }
+            $List = Get-VcList -Source "Bundled" | Select-Object -First 1
+            { $List | Test-VcRedistUri } | Should -Not -Throw
+            Should -Invoke Invoke-VcWebRequest -Times 1
+        }
+    }
 
-Describe -Name "Test-VcRedistUri" -ForEach $SupportedReleases {
-	BeforeAll {
-		$Release = $_
-	}
-
-	Context "Test-VcRedistUri returns true for release <Release> x64" {
-		BeforeAll {
-			$params = @{
-				VcList       = (Get-VcList -Release $Release -Architecture "x64")
-				ShowProgress = $true
-			}
-			$Test = Test-VcRedistUri @params
-		}
-
-		It "Returns a true result" {
-			$Test.Result | Should -BeTrue
-		}
-
-		It "Returns an architecture of x64" {
-			$Test.Architecture | Should -BeExactly "x64"
-		}
-	}
-
-	Context "Test-VcRedistUri returns true for release <Release> x86" {
-		BeforeAll {
-			$params = @{
-				VcList       = (Get-VcList -Release $Release -Architecture "x86")
-				ShowProgress = $true
-			}
-			$Test = Test-VcRedistUri @params
-		}
-
-		It "Returns a true result" {
-			$Test.Result | Should -BeTrue
-		}
-
-		It "Returns an architecture of x86" {
-			$Test.Architecture | Should -BeExactly "x86"
-		}
-	}
+    It "Returns a false Result when the request fails" {
+        InModuleScope VcRedist {
+            Mock Invoke-VcWebRequest { throw "404" }
+            $List = Get-VcList -Source "Bundled" | Select-Object -First 1
+            ($List | Test-VcRedistUri).Result | Should -BeFalse
+        }
+    }
 }

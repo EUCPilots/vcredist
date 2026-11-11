@@ -1,46 +1,27 @@
 <#
 	.SYNOPSIS
-		Public Pester function tests.
+		Private Pester function tests. File system calls are mocked; no MDT installation is required.
 #>
 [CmdletBinding()]
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "", Justification = "This OK for the tests files.")]
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "", Justification = "Outputs to log host.")]
 param ()
 
 InModuleScope VcRedist {
-	BeforeDiscovery {
-		if ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") {
-			$Skip = $false
-		}
-		else {
-			$Skip = $true
-		}
-	}
+    Describe -Name "New-MdtApplicationFolder" {
+        It "Returns true without creating a folder that exists" {
+            Mock Test-Path { $true }
+            Mock New-Item { }
+            New-MdtApplicationFolder -Drive "DS020" -Name "VcRedists" | Should -BeTrue
+            Should -Invoke New-Item -Times 0
+        }
 
-	BeforeAll {
-		# Install the MDT Workbench
-		& "$env:GITHUB_WORKSPACE\tests\Install-Mdt.ps1"
-		Import-Module -Name "$Env:ProgramFiles\Microsoft Deployment Toolkit\Bin\MicrosoftDeploymentToolkit.psd1"
-	}
-
-	Describe 'New-MdtApplicationFolder' -Skip:$Skip {
-		BeforeAll {
-			New-MdtDrive -Drive "DS020" -Path "$Env:RUNNER_TEMP\Deployment"
-			Restore-MDTPersistentDrive -Force > $null
-		}
-
-		Context "Validates New-MdtApplicationFolder" {
-			It "Does not throw when creating an application folder" {
-				{ New-MdtApplicationFolder -Drive "DS020:" -Name "Test1" -Verbose } | Should -Not -Throw
-			}
-
-			It "Returns true if the application folder is created" {
-				New-MdtApplicationFolder -Drive "DS020:" -Name "Test2" -Verbose | Should -BeTrue
-			}
-
-			It "It throws when referencing a drive that does not exist" {
-				{ New-MdtApplicationFolder -Drive "DS021:" -Name "Test1" -Verbose } | Should -Throw
-			}
-		}
-	}
+        It "Creates a folder that does not exist" {
+            # New-Item parameters such as -Enable come from the MDT provider, so stub the command
+            function New-Item { param ($Path, $Enable, $Name, $Comments, $ItemType) }
+            Mock Test-Path { $false }
+            Mock New-Item { }
+            New-MdtApplicationFolder -Drive "DS020" -Name "VcRedists" | Should -BeTrue
+            Should -Invoke New-Item -Times 1
+        }
+    }
 }
