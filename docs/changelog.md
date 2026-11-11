@@ -1,5 +1,41 @@
 # Changelog
 
+## 5.0.2-beta
+
+* Separates read-only module validation, release PR preparation, and approved Gallery publishing
+* Tests release artifacts on Windows PowerShell 5.1 and PowerShell 7, on x64 and ARM64
+* Validates release versions, tags, documentation and Gallery package contents; supports safe publication retries
+* Fixes module test discovery and custom analyzer keyword detection
+
+### Breaking changes
+
+* Minimum PowerShell version is now 5.1; TLS 1.2 is enforced for web requests
+* The manifest is now a flat schema: `{ SchemaVersion, Updated, Entries[] }`, each entry has a `Supported` boolean
+* Removes the `-Path` parameter from `Get-VcList` and `Export-VcManifest`; the manifest source can't be overridden
+* Removes the exported `$VcManifest` variable
+* `Get-VcList -Export` filters by `Supported`, `Unsupported` or `All`; the default is `Supported`
+* `Save-VcRedist` and `Install-VcRedist` require installers to be downloaded over HTTPS from an allowed Microsoft host and to carry a valid Microsoft Authenticode signature
+* v4 of the module no longer receives manifest updates
+
+### New and improved
+
+* The manifest is read from the repository (`v5` branch during development) and falls back to the bundled manifest on any failure; use `-Source Auto|Remote|Bundled`. The bundled manifest is used if the remote one is older
+* Adds `-Proxy` and `-ProxyCredential` to every function that fetches or downloads content
+* `Install-VcRedist` and `Uninstall-VcRedist` check installer exit codes; `Uninstall-VcRedist` expands environment variables in uninstall commands
+* `Invoke-Process` fails on unexpected exit codes
+* `Import-VcIntuneApplication` and `Export-VcManifest` support `-WhatIf`
+* `Import-VcIntuneApplication -ImportAsUpdate` adds an older-runtime file-version requirement based on each package's detection file (#204)
+* Corrects the bundled detection file names for the 2012 and 2013 redistributables
+* `Save-VcRedist` creates the `-Path` folder if it does not exist and fails before downloading if it cannot (#219)
+* Web requests use a `VcRedist/<version> (...)` user agent instead of the Chrome browser user agent
+* Fixes `Import-VcIntuneApplication` requirement rule architecture: `All` is no longer valid, x86 packages now use `x64x86`, and ARM64 packages use `arm64` (#207)
+* Fixes `New-VcMdtBundle` and `Update-VcMdtBundle` `-WhatIf` target, and the ConfigMgr location restore in `Import-VcConfigMgrApplication`
+* MDT tests now use stubs and mocks; `tests/Install-Mdt.ps1` is removed
+
+### Deprecated
+
+* The MDT functions (`Import-VcMdtApplication`, `New-VcMdtBundle`, `Update-VcMdtApplication`, `Update-VcMdtBundle`) warn that they are deprecated
+
 ## 4.1.527
 
 * Update Visual C++ Redistributables to `14.51.36247.0`

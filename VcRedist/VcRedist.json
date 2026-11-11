@@ -15,5 +15,19 @@
         "Privacy": "https://go.microsoft.com/fwlink/?LinkId=521839",
         "Docs": "https://visualstudio.microsoft.com/vs/support/",
         "IntuneWinAppUtil": "https://raw.githubusercontent.com/microsoft/Microsoft-Win32-Content-Prep-Tool/master/IntuneWinAppUtil.exe"
+    },
+    "Manifest": {
+        "Uri": "https://raw.githubusercontent.com/EUCPilots/vcredist/v5/VcRedist/VisualCRedistributables.json",
+        "SupportedSchemaMajor": 1,
+        "TimeoutSeconds": 10
+    },
+    "Download": {
+        "AllowedHosts": [
+            "download.microsoft.com",
+            "download.visualstudio.microsoft.com",
+            "aka.ms"
+        ],
+        "SignerSubject": "Microsoft Corporation",
+        "TimeoutSeconds": 600
     }
 }

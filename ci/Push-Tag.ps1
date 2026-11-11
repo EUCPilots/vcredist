@@ -1,13 +1,13 @@
 <#
     .SYNOPSIS
-        Set a tag and push
+        Requests the gated publishing workflow instead of pushing unvalidated tags.
 #>
 [CmdletBinding()]
-param()
+param ()
 
-$Path = Resolve-Path -Path (((Get-Item (Split-Path -Parent -Path $MyInvocation.MyCommand.Definition)).Parent).FullName)
-$Module = Test-ModuleManifest -Path "$Path/VcRedist/VcRedist.psd1"
-if ($null -ne $Module) {
-    git tag "v$($Module.Version.ToString())"
-    git push origin --tags
-}
+$ErrorActionPreference = "Stop"
+$Metadata = & (Join-Path -Path $PSScriptRoot -ChildPath "Get-ReleaseMetadata.ps1") -RequireDocumentation
+$Sha = git rev-parse HEAD
+if ($LASTEXITCODE -ne 0) { throw "Could not determine the release commit." }
+gh workflow run publish-module.yml --ref main -f "tag=$($Metadata.Tag)" -f "commit=$Sha"
+if ($LASTEXITCODE -ne 0) { throw "Could not dispatch the gated publishing workflow." }

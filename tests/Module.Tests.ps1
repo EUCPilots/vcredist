@@ -8,23 +8,21 @@
 param ()
 
 BeforeDiscovery {
+    $ModulePath = Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath "VcRedist"
+    $ScriptCases = Get-ChildItem -Path $ModulePath -Recurse -Include "*.ps1", "*.psm1", "*.psd1" |
+        ForEach-Object { @{ File = $_ } }
+    $FunctionCases = Get-ChildItem -Path $ModulePath -Recurse -Filter "*.ps1" |
+        ForEach-Object { @{ File = $_ } }
 }
 
 Describe -Name "General module validation" {
     Context "Validation" {
-        BeforeAll {
-            $scripts = Get-ChildItem -Path "$env:GITHUB_WORKSPACE\VcRedist" -Recurse -Include "*.ps1", "*.psm1", "*.psd1"
-
-            # TestCases are splatted to the script so we need hashtables
-            $testCase = $scripts | ForEach-Object { @{file = $_ } }
-        }
-
-        It "Script <file> should exist" -TestCases $testCase {
+        It "Script <file> should exist" -TestCases $ScriptCases {
             param($file)
             $file.FullName | Should -Exist
         }
 
-        It "Script <file> should be valid PowerShell" -TestCases $testCase {
+        It "Script <file> should be valid PowerShell" -TestCases $ScriptCases {
             param($file)
             $contents = Get-Content -Path $file.FullName -ErrorAction "Stop"
             $errors = $null
@@ -36,25 +34,20 @@ Describe -Name "General module validation" {
 
 Describe -Name "function validation" {
     Context "Validation" {
-        BeforeEach {
-            $scripts = Get-ChildItem -Path "$env:GITHUB_WORKSPACE\VcRedist" -Recurse -Include "*.ps1"
-            $testCase = $scripts | ForEach-Object { @{file = $_ } }
-        }
-
-        It "Script <file> should only contain one function" -TestCases $testCase {
+        It "Script <file> should only contain one function" -TestCases $FunctionCases {
             param($file)
             $contents = Get-Content -Path $file.FullName -ErrorAction "Stop"
             $describes = [Management.Automation.Language.Parser]::ParseInput($contents, [ref]$null, [ref]$null)
-            $test = $describes.FindAll( { $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] }, $true)
+            $test = @($describes.EndBlock.Statements | Where-Object { $_ -is [System.Management.Automation.Language.FunctionDefinitionAst] })
             $test.Count | Should -Be 1
         }
 
-        It "<file> should match function name" -TestCases $testCase {
+        It "<file> should match function name" -TestCases $FunctionCases {
             param($file)
             $contents = Get-Content -Path $file.FullName -ErrorAction "Stop"
             $describes = [Management.Automation.Language.Parser]::ParseInput($contents, [ref]$null, [ref]$null)
-            $test = $describes.FindAll( { $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] }, $true)
-            $test[0].name | Should -Match $file.Name
+            $test = @($describes.EndBlock.Statements | Where-Object { $_ -is [System.Management.Automation.Language.FunctionDefinitionAst] })
+            $test[0].name | Should -BeExactly $file.BaseName
         }
     }
 }

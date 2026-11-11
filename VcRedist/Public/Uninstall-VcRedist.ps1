@@ -26,7 +26,7 @@ function Uninstall-VcRedist {
 
     begin {
         # Get script elevation status
-        [System.Boolean] $Elevated = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+        [System.Boolean] $Elevated = Test-Elevated
         if ($Elevated -eq $false) {
             $Msg = "Uninstalling the Visual C++ Redistributables requires elevation. The current Windows PowerShell session is not running as Administrator. Start Windows PowerShell by using the Run as Administrator option, and then try running the script again"
             throw [System.Management.Automation.ScriptRequiresException]::New($Msg)
@@ -48,6 +48,10 @@ function Uninstall-VcRedist {
 
         # Walk through each VcRedist and uninstall
         foreach ($VcRedist in $VcRedistsToRemove) {
+            $UninstallString = $null
+            $Result = $null
+            $State = $null
+            $params = $null
 
             # We could be passed an object from Get-VcList or Get InstalledVcRedist
             if ([System.String]::IsNullOrEmpty($VcRedist.UninstallString) -eq $false) {
@@ -61,54 +65,70 @@ function Uninstall-VcRedist {
                 $Msg = "Cannot find uninstall string. Please check object passed to this function."
                 throw [System.Management.Automation.PropertyNotFoundException]::New($Msg)
             }
+
+            # Build the uninstall command
+            if ($UninstallString -match "^\s*`"?msiexec(\.exe)?`"?\s") {
+                if ($VcRedist.ProductCode -notmatch "^\{[0-9A-Fa-f]{8}(-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}\}$") {
+                    Write-Warning -Message "Invalid product code for '$($VcRedist.Name)': '$($VcRedist.ProductCode)'."
+                    continue
+                }
+                Write-Verbose -Message "VcRedist uninstall uses Msiexec."
+                $params = @{
+                    FilePath     = "$Env:SystemRoot\System32\msiexec.exe"
+                    ArgumentList = "/uninstall $($VcRedist.ProductCode) /quiet /norestart"
+                }
+            }
             else {
-                # Build the uninstall command
-                switch -Regex ($UninstallString.ToLower()) {
-                    "^msiexec.*$" {
-                        Write-Verbose -Message "VcRedist uninstall uses Msiexec."
-                        $params = @{
-                            FilePath     = "$Env:SystemRoot\System32\msiexec.exe"
-                            ArgumentList = "/uninstall $($VcRedist.ProductCode) /quiet /norestart"
-                            PassThru     = $true
-                            Wait         = $true
-                            NoNewWindow  = $true
-                            Verbose      = $VerbosePreference
-                        }
-                    }
-                    default {
-                        $FilePath = [Regex]::Match($UninstallString, '\"(.*)\"').Captures.Groups[1].Value
-                        Write-Verbose -Message "VcRedist uninstall uses '$FilePath'."
-                        $params = @{
-                            FilePath     = $FilePath
-                            ArgumentList = "/uninstall /quiet /norestart"
-                            PassThru     = $true
-                            Wait         = $true
-                            NoNewWindow  = $true
-                            Verbose      = $VerbosePreference
-                        }
+                # Split the command into the executable (quoted or not), expanding environment variables
+                $FilePath = $null
+                if ($UninstallString -match "^\s*`"([^`"]+)`"") { $FilePath = $Matches[1] }
+                elseif ($UninstallString -match "^\s*(\S+)") { $FilePath = $Matches[1] }
+                $FilePath = [System.Environment]::ExpandEnvironmentVariables([System.String]$FilePath)
+
+                if (-not (Test-Path -LiteralPath $FilePath -PathType "Leaf")) {
+                    Write-Warning -Message "Cannot find uninstaller '$FilePath' for $($VcRedist.Name) $($VcRedist.Version) $($VcRedist.Architecture)."
+                    $State = "Failed"
+                }
+                else {
+                    Write-Verbose -Message "VcRedist uninstall uses '$FilePath'."
+                    $params = @{
+                        FilePath     = $FilePath
+                        ArgumentList = "/uninstall /quiet /norestart"
                     }
                 }
+            }
 
-                if ($PSCmdlet.ShouldProcess($VcRedist.Name, "Uninstall")) {
-                    try {
-                        $Result = Start-Process @params
+            if ($null -ne $params -and $PSCmdlet.ShouldProcess($VcRedist.Name, "Uninstall")) {
+                try {
+                    $params.PassThru = $true
+                    $params.Wait = $true
+                    $params.NoNewWindow = $true
+                    $params.ErrorAction = "Stop"
+                    $Result = Start-Process @params
+
+                    # 3010: reboot required; 1641: reboot initiated; 1605: product not installed
+                    if (@(0, 1605, 1641, 3010) -contains $Result.ExitCode) {
                         $State = "Uninstalled"
                     }
-                    catch [System.Exception] {
-                        Write-Warning -Message "Failure in uninstalling $($VcRedist.Name) $($VcRedist.Version) $($VcRedist.Architecture)"
+                    else {
+                        Write-Warning -Message "Uninstall of $($VcRedist.Name) $($VcRedist.Version) $($VcRedist.Architecture) returned exit code $($Result.ExitCode)."
                         $State = "Failed"
                     }
-                    finally {
-                        $Object = [PSCustomObject] @{
-                            Name         = $VcRedist.Name
-                            Version      = $VcRedist.Version
-                            Release      = $VcRedist.Release
-                            Architecture = $VcRedist.Architecture
-                            State        = $State
-                            ExitCode     = $Result.ExitCode
-                        }
-                        Write-Output -InputObject $Object
-                    }
+                }
+                catch [System.Exception] {
+                    Write-Warning -Message "Failure in uninstalling $($VcRedist.Name) $($VcRedist.Version) $($VcRedist.Architecture): $($_.Exception.Message)"
+                    $State = "Failed"
+                }
+            }
+
+            if ($null -ne $State) {
+                [PSCustomObject] @{
+                    Name         = $VcRedist.Name
+                    Version      = $VcRedist.Version
+                    Release      = $VcRedist.Release
+                    Architecture = $VcRedist.Architecture
+                    State        = $State
+                    ExitCode     = $Result.ExitCode
                 }
             }
         }

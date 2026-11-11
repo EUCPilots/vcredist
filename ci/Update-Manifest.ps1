@@ -33,12 +33,12 @@ process {
         foreach ($Rls in $Release) {
 
             Write-Information -MessageData "$($PSStyle.Foreground.Cyan)`tInstalling VcRedist $Rls $Arch."
-            $VcList = Get-VcList -Release $Rls -Architecture $Arch | Save-VcRedist -Path $Path | Install-VcRedist -Silent
+            $VcList = Get-VcList -Release $Rls -Architecture $Arch -Source "Bundled" | Save-VcRedist -Path $Path | Install-VcRedist -Silent
             $InstalledVcRedists = Get-InstalledVcRedist | Where-Object { $_.Name -notmatch "Debug Runtime" }
 
             # Filter the VcRedists for the target version and compare against what has been installed
-            foreach ($ManifestVcRedist in ($CurrentManifest.Supported | `
-                        Where-Object { $_.Release -eq $Rls -and $_.Architecture -eq $Arch })) {
+            foreach ($ManifestVcRedist in ($CurrentManifest.Entries | `
+                        Where-Object { $_.Supported -eq $true -and $_.Release -eq $Rls -and $_.Architecture -eq $Arch })) {
 
                 if ($Arch -eq "arm64" -and $Rls -eq "14") {
                     $InstalledItem = $InstalledVcRedists | `
@@ -63,10 +63,9 @@ process {
                     Write-Information -MessageData "$($PSStyle.Foreground.Cyan)`tInstalled version:`t$($InstalledItem.Version)"
                     Write-Information -MessageData "$($PSStyle.Foreground.Cyan)`tManifest version:`t$($ManifestVcRedist.Version)"
 
-                    # Find the index of the VcRedist in the manifest and update it's properties
-                    $Index = $CurrentManifest.Supported::IndexOf($CurrentManifest.Supported.ProductCode, $ManifestVcRedist.ProductCode)
-                    $CurrentManifest.Supported[$Index].ProductCode = $InstalledItem.ProductCode
-                    $CurrentManifest.Supported[$Index].Version = $InstalledItem.Version
+                    # Update the manifest entry in place
+                    $ManifestVcRedist.ProductCode = $InstalledItem.ProductCode
+                    $ManifestVcRedist.Version = $InstalledItem.Version
 
                     # Create output variable
                     # $NewVersion = $InstalledItem.Version
@@ -85,7 +84,12 @@ process {
         # Convert to JSON and export to the module manifest
         try {
             Write-Information -MessageData "$($PSStyle.Foreground.Cyan)`tUpdating module manifest for VcRedist $($Output -join ", ")."
-            $CurrentManifest | ConvertTo-Json | Set-Content -Path $VcManifest -Force
+            $Updated = [ordered]@{
+                SchemaVersion = $CurrentManifest.SchemaVersion
+                Updated       = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+                Entries       = @($CurrentManifest.Entries)
+            }
+            $Updated | ConvertTo-Json -Depth 5 | Set-Content -Path $VcManifest -Force
         }
         catch {
             throw "Failed to convert to JSON and write back to the manifest."

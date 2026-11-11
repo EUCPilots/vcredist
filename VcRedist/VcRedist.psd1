@@ -12,7 +12,7 @@
 RootModule = 'VcRedist.psm1'
 
 # Version number of this module.
-ModuleVersion = '4.1.528'
+ModuleVersion = '5.0.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -33,7 +33,7 @@ Copyright = '(c) 2025 stealthpuppy. All rights reserved.'
 Description = 'A module for lifecycle management of the Microsoft Visual C++ Redistributables. VcRedist downloads, installs and uninstalls the supported (and unsupported) Redistributables. Use for local install, gold image creation and update, or importing as applications into the Microsoft Deployment Toolkit, Microsoft Configuration Manager or Microsoft Intune. Supports passive and silent installs, and uninstalls of the Visual C++ Redistributables.'
 
 # Minimum version of the PowerShell engine required by this module
-PowerShellVersion = '3.0'
+PowerShellVersion = '5.1'
 
 # Name of the PowerShell host required by this module
 # PowerShellHostName = ''
@@ -80,7 +80,7 @@ FunctionsToExport = @('Export-VcManifest', 'Get-InstalledVcRedist',
 CmdletsToExport = @()
 
 # Variables to export from this module
-VariablesToExport = 'VcManifest'
+VariablesToExport = @()
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
 AliasesToExport = 'Get-VcRedist', 'Export-VcXml', 'Import-VcCmApp', 'Import-VcMdtApp', 
@@ -104,7 +104,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = 'Redistributables','C++','VisualC','VisualStudio','MDT','ConfigMgr','SCCM','Intune','Windows'
+        Tags = 'Redistributables','C++','VisualC','VcRedist','VisualStudio','MDT','ConfigMgr','SCCM','Intune','Windows'
 
         # A URL to the license for this module.
         LicenseUri = 'https://github.com/aaronparker/vcredist/blob/main/LICENSE'
@@ -119,7 +119,7 @@ PrivateData = @{
         ReleaseNotes = 'https://vcredist.com/changelog/'
 
         # Prerelease string of this module
-        # Prerelease = ''
+        Prerelease = 'beta'
 
         # Flag to indicate whether the module requires explicit user acceptance for install/update/save
         # RequireLicenseAcceptance = $false

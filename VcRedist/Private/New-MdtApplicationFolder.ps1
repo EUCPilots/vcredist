@@ -23,11 +23,7 @@ function New-MdtApplicationFolder {
         [Parameter(Mandatory = $true, Position = 1)]
         [ValidateNotNullOrEmpty()]
         [Alias("AppFolder")]
-        [System.String] $Name,
-
-        [Parameter(Mandatory = $false, Position = 2)]
-        [ValidateNotNullOrEmpty()]
-        [System.String] $Description = "Microsoft Visual C++ Redistributables imported with VcRedist https://vcredist.com/"
+        [System.String] $Name
     )
 
     # Create a sub-folder below Applications to import the Redistributables into
@@ -45,7 +41,6 @@ function New-MdtApplicationFolder {
                     Path        = "$($Drive)\Applications"
                     Enable      = "True"
                     Name        = $Name
-                    Comments    = $Description
                     ItemType    = "Folder"
                     ErrorAction = "Continue"
                 }

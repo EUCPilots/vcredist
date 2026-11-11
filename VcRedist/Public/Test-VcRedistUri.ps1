@@ -4,7 +4,7 @@ function Test-VcRedistUri {
     #>
     [Alias("Test-VcRedistDownload")]
     [OutputType([System.Management.Automation.PSObject])]
-    [CmdletBinding(SupportsShouldProcess = $true, HelpURI = "https://stealthpuppy.com/vcredist/test/", DefaultParameterSetName = "Path")]
+    [CmdletBinding(HelpURI = "https://stealthpuppy.com/vcredist/test/")]
     param (
         [Parameter(
             Mandatory = $true,
@@ -26,48 +26,40 @@ function Test-VcRedistUri {
     )
 
     begin {
-        # Disable the Invoke-WebRequest progress bar for faster downloads
-        if ($PSBoundParameters.ContainsKey("Verbose") -or ($PSBoundParameters.ContainsKey("ShowProgress"))) {
-            $ProgressPreference = [System.Management.Automation.ActionPreference]::Continue
-        }
-        else {
-            $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
-        }
-
-        # Enable TLS 1.2
-        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+        $ShowProgressBar = $PSBoundParameters.ContainsKey("Verbose") -or $PSBoundParameters.ContainsKey("ShowProgress")
     }
 
     process {
-        # Loop through each object and download to the target path
         foreach ($Object in $VcList) {
 
-            #region Validate the URI property and find the output filename
-            if ([System.Boolean]($Object.URI) -eq $false) {
+            # Validate the URI property
+            if ([System.String]::IsNullOrEmpty($Object.URI)) {
                 $Msg = "Object does not have valid URI property."
                 throw [System.Management.Automation.PropertyNotFoundException]::New($Msg)
             }
-            #endregion
 
-            try {
-                $params = @{
-                    Uri             = $Object.URI
-                    Method          = "HEAD"
-                    UseBasicParsing = $true
-                    ErrorAction     = "SilentlyContinue"
+            $Result = $false
+            if (Test-VcDownloadUri -Uri $Object.URI) {
+                try {
+                    $params = @{
+                        Uri          = $Object.URI
+                        Method       = "Head"
+                        TimeoutSec   = 30
+                        ShowProgress = $ShowProgressBar
+                    }
+                    if ($PSBoundParameters.ContainsKey("Proxy")) { $params.Proxy = $Proxy }
+                    if ($PSBoundParameters.ContainsKey("ProxyCredential")) { $params.ProxyCredential = $ProxyCredential }
+                    Invoke-VcWebRequest @params | Out-Null
+                    $Result = $true
                 }
-                if ($PSBoundParameters.ContainsKey("Proxy")) {
-                    $params.Proxy = $Proxy
+                catch [System.Exception] {
+                    Write-Verbose -Message "Request failed for '$($Object.URI)': $($_.Exception.Message)"
                 }
-                if ($PSBoundParameters.ContainsKey("ProxyCredential")) {
-                    $params.ProxyCredential = $ProxyCredential
-                }
-                $Result = $true
-                Invoke-WebRequest @params | Out-Null
             }
-            catch [System.Exception] {
-                $Result = $false
+            else {
+                Write-Warning -Message "URI is not HTTPS or not on the allowed host list: '$($Object.URI)'."
             }
+
             $PSObject = [PSCustomObject] @{
                 Result       = $Result
                 Release      = $Object.Release
@@ -79,10 +71,5 @@ function Test-VcRedistUri {
         }
     }
 
-    end {
-        if ($PSCmdlet.ShouldProcess("Remove variables")) {
-            if (Test-Path -Path Variable:params) { Remove-Variable -Name "params" -ErrorAction "SilentlyContinue" }
-            Remove-Variable -Name "OutPath", "OutFile" -ErrorAction "SilentlyContinue"
-        }
-    }
+    end { }
 }

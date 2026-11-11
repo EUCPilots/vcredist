@@ -35,6 +35,8 @@ function New-VcMdtBundle {
     )
 
     begin {
+        Write-Warning -Message "MDT is no longer supported by Microsoft. This function is deprecated and may be removed in a future release of VcRedist."
+
         # If running on PowerShell Core, error and exit.
         if (Test-PSCore) {
             $Msg = "We can't load the MicrosoftDeploymentToolkit module on PowerShell Core. Please use PowerShell 5.1."
@@ -43,7 +45,7 @@ function New-VcMdtBundle {
 
         # Import the MDT module and create a PS drive to MdtPath
         if (Import-MdtModule) {
-            if ($PSCmdlet.ShouldProcess($Path, "Mapping")) {
+            if ($PSCmdlet.ShouldProcess($MdtPath, "Mapping")) {
                 try {
                     $params = @{
                         Drive       = $MdtDrive

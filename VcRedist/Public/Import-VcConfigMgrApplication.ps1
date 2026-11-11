@@ -107,141 +107,131 @@ function Import-VcConfigMgrApplication {
             throw [System.Management.Automation.PropertyNotFoundException]::New($Msg)
         }
 
-        foreach ($VcRedist in $VcList) {
-            Write-Verbose -Message "Importing VcRedist app: 'Visual C++ Redistributable $($VcRedist.Release) $($VcRedist.Architecture) $($VcRedist.Version)'"
+        $OriginalLocation = Get-Location
+        try {
+            foreach ($VcRedist in $VcList) {
+                Write-Verbose -Message "Importing VcRedist app: 'Visual C++ Redistributable $($VcRedist.Release) $($VcRedist.Architecture) $($VcRedist.Version)'"
 
-            # Import as an application into ConfigMgr
-            if ($PSCmdlet.ShouldProcess("'$($VcRedist.Name)' in $CMPath", "Import ConfigMgr app")) {
+                # Import as an application into ConfigMgr
+                if ($PSCmdlet.ShouldProcess("'$($VcRedist.Name)' in $CMPath", "Import ConfigMgr app")) {
 
-                # Create the ConfigMgr application with properties from the manifest
-                if ((Get-Item -Path $DestCmFolder).PSDrive.Name -eq $SMSSiteCode) {
-                    if ($PSCmdlet.ShouldProcess($VcRedist.Name + " $($VcRedist.Architecture)", "Creating ConfigMgr application")) {
+                    # Create the ConfigMgr application with properties from the manifest
+                    if ((Get-Item -Path $DestCmFolder).PSDrive.Name -eq $SMSSiteCode) {
+                        if ($PSCmdlet.ShouldProcess($VcRedist.Name + " $($VcRedist.Architecture)", "Creating ConfigMgr application")) {
 
-                        # Build paths
-                        $SourceFolder = $(Split-Path -Path $VcRedist.Path -Parent)
-                        $ContentLocation = [System.IO.Path]::Combine($CMPath, $VcRedist.Release, $VcRedist.Version, $VcRedist.Architecture)
+                            # Build paths
+                            $SourceFolder = $(Split-Path -Path $VcRedist.Path -Parent)
+                            $ContentLocation = [System.IO.Path]::Combine($CMPath, $VcRedist.Release, $VcRedist.Version, $VcRedist.Architecture)
 
-                        #region Copy VcRedists to the network location. Use robocopy for robustness
-                        if ($PSBoundParameters.ContainsKey($NoCopy)) {
-                            Write-Warning -Message "NoCopy specified, skipping copy to $ContentLocation. Ensure VcRedists exist in the target."
-                        }
-                        else {
-                            if ($PSCmdlet.ShouldProcess("'$($VcRedist.Path)' to '$($ContentLocation)'", "Copy")) {
-                                if (!(Test-Path -Path $ContentLocation)) {
-                                    New-Item -Path $ContentLocation -ItemType "Directory" -ErrorAction "SilentlyContinue" | Out-Null
-                                }
-
-                                try {
-                                    $invokeProcessParams = @{
-                                        FilePath     = "$env:SystemRoot\System32\robocopy.exe"
-                                        ArgumentList = "`"$SourceFolder`" `"$ContentLocation`" `"$(Split-Path -Path $VcRedist.Path -Leaf)`" /S /XJ /R:1 /W:1 /NP /NJH /NJS /NFL /NDL"
+                            #region Copy VcRedists to the network location. Use robocopy for robustness
+                            if ($PSBoundParameters.ContainsKey("NoCopy")) {
+                                Write-Warning -Message "NoCopy specified, skipping copy to $ContentLocation. Ensure VcRedists exist in the target."
+                            }
+                            else {
+                                if ($PSCmdlet.ShouldProcess("'$($VcRedist.Path)' to '$($ContentLocation)'", "Copy")) {
+                                    if (!(Test-Path -Path $ContentLocation)) {
+                                        New-Item -Path $ContentLocation -ItemType "Directory" -ErrorAction "SilentlyContinue" | Out-Null
                                     }
-                                    Invoke-Process @invokeProcessParams | Out-Null
-                                }
-                                catch [System.Exception] {
-                                    $Err = $_
-                                    $Target = Join-Path -Path $ContentLocation -ChildPath $(Split-Path -Path $VcRedist.Path -Leaf)
-                                    if (Test-Path -Path $Target) {
-                                        Write-Verbose -Message "Copy successful: '$Target'."
+
+                                    try {
+                                        $invokeProcessParams = @{
+                                            FilePath     = "$env:SystemRoot\System32\robocopy.exe"
+                                            ArgumentList = "`"$SourceFolder`" `"$ContentLocation`" `"$(Split-Path -Path $VcRedist.Path -Leaf)`" /S /XJ /R:1 /W:1 /NP /NJH /NJS /NFL /NDL"
+                                            SuccessExitCodes = 0..7
+                                        }
+                                        Invoke-Process @invokeProcessParams | Out-Null
                                     }
-                                    else {
-                                        Write-Warning -Message "Failed to copy Redistributables from '$($VcRedist.Path)' to '$ContentLocation'."
-                                        Write-Warning -Message $Err.Exception.Message
+                                    catch [System.Exception] {
+                                        $Err = $_
+                                        $Target = Join-Path -Path $ContentLocation -ChildPath $(Split-Path -Path $VcRedist.Path -Leaf)
+                                        if (Test-Path -Path $Target) {
+                                            Write-Verbose -Message "Copy successful: '$Target'."
+                                        }
+                                        else {
+                                            Write-Warning -Message "Failed to copy Redistributables from '$($VcRedist.Path)' to '$ContentLocation'."
+                                            Write-Warning -Message $Err.Exception.Message
+                                        }
                                     }
                                 }
                             }
-                        }
-                        #endregion
+                            #endregion
 
-                        # Change to the SMS Application folder before importing the applications
-                        try {
-                            Write-Verbose -Message "Setting location to: $DestCmFolder"
-                            Push-Location -Path $DestCmFolder -ErrorAction "Continue"
-                        }
-                        catch [System.Exception] {
-                            Pop-Location
-                            Write-Warning -Message "Failed to set location to: $DestCmFolder."
-                            Write-Warning -Message $_.Exception.Message
-                        }
+                            $app = $null
+                            try {
+                                # Change to the SMS Application folder before importing the applications
+                                Write-Verbose -Message "Setting location to: $DestCmFolder"
+                                Set-Location -Path $DestCmFolder -ErrorAction "Stop"
 
-                        try {
-                            # Splat New-CMApplication parameters, add the application and move into the target folder
-                            $ApplicationName = "Visual C++ Redistributable $($VcRedist.Release) $($VcRedist.Architecture) $($VcRedist.Version)"
-                            $cmAppParams = @{
-                                Name              = $ApplicationName
-                                Description       = "$Publisher $ApplicationName imported by $($MyInvocation.MyCommand). https://vcredist.com"
-                                SoftwareVersion   = $VcRedist.Version
-                                LinkText          = $VcRedist.URL
-                                Publisher         = $Publisher
-                                Keyword           = $Keyword
-                                ReleaseDate       = $(Get-Date -Format (([System.Globalization.CultureInfo]::CurrentUICulture.DateTimeFormat).ShortDatePattern))
-                                PrivacyUrl        = "https://go.microsoft.com/fwlink/?LinkId=521839"
-                                UserDocumentation = "https://visualstudio.microsoft.com/vs/support/"
+                                # Splat New-CMApplication parameters, add the application and move into the target folder
+                                $ApplicationName = "Visual C++ Redistributable $($VcRedist.Release) $($VcRedist.Architecture) $($VcRedist.Version)"
+                                $cmAppParams = @{
+                                    Name              = $ApplicationName
+                                    Description       = "$Publisher $ApplicationName imported by $($MyInvocation.MyCommand). https://vcredist.com"
+                                    SoftwareVersion   = $VcRedist.Version
+                                    LinkText          = $VcRedist.URL
+                                    Publisher         = $Publisher
+                                    Keyword           = $Keyword
+                                    ReleaseDate       = [System.DateTime]::Today
+                                    PrivacyUrl        = "https://go.microsoft.com/fwlink/?LinkId=521839"
+                                    UserDocumentation = "https://visualstudio.microsoft.com/vs/support/"
+                                }
+                                $app = New-CMApplication @cmAppParams
+                                if ($AppFolder) {
+                                    $app | Move-CMObject -FolderPath $DestCmFolder -ErrorAction "SilentlyContinue" | Out-Null
+                                }
                             }
-                            $app = New-CMApplication @cmAppParams
-                            if ($AppFolder) {
-                                $app | Move-CMObject -FolderPath $DestCmFolder -ErrorAction "SilentlyContinue" | Out-Null
+                            catch [System.Exception] {
+                                Write-Warning -Message "Failed to create application $($VcRedist.Name) $($VcRedist.Architecture)."
+                                Write-Warning -Message $_.Exception.Message
                             }
-                        }
-                        catch [System.Exception] {
-                            Pop-Location
-                            Write-Warning -Message "Failed to create application $($VcRedist.Name) $($VcRedist.Architecture)."
-                            Write-Warning -Message $_.Exception.Message
-                        }
-                        # Write app detail to the pipeline
-                        Write-Output -InputObject $app
-                    }
-
-                    # Add a deployment type to the application
-                    if ($PSCmdlet.ShouldProcess($("$($VcRedist.Name) $($VcRedist.Architecture) $($VcRedist.Version)"), "Adding deployment type")) {
-
-                        # Change to the SMS Application folder before importing the applications
-                        try {
-                            Write-Verbose -Message "Set location to: $DestCmFolder"
-                            Push-Location -Path $DestCmFolder -ErrorAction "Continue"
-                        }
-                        catch [System.Exception] {
-                            Pop-Location
-                            Write-Warning -Message "Failed to set location to: $DestCmFolder."
-                            Write-Warning -Message $_.Exception.Message
+                            # Write app detail to the pipeline
+                            if ($null -ne $app) { Write-Output -InputObject $app }
                         }
 
-                        try {
-                            # Create the detection method
-                            $params = @{
-                                Hive    = "LocalMachine"
-                                Is64Bit = if ($VcRedist.UninstallKey -eq "64") { $true } else { $false }
-                                KeyName = "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$($VcRedist.ProductCode)"
+                        # Add a deployment type to the application
+                        if ((($null -ne $app) -or $WhatIfPreference) -and $PSCmdlet.ShouldProcess($("$($VcRedist.Name) $($VcRedist.Architecture) $($VcRedist.Version)"), "Adding deployment type")) {
+
+                            try {
+                                # Change to the SMS Application folder before importing the applications
+                                Write-Verbose -Message "Set location to: $DestCmFolder"
+                                Set-Location -Path $DestCmFolder -ErrorAction "Stop"
+
+                                # Create the detection method
+                                $params = @{
+                                    Hive    = "LocalMachine"
+                                    Is64Bit = if ($VcRedist.UninstallKey -eq "64") { $true } else { $false }
+                                    KeyName = "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$($VcRedist.ProductCode)"
+                                }
+                                $detectionClause = New-CMDetectionClauseRegistryKey @params
+
+                                # Splat Add-CMScriptDeploymentType parameters and add the application deployment type
+                                $cmScriptParams = @{
+                                    ApplicationName          = $ApplicationName
+                                    InstallCommand           = "$(Split-Path -Path $VcRedist.Path -Leaf) $(if ($Silent) { $VcRedist.SilentInstall } else { $VcRedist.Install })"
+                                    ContentLocation          = $ContentLocation
+                                    AddDetectionClause       = $detectionClause
+                                    DeploymentTypeName       = "SCRIPT_$($VcRedist.Name)"
+                                    UserInteractionMode      = "Hidden"
+                                    UninstallCommand         = $VcRedist.SilentUninstall
+                                    LogonRequirementType     = "WhetherOrNotUserLoggedOn"
+                                    InstallationBehaviorType = "InstallForSystem"
+                                    Comment                  = "Generated by $($MyInvocation.MyCommand). https://vcredist.com"
+                                }
+                                Add-CMScriptDeploymentType @cmScriptParams | Out-Null
                             }
-                            $detectionClause = New-CMDetectionClauseRegistryKey @params
-
-                            # Splat Add-CMScriptDeploymentType parameters and add the application deployment type
-                            $cmScriptParams = @{
-                                ApplicationName          = $ApplicationName
-                                InstallCommand           = "$(Split-Path -Path $VcRedist.Path -Leaf) $(if ($Silent) { $VcRedist.SilentInstall } else { $VcRedist.Install })"
-                                ContentLocation          = $ContentLocation
-                                AddDetectionClause       = $detectionClause
-                                DeploymentTypeName       = "SCRIPT_$($VcRedist.Name)"
-                                UserInteractionMode      = "Hidden"
-                                UninstallCommand         = $VcRedist.SilentUninstall
-                                LogonRequirementType     = "WhetherOrNotUserLoggedOn"
-                                InstallationBehaviorType = "InstallForSystem"
-                                Comment                  = "Generated by $($MyInvocation.MyCommand). https://vcredist.com"
+                            catch [System.Exception] {
+                                Write-Warning -Message "Failed to add script deployment type."
+                                Write-Warning -Message $_.Exception.Message
                             }
-                            Add-CMScriptDeploymentType @cmScriptParams | Out-Null
-                        }
-                        catch [System.Exception] {
-                            Pop-Location
-                            Write-Warning -Message "Failed to add script deployment type."
-                            Write-Warning -Message $_.Exception.Message
                         }
                     }
                 }
             }
         }
+        finally {
+            Set-Location -Path $OriginalLocation
+        }
     }
 
-    end {
-        Pop-Location
-    }
+    end { }
 }
