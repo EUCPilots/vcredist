@@ -12,7 +12,7 @@
 RootModule = 'VcRedist.psm1'
 
 # Version number of this module.
-ModuleVersion = '4.1.529'
+ModuleVersion = '5.0.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -104,7 +104,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = 'Redistributables','C++','VisualC','VisualStudio','MDT','ConfigMgr','SCCM','Intune','Windows'
+        Tags = 'Redistributables','C++','VisualC','VcRedist','VisualStudio','MDT','ConfigMgr','SCCM','Intune','Windows'
 
         # A URL to the license for this module.
         LicenseUri = 'https://github.com/aaronparker/vcredist/blob/main/LICENSE'
@@ -119,7 +119,7 @@ PrivateData = @{
         ReleaseNotes = 'https://vcredist.com/changelog/'
 
         # Prerelease string of this module
-        # Prerelease = ''
+        Prerelease = 'beta'
 
         # Flag to indicate whether the module requires explicit user acceptance for install/update/save
         # RequireLicenseAcceptance = $false
