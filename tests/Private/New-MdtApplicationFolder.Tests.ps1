@@ -16,8 +16,8 @@ InModuleScope VcRedist {
         }
 
         It "Creates a folder that does not exist" {
-            # New-Item parameters such as -Enable come from the MDT provider, so stub the command
-            function New-Item { param ($Path, $Enable, $Name, $Comments, $ItemType) }
+            # MDT provider parameters such as -Enable come from the provider.
+            function New-Item { param ($Path, $Enable, $Name, $ItemType) }
             Mock Test-Path { $false }
             Mock New-Item { }
             New-MdtApplicationFolder -Drive "DS020" -Name "VcRedists" | Should -BeTrue
