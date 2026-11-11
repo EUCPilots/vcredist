@@ -43,6 +43,16 @@ $ManifestPath = Join-Path -Path $Root -ChildPath "VcRedist/VcRedist.psd1"
 $Functions = @(Get-ChildItem -LiteralPath (Join-Path -Path $Root -ChildPath "VcRedist/Public") -Filter "*.ps1" | Select-Object -ExpandProperty BaseName)
 Update-ModuleManifest -Path $ManifestPath -ModuleVersion $Version -Prerelease $Prerelease -FunctionsToExport $Functions -ErrorAction "Stop"
 $Encoding = New-Object -TypeName "System.Text.UTF8Encoding" -ArgumentList $false
+if (-not $Prerelease) {
+    # Update-ModuleManifest ignores an empty prerelease value, so remove any previous label for stable releases.
+    $ManifestContent = [System.IO.File]::ReadAllText($ManifestPath)
+    $ManifestContent = [System.Text.RegularExpressions.Regex]::Replace(
+        $ManifestContent,
+        '(?m)^[ \t]*Prerelease[ \t]*=[ \t]*(?:''[^'']*''|"[^"]*")[ \t]*\r?\n',
+        ""
+    )
+    [System.IO.File]::WriteAllText($ManifestPath, $ManifestContent, $Encoding)
+}
 [System.IO.File]::WriteAllText($ChangelogPath, ($Changelog -replace "(?m)^## VERSION\r?$", "## $FullVersion"), $Encoding)
 [System.IO.File]::WriteAllText((Join-Path -Path $Root -ChildPath "docs/versions.md"), $Document, $Encoding)
 & (Join-Path -Path $PSScriptRoot -ChildPath "Get-ReleaseMetadata.ps1") -Root $Root -RequireDocumentation

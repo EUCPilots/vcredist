@@ -98,6 +98,7 @@ Describe "Release metadata and preparation" {
         $After.PowerShellVersion | Should -BeExactly $Before.PowerShellVersion
         @($After.AliasesToExport) | Should -Be @($Before.AliasesToExport)
         @($After.FunctionsToExport) | Should -Be @($Before.FunctionsToExport)
+        $After.PrivateData.PSData.Prerelease | Should -BeNullOrEmpty
         (& $MetadataScript -Root $Root -RequireDocumentation).Version | Should -BeExactly $NewVersion
     }
 
