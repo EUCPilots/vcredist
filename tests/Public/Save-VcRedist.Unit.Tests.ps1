@@ -27,6 +27,58 @@ Describe -Name "Save-VcRedist unit tests" {
         }
     }
 
+    It "Downloads without signature validation when explicitly requested" {
+        InModuleScope VcRedist -Parameters @{ Item = $Item; Dir = (Join-Path -Path $TestDrive -ChildPath "skip-download") } {
+            Mock Invoke-VcWebRequest { Set-Content -LiteralPath $OutFile -Value "x" }
+            Mock Assert-VcSignature { throw "Signature validation should not run" }
+            $Result = $Item | Save-VcRedist -Path $Dir -SkipAuthenticodeValidation
+            $Result.Path | Should -Exist
+            Should -Invoke Invoke-VcWebRequest -Times 1 -Exactly
+            Should -Invoke Assert-VcSignature -Times 0 -Exactly
+        }
+    }
+
+    It "Validates an explicitly false skip switch" {
+        InModuleScope VcRedist -Parameters @{ Item = $Item; Dir = (Join-Path -Path $TestDrive -ChildPath "skip-false") } {
+            Mock Invoke-VcWebRequest { Set-Content -LiteralPath $OutFile -Value "x" }
+            Mock Assert-VcSignature { throw "Invalid signature" }
+            { $Item | Save-VcRedist -Path $Dir -SkipAuthenticodeValidation:$false } | Should -Throw "*Invalid signature*"
+            Should -Invoke Assert-VcSignature -Times 1 -Exactly
+            Get-ChildItem -Path $Dir -Recurse -File | Should -BeNullOrEmpty
+        }
+    }
+
+    It "Validates an existing installer by default" {
+        InModuleScope VcRedist -Parameters @{ Item = $Item; Dir = (Join-Path -Path $TestDrive -ChildPath "existing-default") } {
+            $TargetDir = Join-Path -Path $Dir -ChildPath "2022/14.0.0.1/x64"
+            New-Item -Path $TargetDir -ItemType "Directory" -Force | Out-Null
+            $Target = Join-Path -Path $TargetDir -ChildPath "vc_redist.x64.exe"
+            Set-Content -LiteralPath $Target -Value "x"
+            Mock Get-Item { [PSCustomObject]@{ VersionInfo = [PSCustomObject]@{ ProductVersion = "14.0.0.1" } } } -ParameterFilter { $LiteralPath -eq $Target }
+            Mock Invoke-VcWebRequest { throw "Download should not run" }
+            Mock Assert-VcSignature { throw "Invalid signature" }
+            { $Item | Save-VcRedist -Path $Dir } | Should -Throw "*Invalid signature*"
+            Should -Invoke Assert-VcSignature -Times 1 -Exactly -ParameterFilter { $Path -eq $Target }
+            Should -Invoke Invoke-VcWebRequest -Times 0 -Exactly
+        }
+    }
+
+    It "Reuses an existing installer without signature validation when explicitly requested" {
+        InModuleScope VcRedist -Parameters @{ Item = $Item; Dir = (Join-Path -Path $TestDrive -ChildPath "existing-skip") } {
+            $TargetDir = Join-Path -Path $Dir -ChildPath "2022/14.0.0.1/x64"
+            New-Item -Path $TargetDir -ItemType "Directory" -Force | Out-Null
+            $Target = Join-Path -Path $TargetDir -ChildPath "vc_redist.x64.exe"
+            Set-Content -LiteralPath $Target -Value "x"
+            Mock Get-Item { [PSCustomObject]@{ VersionInfo = [PSCustomObject]@{ ProductVersion = "14.0.0.1" } } } -ParameterFilter { $LiteralPath -eq $Target }
+            Mock Invoke-VcWebRequest { throw "Download should not run" }
+            Mock Assert-VcSignature { throw "Signature validation should not run" }
+            $Result = $Item | Save-VcRedist -Path $Dir -SkipAuthenticodeValidation
+            $Result.Path | Should -Be $Target
+            Should -Invoke Invoke-VcWebRequest -Times 0 -Exactly
+            Should -Invoke Assert-VcSignature -Times 0 -Exactly
+        }
+    }
+
     It "Passes the proxy to the download" {
         InModuleScope VcRedist -Parameters @{ Item = $Item; Dir = (New-Item -Path "$TestDrive/p" -ItemType "Directory").FullName } {
             Mock Invoke-VcWebRequest { Set-Content -LiteralPath $OutFile -Value "x" }
@@ -75,7 +127,7 @@ Describe -Name "Save-VcRedist unit tests" {
         InModuleScope VcRedist -Parameters @{ Dir = (New-Item -Path "$TestDrive/h" -ItemType "Directory").FullName } {
             Mock Invoke-VcWebRequest { }
             $Bad = [PSCustomObject]@{ Name = "x"; Release = "2022"; Version = "1.0.0.0"; Architecture = "x64"; URI = "https://example.com/vc.exe" }
-            { $Bad | Save-VcRedist -Path $Dir } | Should -Throw
+            { $Bad | Save-VcRedist -Path $Dir -SkipAuthenticodeValidation } | Should -Throw
             Should -Invoke Invoke-VcWebRequest -Times 0
         }
     }

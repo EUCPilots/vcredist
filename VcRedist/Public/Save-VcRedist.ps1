@@ -30,7 +30,10 @@ function Save-VcRedist {
         [System.String] $UserAgent = (Get-VcUserAgent),
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter] $ShowProgress
+        [System.Management.Automation.SwitchParameter] $ShowProgress,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter] $SkipAuthenticodeValidation
     )
 
     begin {
@@ -107,7 +110,12 @@ function Save-VcRedist {
                         if ($PSBoundParameters.ContainsKey("ProxyCredential")) { $iwrParams.ProxyCredential = $ProxyCredential }
                         Invoke-VcWebRequest @iwrParams | Out-Null
 
-                        Assert-VcSignature -Path $TempFile | Out-Null
+                        if (-not $SkipAuthenticodeValidation) {
+                            Assert-VcSignature -Path $TempFile | Out-Null
+                        }
+                        else {
+                            Write-Verbose -Message "Skipping Authenticode validation: $TargetVcRedist."
+                        }
                         Move-Item -LiteralPath $TempFile -Destination $TargetVcRedist -Force -ErrorAction "Stop"
                     }
                     catch {
@@ -123,7 +131,12 @@ function Save-VcRedist {
             }
             else {
                 Write-Verbose -Message "VcRedist exists: $TargetVcRedist."
-                Assert-VcSignature -Path $TargetVcRedist | Out-Null
+                if (-not $SkipAuthenticodeValidation) {
+                    Assert-VcSignature -Path $TargetVcRedist | Out-Null
+                }
+                else {
+                    Write-Verbose -Message "Skipping Authenticode validation: $TargetVcRedist."
+                }
             }
 
             # Return the $VcList object on the pipeline with the Path property pointing to the downloaded file
