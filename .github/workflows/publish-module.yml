@@ -68,6 +68,9 @@ jobs:
   validate:
     needs: release-metadata
     uses: ./.github/workflows/validate-module.yml
+    permissions:
+      contents: read
+      checks: write
     with:
       ref: ${{ needs.release-metadata.outputs.sha }}
       run_intune: true
