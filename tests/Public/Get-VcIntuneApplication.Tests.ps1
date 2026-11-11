@@ -5,11 +5,9 @@
 [CmdletBinding()]
 param ()
 
-Describe "Get-VcIntuneApplication" {
+Describe "Get-VcIntuneApplication" -Tag "Intune" {
     BeforeAll {
-        foreach ($Module in @("MSAL.PS", "IntuneWin32App")) {
-            Install-Module -Name $Module -Force
-        }
+        & "$env:GITHUB_WORKSPACE/ci/Install-IntuneTestDependencies.ps1"
 
         try {
             # Authenticate to the Graph API

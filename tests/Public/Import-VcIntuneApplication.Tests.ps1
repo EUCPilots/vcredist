@@ -30,9 +30,7 @@ Describe -Name "Import-VcIntuneApplication without IntuneWin32App" -ForEach $Sup
 
 Describe -Name "Import-VcIntuneApplication imports VcRedists" -ForEach $SupportedReleases -Skip:$Skip {
 	BeforeAll {
-		foreach ($Module in @("MSAL.PS", "IntuneWin32App")) {
-			Install-Module -Name $Module -Force
-		}
+		& "$env:GITHUB_WORKSPACE/ci/Install-IntuneTestDependencies.ps1"
 	}
 
 	Context "Validate Import-VcIntuneApplication fail scenarios" {
