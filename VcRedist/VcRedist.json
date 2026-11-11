@@ -17,7 +17,7 @@
         "IntuneWinAppUtil": "https://raw.githubusercontent.com/microsoft/Microsoft-Win32-Content-Prep-Tool/master/IntuneWinAppUtil.exe"
     },
     "Manifest": {
-        "Uri": "https://raw.githubusercontent.com/EUCPilots/vcredist/v5/VcRedist/VisualCRedistributables.json",
+        "Uri": "https://raw.githubusercontent.com/EUCPilots/vcredist/main/VcRedist/VisualCRedistributables.json",
         "SupportedSchemaMajor": 1,
         "TimeoutSeconds": 10
     },
