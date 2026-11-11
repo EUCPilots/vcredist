@@ -12,7 +12,7 @@
 RootModule = 'VcRedist.psm1'
 
 # Version number of this module.
-ModuleVersion = '5.0.1'
+ModuleVersion = '5.0.2'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -27,7 +27,7 @@ Author = 'Aaron Parker'
 CompanyName = 'stealthpuppy'
 
 # Copyright statement for this module
-Copyright = '(c) 2025 stealthpuppy. All rights reserved.'
+Copyright = '(c) 2026 EUC Pilots, stealthpuppy. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'A module for lifecycle management of the Microsoft Visual C++ Redistributables. VcRedist downloads, installs and uninstalls the supported (and unsupported) Redistributables. Use for local install, gold image creation and update, or importing as applications into the Microsoft Deployment Toolkit, Microsoft Configuration Manager or Microsoft Intune. Supports passive and silent installs, and uninstalls of the Visual C++ Redistributables.'
@@ -99,7 +99,7 @@ AliasesToExport = 'Get-VcRedist', 'Export-VcXml', 'Import-VcCmApp', 'Import-VcMd
 PrivateData = @{
 
     #RepositorySourceLocation of this module
-    RepositorySourceLocation = 'https://github.com/aaronparker/vcredist/'
+    RepositorySourceLocation = 'https://github.com/EUCPilots/vcredist/'
 
     PSData = @{
 
@@ -107,7 +107,7 @@ PrivateData = @{
         Tags = 'Redistributables','C++','VisualC','VcRedist','VisualStudio','MDT','ConfigMgr','SCCM','Intune','Windows'
 
         # A URL to the license for this module.
-        LicenseUri = 'https://github.com/aaronparker/vcredist/blob/main/LICENSE'
+        LicenseUri = 'https://github.com/EUCPilots/vcredist/blob/main/LICENSE'
 
         # A URL to the main website for this project.
         ProjectUri = 'https://vcredist.com/'
