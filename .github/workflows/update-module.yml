@@ -36,8 +36,9 @@ jobs:
           $ErrorActionPreference = "Stop"
           if ($env:GITHUB_REF -ne "refs/heads/main") { throw "Dispatch release preparation from main." }
           if (-not $env:GH_TOKEN) { throw "Configure PAT with contents and pull request write access so release PR checks are triggered." }
-          if ($env:ISSUE -notmatch "^[1-9][0-9]*$") { throw "Issue must be an open issue number." }
-          $State = gh issue view $env:ISSUE --repo "$env:GITHUB_REPOSITORY" --json state --jq .state
+          if ($env:ISSUE -notmatch "^#?[1-9][0-9]*$") { throw "Issue must be an open issue number." }
+          $IssueNumber = $env:ISSUE.TrimStart("#")
+          $State = gh issue view $IssueNumber --repo "$env:GITHUB_REPOSITORY" --json state --jq .state
           if ($LASTEXITCODE -ne 0 -or $State -ne "OPEN") { throw "The release must reference an open issue." }
       - uses: actions/checkout@v7
         with:
@@ -90,9 +91,10 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Could not commit release changes." }
           git push --set-upstream origin $env:RELEASE_BRANCH
           if ($LASTEXITCODE -ne 0) { throw "Could not push release branch. If it already exists, use its PR instead of rerunning preparation." }
+          $IssueNumber = $env:ISSUE.TrimStart("#")
           $Body = Get-Content ./.github/PULL_REQUEST_TEMPLATE.md -Raw
           $Body = $Body.Replace("Please describe your pull request in detail.", "Prepare VcRedist $env:RELEASE_VERSION with matching manifest, changelog and bundled redistributable documentation.")
-          $Body = $Body.Replace("_Please link to the issue here_", "Related to #$env:ISSUE")
+          $Body = $Body.Replace("_Please link to the issue here_", "Related to #$IssueNumber")
           $Body = $Body.Replace("Why is this change required? What problem does it solve?", "Separate version preparation from development validation and require release validation before publishing.")
           $Body += "`n`nPreparation validation: ``Invoke-Pester -Configuration `$Config`` passed on Windows PowerShell 7, selecting ``tests/Module.Tests.ps1`` and ``tests/CI`` with ``Run.Throw = `$true``. Full CI is pending; merge only after Validation gate passes.`n"
           $BodyPath = Join-Path $env:RUNNER_TEMP "release-pr-body.md"
