@@ -1,5 +1,12 @@
 # Changelog
 
+## VERSION
+
+* Separates read-only module validation, release PR preparation, and approved Gallery publishing
+* Tests release artifacts on Windows PowerShell 5.1 and PowerShell 7, on x64 and ARM64
+* Validates release versions, tags, documentation and Gallery package contents; supports safe publication retries
+* Fixes module test discovery and custom analyzer keyword detection
+
 ## 4.1.527
 
 * Update Visual C++ Redistributables to `14.51.36247.0`
