@@ -41,7 +41,7 @@ Describe -Name "AMD64 specific tests" -Skip:$SkipAmd {
             }
             New-Item -Path $Path -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" > $Null
 
-            $VcList = Get-VcList -Release $Release | Save-VcRedist -Path $Path
+            $VcList = Get-VcList -Release $Release -Architecture @("x86", "x64") | Save-VcRedist -Path $Path
             Install-VcRedist -VcList $VcList -Silent | Out-Null
         }
 
@@ -74,11 +74,15 @@ Describe -Name "ARM64 specific tests" -Skip:$SkipArm {
             }
             New-Item -Path $Path -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" > $Null
 
-            $VcList = Get-VcList -Release $Release | Save-VcRedist -Path $Path
+            $VcList = Get-VcList -Release $Release -Architecture @("x86", "arm64") | Save-VcRedist -Path $Path
             Install-VcRedist -VcList $VcList -Silent | Out-Null
         }
 
         Context "Uninstall VcRedist <Release>" {
+            It "Uninstalls the VcRedist <Release> x86" {
+                { Uninstall-VcRedist -Release $Release -Architecture "x86" -Confirm:$false } | Should -Not -Throw
+            }
+
             It "Uninstalls the VcRedist <Release> arm64" {
                 { Uninstall-VcRedist -Release $Release -Architecture "arm64" -Confirm:$false } | Should -Not -Throw
             }
