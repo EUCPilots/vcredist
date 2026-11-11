@@ -1,83 +1,82 @@
 <#
 	.SYNOPSIS
-		Public Pester function tests.
+		Mocked tests for Import-VcConfigMgrApplication. ConfigMgr cmdlets are stubbed; no site is required.
 #>
 [CmdletBinding()]
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "", Justification = "This OK for the tests files.")]
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "", Justification = "Outputs to log host.")]
 param ()
 
-BeforeDiscovery {
-	$SupportedReleases = @("14")
-	if ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") {
-		$Skip = $false
-	}
-	else {
-		$Skip = $true
-	}
-}
+InModuleScope VcRedist {
+    Describe -Name "Import-VcConfigMgrApplication" {
+        BeforeAll {
+            function New-CMApplication { param ($Name, $Description, $SoftwareVersion, $LinkText, $Publisher, $Keyword, $ReleaseDate, $PrivacyUrl, $UserDocumentation) }
+            function Move-CMObject { param ([Parameter(ValueFromPipeline)] $InputObject, $FolderPath) process { $InputObject } }
+            function New-CMDetectionClauseRegistryKey { param ($Hive, $Is64Bit, $KeyName) }
+            function Add-CMScriptDeploymentType { param ($ApplicationName, $InstallCommand, $ContentLocation, $AddDetectionClause, $DeploymentTypeName, $UserInteractionMode, $UninstallCommand, $LogonRequirementType, $InstallationBehaviorType, $Comment) }
 
-Describe -Name "Validate Import-VcConfigMgrApplication" -ForEach $SupportedReleases -Skip:$Skip {
-	BeforeAll {
-		$Release = $_
-		$Path = $([System.IO.Path]::Combine($env:RUNNER_TEMP, "Downloads"))
-		New-Item -Path $Path -ItemType "Directory" -ErrorAction "SilentlyContinue" | Out-Null
-		$VcList = Save-VcRedist -Path $Path -VcList (Get-VcList -Release $Release)
-	}
+            $Item = Get-VcList -Source "Bundled" | Select-Object -First 1
+            $Item | Add-Member -MemberType "NoteProperty" -Name "Path" -Value (Join-Path -Path $TestDrive -ChildPath "vc_redist.exe") -Force
+            $Params = @{ VcList = $Item; CMPath = $TestDrive; SMSSiteCode = "LAB"; NoCopy = $true; Silent = $true }
+        }
 
-	Context "ConfigMgr is not installed" {
-		It "Should throw when the ConfigMgr module is not installed" {
-			$params = @{
-				VcList      = $VcList
-				CMPath      = $env:RUNNER_TEMP
-				SMSSiteCode = "LAB"
-				AppFolder   = "VcRedists"
-				Silent      = $true
-				NoCopy      = $true
-				Publisher   = "Microsoft"
-				Keyword     = "Visual C++ Redistributable"
-			}
-			{ Import-VcConfigMgrApplication @params } | Should -Throw
-		}
-	}
+        BeforeEach {
+            $env:SMS_ADMIN_UI_PATH = Join-Path -Path $TestDrive -ChildPath "bin"
+            Mock Get-ChildItem { [PSCustomObject]@{ FullName = "ConfigurationManager.psd1" } }
+            Mock Import-Module { }
+            Mock New-Item { }
+            Mock Get-Item { [PSCustomObject]@{ PSDrive = [PSCustomObject]@{ Name = "LAB" } } }
+            Mock Set-Location { }
+            Mock New-CMApplication { [PSCustomObject]@{ Name = "App" } }
+            Mock Move-CMObject { $InputObject }
+            Mock New-CMDetectionClauseRegistryKey { "clause" }
+            Mock Add-CMScriptDeploymentType { }
+        }
 
-	Context "ConfigMgr is not installed but env:SMS_ADMIN_UI_PATH set to a valid path" {
-		BeforeAll {
-			[Environment]::SetEnvironmentVariable("SMS_ADMIN_UI_PATH", "$env:RUNNER_TEMP")
-		}
+        AfterAll {
+            Remove-Item -Path "env:SMS_ADMIN_UI_PATH" -ErrorAction "SilentlyContinue"
+        }
 
-		It "Should throw when env:SMS_ADMIN_UI_PATH is valid but module does not exist" {
-			$params = @{
-				VcList      = $VcList
-				CMPath      = $env:RUNNER_TEMP
-				SMSSiteCode = "LAB"
-				AppFolder   = "VcRedists"
-				Silent      = $true
-				NoCopy      = $true
-				Publisher   = "Microsoft"
-				Keyword     = "Visual C++ Redistributable"
-			}
-			{ Import-VcConfigMgrApplication @params } | Should -Throw
-		}
-	}
+        It "Throws when SMS_ADMIN_UI_PATH is not set" {
+            Remove-Item -Path "env:SMS_ADMIN_UI_PATH" -ErrorAction "SilentlyContinue"
+            { Import-VcConfigMgrApplication @Params } | Should -Throw
+        }
 
-	Context "ConfigMgr is not installed but env:SMS_ADMIN_UI_PATH set to an invalid path" {
-		BeforeAll {
-			[Environment]::SetEnvironmentVariable("SMS_ADMIN_UI_PATH", "$env:RUNNER_TEMP\Test")
-		}
+        It "Throws when the ConfigurationManager module cannot be found" {
+            Mock Get-ChildItem { $null }
+            { Import-VcConfigMgrApplication @Params } | Should -Throw
+        }
 
-		It "Should throw when env:SMS_ADMIN_UI_PATH is invalid" {
-			$params = @{
-				VcList      = $VcList
-				CMPath      = $env:RUNNER_TEMP
-				SMSSiteCode = "LAB"
-				AppFolder   = "VcRedists"
-				Silent      = $true
-				NoCopy      = $true
-				Publisher   = "Microsoft"
-				Keyword     = "Visual C++ Redistributable"
-			}
-			{ Import-VcConfigMgrApplication @params } | Should -Throw
-		}
-	}
+        It "Creates the application and deployment type and returns the application" {
+            Import-VcConfigMgrApplication @Params | Should -Not -BeNullOrEmpty
+            Should -Invoke New-CMApplication -Times 1
+            Should -Invoke Add-CMScriptDeploymentType -Times 1
+        }
+
+        It "Restores the original location" {
+            $Before = Get-Location
+            Import-VcConfigMgrApplication @Params | Out-Null
+            Should -Invoke Set-Location -Times 1 -ParameterFilter { "$Path" -eq $Before.Path }
+        }
+
+        It "Restores the location and skips the deployment type when application creation fails" {
+            Mock New-CMApplication { throw "boom" }
+            $Before = Get-Location
+            Import-VcConfigMgrApplication @Params -WarningAction "SilentlyContinue" | Should -BeNullOrEmpty
+            Should -Invoke Add-CMScriptDeploymentType -Times 0
+            Should -Invoke Set-Location -Times 1 -ParameterFilter { "$Path" -eq $Before.Path }
+        }
+
+        It "Does not call ConfigMgr with -WhatIf" {
+            Import-VcConfigMgrApplication @Params -WhatIf | Out-Null
+            Should -Invoke New-CMApplication -Times 0
+        }
+
+        It "Copies content with robocopy success codes when NoCopy is not set" {
+            Mock Invoke-Process { }
+            $Copy = $Params.Clone()
+            $Copy.Remove("NoCopy")
+            Import-VcConfigMgrApplication @Copy | Out-Null
+            Should -Invoke Invoke-Process -Times 1 -ParameterFilter { $SuccessExitCodes -contains 7 }
+        }
+    }
 }
