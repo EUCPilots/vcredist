@@ -242,6 +242,10 @@ When beta testing is complete:
 
 ## Other workflows and recovery
 
+* For local preparation or metadata troubleshooting, add `-Verbose` to
+  `./ci/Update-Release.ps1 -Version <version> -Prerelease <label>` or
+  `./ci/Get-ReleaseMetadata.ps1 -RequireDocumentation`. Omit `-Prerelease`
+  for a stable release.
 * Publishing enables verbose diagnostics for the **Publish and verify Gallery
   contents** step. Expand that step in the Actions log to see metadata validation,
   dependency setup, package downloads, per-file SHA256 verification, retries, and

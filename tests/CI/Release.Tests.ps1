@@ -90,6 +90,34 @@ Describe "Release metadata and preparation" {
         (& $MetadataScript -Root $Root -RequireDocumentation -Tag "v1.0.1").FullVersion | Should -BeExactly "1.0.1"
     }
 
+    It "Emits opt-in preparation and metadata diagnostics without changing success output" {
+        $QuietOutput = @(& $MetadataScript -Root $Root -Verbose:$false 4>&1)
+        @($QuietOutput | Where-Object { $_ -is [System.Management.Automation.VerboseRecord] }).Count | Should -Be 0
+        @($QuietOutput | Where-Object { $_ -isnot [System.Management.Automation.VerboseRecord] }).Count | Should -Be 1
+
+        $QuietRoot = New-ReleaseFixture
+        $QuietOutput = @(& $UpdateScript -Root $QuietRoot -Version "1.0.1" -Verbose:$false 4>&1)
+        @($QuietOutput | Where-Object { $_ -is [System.Management.Automation.VerboseRecord] }).Count | Should -Be 0
+        @($QuietOutput | Where-Object { $_ -isnot [System.Management.Automation.VerboseRecord] }).Count | Should -Be 1
+
+        $Output = @(& $UpdateScript -Root $Root -Version "1.0.1" -Verbose 4>&1)
+        $Messages = @($Output | Where-Object { $_ -is [System.Management.Automation.VerboseRecord] } | ForEach-Object { $_.Message }) -join "`n"
+        $Messages | Should -Match "Comparing requested release '1.0.1' with current release '1.0.0'"
+        $Messages | Should -Match "Changelog heading 'VERSION' has nonempty release notes"
+        $Messages | Should -Match "Writing changelog and bundled version documentation"
+        $Messages | Should -Match "Release metadata validated: version '1.0.1'"
+        $Results = @($Output | Where-Object { $_ -isnot [System.Management.Automation.VerboseRecord] })
+        $Results.Count | Should -Be 1
+        $Results[0].FullVersion | Should -BeExactly "1.0.1"
+
+        $Output = @(& $MetadataScript -Root $Root -RequireDocumentation -Tag "v1.0.1" -Verbose 4>&1)
+        $Messages = @($Output | Where-Object { $_ -is [System.Management.Automation.VerboseRecord] } | ForEach-Object { $_.Message }) -join "`n"
+        $Messages | Should -Match "Requested tag 'v1.0.1' matches"
+        $Messages | Should -Match "Changelog contains nonempty notes"
+        $Messages | Should -Match "Version documentation matches the bundled manifest"
+        @($Output | Where-Object { $_ -isnot [System.Management.Automation.VerboseRecord] }).Count | Should -Be 1
+    }
+
     It "Prepares the real module without changing its identity or export contract" {
         $Root = Join-Path $TestDrive "real-module"
         New-Item -Path $Root -ItemType Directory -Force | Out-Null
