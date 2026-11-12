@@ -73,6 +73,14 @@ InModuleScope VcRedist {
 			$M = New-TestManifest; $M.Entries[0].Version = "abc"
 			{ Test-VcManifest -Manifest $M } | Should -Throw "*Version*"
 		}
+		It "Rejects an invalid release" {
+			$M = New-TestManifest; $M.Entries[0].Release = "../14"
+			{ Test-VcManifest -Manifest $M } | Should -Throw "*Release*"
+		}
+		It "Rejects an invalid architecture" {
+			$M = New-TestManifest; $M.Entries[0].Architecture = "AMD64"
+			{ Test-VcManifest -Manifest $M } | Should -Throw "*Architecture*"
+		}
 		It "Throws for a URI that is not HTTPS" {
 			$M = New-TestManifest; $M.Entries[0].URI = "http://download.microsoft.com/a.exe"
 			{ Test-VcManifest -Manifest $M -AllowedHosts @("download.microsoft.com") } | Should -Throw "*allowed host*"

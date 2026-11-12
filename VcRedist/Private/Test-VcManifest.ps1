@@ -41,6 +41,12 @@ function Test-VcManifest {
                 throw "Manifest entry '$($Entry.Name)' is missing a value for '$Property'."
             }
         }
+        if ($Entry.Release -isnot [System.String] -or $Entry.Release -notmatch "^[0-9]{2,4}$") {
+            throw "Manifest entry '$($Entry.Name)' has an invalid Release '$($Entry.Release)'."
+        }
+        if ($Entry.Architecture -isnot [System.String] -or @("x86", "x64", "arm64") -notcontains $Entry.Architecture) {
+            throw "Manifest entry '$($Entry.Name)' has an invalid Architecture '$($Entry.Architecture)'."
+        }
         try {
             Get-VcSupportedArchitecture -SupportedArchitecture $Entry.SupportedArchitecture | Out-Null
         }

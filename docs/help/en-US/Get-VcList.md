@@ -27,7 +27,7 @@ Get-VcList [[-Export] <String>] [-Source <String>] [-Proxy <String>] [-ProxyCred
 ## DESCRIPTION
 This function reads the Visual C++ Redistributables listed in an internal manifest into an object that can be passed to other VcRedist functions.
 
-The manifest is read from the VcRedist repository, so manifest updates do not require a module update. If the remote manifest is unavailable, invalid or older than the bundled manifest, the manifest included in the module is used.
+By default, `-Source Auto` tries to read the manifest from the VcRedist repository, so manifest updates do not require a module update. If the remote manifest is unavailable, invalid or older than the bundled manifest, the manifest included in the module is used. Because the remote manifest may change independently of the installed module, use `-Source Bundled` for repeatable offline runs.
 
 A complete listing of the supported and all known redistributables is included in the module.
 By default, Get-VcList will only return a list of the supported Visual C++ Redistributables.
@@ -182,7 +182,7 @@ Accept wildcard characters: False
 ```
 
 ### -Source
-Selects the manifest source. `Auto` (default) uses the remote manifest hosted in the VcRedist repository and falls back to the bundled manifest on any failure, or when the remote manifest is older. `Remote` fails if the remote manifest is unavailable. `Bundled` uses only the manifest included in the module.
+Selects the manifest source. `Auto` (default) tries the remote manifest hosted in the VcRedist repository and falls back to the bundled manifest on any failure, or when the remote manifest is older. `Remote` fails if the remote manifest is unavailable. `Bundled` uses only the manifest included in the module and is recommended for repeatable offline runs.
 
 ```yaml
 Type: String
