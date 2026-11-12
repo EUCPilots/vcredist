@@ -131,4 +131,44 @@ Describe -Name "Save-VcRedist unit tests" {
             Should -Invoke Invoke-VcWebRequest -Times 0
         }
     }
+
+    It "Rejects an object with missing required properties" {
+        InModuleScope VcRedist -Parameters @{ Dir = $TestDrive } {
+            $Invalid = [PSCustomObject]@{
+                URI          = "https://download.microsoft.com/vc_redist.x64.exe"
+                Release      = "2019"
+                Architecture = "x64"
+            }
+
+            { $Invalid | Save-VcRedist -Path $Dir } | Should -Throw "*Property 'Version' is missing or empty.*"
+        }
+    }
+
+    It "Rejects an invalid release path component" {
+        InModuleScope VcRedist -Parameters @{ Dir = $TestDrive } {
+            $Invalid = [PSCustomObject]@{
+                URI          = "https://download.microsoft.com/vc_redist.x64.exe"
+                Release      = "../outside"
+                Version      = "14.29.30156.0"
+                Architecture = "x64"
+            }
+
+            { $Invalid | Save-VcRedist -Path $Dir } | Should -Throw "*Release '../outside' is invalid.*"
+        }
+    }
+
+    It "Reports a file where a release directory is expected" {
+        InModuleScope VcRedist -Parameters @{ Dir = $TestDrive } {
+            $ReleasePath = Join-Path -Path $Dir -ChildPath "2019"
+            New-Item -Path $ReleasePath -ItemType "File" | Out-Null
+            $Valid = [PSCustomObject]@{
+                URI          = "https://download.microsoft.com/vc_redist.x64.exe"
+                Release      = "2019"
+                Version      = "14.29.30156.0"
+                Architecture = "x64"
+            }
+
+            { $Valid | Save-VcRedist -Path $Dir } | Should -Throw "*is a file, not a folder.*"
+        }
+    }
 }

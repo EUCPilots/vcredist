@@ -59,6 +59,23 @@ function Save-VcRedist {
 
     process {
         foreach ($VcRedist in $VcList) {
+            foreach ($Property in @("URI", "Release", "Version", "Architecture")) {
+                $PropertyInfo = $VcRedist.PSObject.Properties[$Property]
+                if ($null -eq $PropertyInfo -or [System.String]::IsNullOrWhiteSpace([System.String]$PropertyInfo.Value)) {
+                    throw [System.Management.Automation.ValidationMetadataException]::New("Property '$Property' is missing or empty.")
+                }
+            }
+            if ($VcRedist.Release -notmatch "^[0-9]{2,4}$") {
+                throw [System.Management.Automation.ValidationMetadataException]::New("Release '$($VcRedist.Release)' is invalid.")
+            }
+            $ParsedVersion = $null
+            if (-not [System.Version]::TryParse([System.String]$VcRedist.Version, [ref] $ParsedVersion)) {
+                throw [System.Management.Automation.ValidationMetadataException]::New("Version '$($VcRedist.Version)' is invalid.")
+            }
+            if (@("x86", "x64", "arm64") -notcontains $VcRedist.Architecture) {
+                throw [System.Management.Automation.ValidationMetadataException]::New("Architecture '$($VcRedist.Architecture)' is invalid.")
+            }
+
             # Only download from HTTPS URIs on the allowed host list
             if (-not (Test-VcDownloadUri -Uri $VcRedist.URI)) {
                 throw [System.Management.Automation.ValidationMetadataException]::New("The URI is not HTTPS or not on the allowed host list: '$($VcRedist.URI)'.")
@@ -66,8 +83,15 @@ function Save-VcRedist {
 
             # Build the path to save the VcRedist into; Create the folder to store the downloaded file. Skip if it exists
             $TargetDirectory = [System.IO.Path]::Combine($FullPath, $VcRedist.Release, $VcRedist.Version, $VcRedist.Architecture)
+            $DirectoryToCheck = $FullPath
+            foreach ($Segment in @($VcRedist.Release, $VcRedist.Version, $VcRedist.Architecture)) {
+                $DirectoryToCheck = Join-Path -Path $DirectoryToCheck -ChildPath $Segment
+                if (Test-Path -LiteralPath $DirectoryToCheck -PathType "Leaf") {
+                    throw [System.IO.IOException]::New("The path '$DirectoryToCheck' is a file, not a folder.")
+                }
+            }
             Write-Verbose -Message "Test directory exists: $TargetDirectory."
-            if (Test-Path -LiteralPath $TargetDirectory) {
+            if (Test-Path -LiteralPath $TargetDirectory -PathType "Container") {
                 Write-Verbose -Message "Directory exists: $TargetDirectory. Skipping."
             }
             else {
@@ -77,7 +101,12 @@ function Save-VcRedist {
             }
 
             # Test whether the VcRedist is already on disk
-            $TargetVcRedist = Join-Path -Path $TargetDirectory -ChildPath $(Split-Path -Path $VcRedist.URI -Leaf)
+            $ParsedUri = [System.Uri]$VcRedist.URI
+            $InstallerName = [System.IO.Path]::GetFileName($ParsedUri.LocalPath)
+            if ([System.String]::IsNullOrWhiteSpace($InstallerName)) {
+                throw [System.Management.Automation.ValidationMetadataException]::New("The URI does not contain an installer filename: '$($VcRedist.URI)'.")
+            }
+            $TargetVcRedist = Join-Path -Path $TargetDirectory -ChildPath $InstallerName
             Write-Verbose -Message "Testing for downloaded VcRedist: $($TargetVcRedist)"
 
             $DownloadRequired = $true
@@ -88,6 +117,7 @@ function Save-VcRedist {
                     Write-Verbose -Message "Manifest version: '$($VcRedist.Version)' > file version: '$ExistingVersion'."
                 }
                 else {
+                    # Evergreen manifest URIs can return an installer newer than the manifest version.
                     Write-Verbose -Message "Manifest version: '$($VcRedist.Version)' matches file version: '$ExistingVersion'."
                     $DownloadRequired = $false
                 }
@@ -117,9 +147,6 @@ function Save-VcRedist {
                             Write-Verbose -Message "Skipping Authenticode validation: $TargetVcRedist."
                         }
                         Move-Item -LiteralPath $TempFile -Destination $TargetVcRedist -Force -ErrorAction "Stop"
-                    }
-                    catch {
-                        throw $_
                     }
                     finally {
                         if (Test-Path -LiteralPath $TempFile) { Remove-Item -LiteralPath $TempFile -Force -ErrorAction "SilentlyContinue" }
