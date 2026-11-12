@@ -12,7 +12,7 @@ InModuleScope VcRedist {
             function New-CMApplication { param ($Name, $Description, $SoftwareVersion, $LinkText, $Publisher, $Keyword, $ReleaseDate, $PrivacyUrl, $UserDocumentation) }
             function Move-CMObject { param ([Parameter(ValueFromPipeline)] $InputObject, $FolderPath) process { $InputObject } }
             function New-CMDetectionClauseRegistryKey { param ($Hive, $Is64Bit, $KeyName) }
-            function Add-CMScriptDeploymentType { param ($ApplicationName, $InstallCommand, $ContentLocation, $AddDetectionClause, $DeploymentTypeName, $UserInteractionMode, $UninstallCommand, $LogonRequirementType, $InstallationBehaviorType, $Comment) }
+            function Add-CMScriptDeploymentType { param ($ApplicationName, $InstallCommand, $ContentLocation, $AddDetectionClause, $AddRequirement, $DeploymentTypeName, $UserInteractionMode, $UninstallCommand, $LogonRequirementType, $InstallationBehaviorType, $Comment) }
 
             $Item = Get-VcList -Source "Bundled" | Select-Object -First 1
             $Item | Add-Member -MemberType "NoteProperty" -Name "Path" -Value (Join-Path -Path $TestDrive -ChildPath "vc_redist.exe") -Force
@@ -29,6 +29,7 @@ InModuleScope VcRedist {
             Mock New-CMApplication { [PSCustomObject]@{ Name = "App" } }
             Mock Move-CMObject { $InputObject }
             Mock New-CMDetectionClauseRegistryKey { "clause" }
+            Mock New-VcConfigMgrArchitectureRequirement { "architecture-rule" }
             Mock Add-CMScriptDeploymentType { }
         }
 
@@ -50,6 +51,10 @@ InModuleScope VcRedist {
             Import-VcConfigMgrApplication @Params | Should -Not -BeNullOrEmpty
             Should -Invoke New-CMApplication -Times 1
             Should -Invoke Add-CMScriptDeploymentType -Times 1
+            Should -Invoke Add-CMScriptDeploymentType -Times 1 -ParameterFilter { $AddRequirement -eq "architecture-rule" }
+            Should -Invoke New-VcConfigMgrArchitectureRequirement -Times 1 -ParameterFilter {
+                ($SupportedArchitecture -join ",") -eq ($Item.SupportedArchitecture -join ",")
+            }
         }
 
         It "Passes ReleaseDate to ConfigMgr as a DateTime value" {
@@ -74,6 +79,22 @@ InModuleScope VcRedist {
         It "Does not call ConfigMgr with -WhatIf" {
             Import-VcConfigMgrApplication @Params -WhatIf | Out-Null
             Should -Invoke New-CMApplication -Times 0
+            Should -Invoke New-VcConfigMgrArchitectureRequirement -Times 0
+        }
+
+        It "Does not create an application when requirement creation fails" {
+            Mock New-VcConfigMgrArchitectureRequirement { throw "Cannot create requirement" }
+            { Import-VcConfigMgrApplication @Params } | Should -Throw "*Cannot create requirement*"
+            Should -Invoke New-CMApplication -Times 0
+            Should -Invoke Add-CMScriptDeploymentType -Times 0
+        }
+
+        It "Does not report an application when deployment type creation fails" {
+            Mock Add-CMScriptDeploymentType { throw "Deployment type failed" }
+            $Output = @()
+            { $Output = @(Import-VcConfigMgrApplication @Params -WarningAction "SilentlyContinue") } |
+                Should -Throw "*Deployment type failed*"
+            $Output | Should -BeNullOrEmpty
         }
 
         It "Copies content with robocopy success codes when NoCopy is not set" {
