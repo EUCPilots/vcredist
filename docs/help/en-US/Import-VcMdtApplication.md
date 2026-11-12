@@ -20,6 +20,7 @@ Import-VcMdtApplication [-VcList] <PSObject> [-Path <String>] [-MdtPath] <String
 
 ## DESCRIPTION
 Creates an application in a Microsoft Deployment Toolkit share for each Visual C++ Redistributable and includes properties such as target Silent command line, Platform and Uninstall key.
+Supported platforms are derived from the manifest. ARM64-only packages are skipped with a warning because MDT does not support ARM64 deployment.
 
 Use Get-VcList and Save-VcRedist to download the Redistributables and create the array for importing into MDT.
 

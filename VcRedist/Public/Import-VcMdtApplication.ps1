@@ -119,7 +119,15 @@ function Import-VcMdtApplication {
 
             # Set variables
             Write-Verbose -Message "processing: '$($VcRedist.Name) $($VcRedist.Architecture)'."
-            $supportedPlatform = if ($VcRedist.Architecture -eq "x86") {
+            $SupportedArchitecture = @(Get-VcSupportedArchitecture -SupportedArchitecture $VcRedist.SupportedArchitecture)
+            if ($SupportedArchitecture -notcontains "x86" -and $SupportedArchitecture -notcontains "AMD64") {
+                Write-Warning -Message "Skipping '$($VcRedist.Name) $($VcRedist.Architecture)': MDT does not support ARM64 deployment."
+                continue
+            }
+            if ($SupportedArchitecture -contains "x86" -and $SupportedArchitecture -notcontains "AMD64") {
+                throw "MDT platform restrictions cannot safely represent x86-only support for '$($VcRedist.Name)'."
+            }
+            $supportedPlatform = if ($SupportedArchitecture -contains "x86") {
                 $null
             }
             else {
