@@ -19,6 +19,7 @@ InModuleScope VcRedist {
 						URI             = "https://download.microsoft.com/vc_redist.x64.exe"
 						Release         = "14"
 						Architecture    = "x64"
+						SupportedArchitecture = @("AMD64")
 						Install         = "/install"
 						SilentInstall   = "/install /quiet"
 						SilentUninstall = "uninstall"
@@ -57,6 +58,16 @@ InModuleScope VcRedist {
 		It "Throws when Supported is not a boolean" {
 			$M = New-TestManifest; $M.Entries[0].Supported = "true"
 			{ Test-VcManifest -Manifest $M } | Should -Throw "*Supported*"
+		}
+		It "Rejects invalid supported architectures" -ForEach @(
+			@{ Value = $null }
+			@{ Value = @() }
+			@{ Value = @("") }
+			@{ Value = @("AMD64", "unknown") }
+			@{ Value = "AMD64" }
+		) {
+			$M = New-TestManifest; $M.Entries[0].SupportedArchitecture = $Value
+			{ Test-VcManifest -Manifest $M } | Should -Throw "*SupportedArchitecture*"
 		}
 		It "Throws for an invalid version" {
 			$M = New-TestManifest; $M.Entries[0].Version = "abc"
