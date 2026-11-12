@@ -34,6 +34,7 @@ function Install-VcRedist {
 
         # Get currently installed VcRedist versions
         $currentInstalled = Get-InstalledVcRedist
+        $OperatingSystemArchitecture = Get-VcOperatingSystemArchitecture
     }
 
     process {
@@ -47,15 +48,19 @@ function Install-VcRedist {
         # Sort $VcList by version number from oldest to newest
         foreach ($VcRedist in ($VcList | Sort-Object -Property @{ Expression = { [System.Version]$_.Version }; Descending = $false })) {
 
+            if ($null -eq $VcRedist.SupportedArchitecture -or @($VcRedist.SupportedArchitecture).Count -eq 0 -or
+                @($VcRedist.SupportedArchitecture | Where-Object { -not [System.String]::IsNullOrWhiteSpace($_) }).Count -eq 0) {
+                throw [System.Management.Automation.ValidationMetadataException]::New("Property 'SupportedArchitecture' is missing or empty for '$($VcRedist.Name)'.")
+            }
+
             # If already installed or the -Force parameter is not specified, skip
             if (($currentInstalled | Where-Object { $VcRedist.ProductCode -contains $_.ProductCode }) -and !($PSBoundParameters.ContainsKey("Force"))) {
                 Write-Information -MessageData "VcRedist already installed: '$($VcRedist.Name) $($VcRedist.Version) $($VcRedist.Architecture)'" -InformationAction "Continue"
             }
             else {
 
-                # Avoid installing 64-bit Redistributable on x86 Windows
-                if (((Get-Bitness) -eq "x86") -and ($VcRedist.Architecture -eq "x64")) {
-                    Write-Warning -Message "Incompatible architecture: '$($VcRedist.Name) $($VcRedist.Version) $($VcRedist.Architecture)'"
+                if ($VcRedist.SupportedArchitecture -notcontains $OperatingSystemArchitecture) {
+                    Write-Warning -Message "Incompatible architecture: '$($VcRedist.Name) $($VcRedist.Version) $($VcRedist.Architecture)' is not supported on '$OperatingSystemArchitecture'."
                 }
                 else {
 

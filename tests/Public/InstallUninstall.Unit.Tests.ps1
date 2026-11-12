@@ -12,7 +12,7 @@ InModuleScope VcRedist {
             $Installer = Join-Path -Path $TestDrive -ChildPath "vc_redist.exe"
             Set-Content -LiteralPath $Installer -Value "x"
             $Item = [PSCustomObject]@{
-                Name = "VC"; Release = "14"; Version = "14.0.0.1"; Architecture = "x64"; ProductCode = "{11111111-1111-1111-1111-111111111111}"
+                Name = "VC"; Release = "14"; Version = "14.0.0.1"; Architecture = "x64"; SupportedArchitecture = @("AMD64"); ProductCode = "{11111111-1111-1111-1111-111111111111}"
                 URI = "https://download.microsoft.com/vc.exe"; Install = "/install"; SilentInstall = "/quiet"; SilentUninstall = "x"
                 UninstallKey = "64"; PackageId = "x"; DetectionFile = "x"; Path = $Installer
             }
@@ -21,7 +21,7 @@ InModuleScope VcRedist {
         BeforeEach {
             Mock Test-Elevated { $true }
             Mock Get-InstalledVcRedist { @() }
-            Mock Get-Bitness { "x64" }
+            Mock Get-VcOperatingSystemArchitecture { "AMD64" }
             Mock Assert-VcSignature { $true }
             Mock Test-VcListObject { $true }
         }
@@ -53,6 +53,60 @@ InModuleScope VcRedist {
         It "Throws when not elevated" {
             Mock Test-Elevated { $false }
             { $Item | Install-VcRedist | Out-Null } | Should -Throw
+        }
+
+        It "Uses manifest support for <Package> on <System>" -ForEach @(
+            @{ Package = "arm64"; System = "AMD64"; Supported = @("ARM64"); Installs = 0 }
+            @{ Package = "x64"; System = "x86"; Supported = @("AMD64"); Installs = 0 }
+            @{ Package = "x64"; System = "AMD64"; Supported = @("AMD64"); Installs = 1 }
+            @{ Package = "x64"; System = "ARM64"; Supported = @("AMD64", "ARM64"); Installs = 1 }
+            @{ Package = "x64"; System = "ARM64"; Supported = @("AMD64"); Installs = 0 }
+            @{ Package = "x86"; System = "ARM64"; Supported = @("x86", "AMD64", "ARM64"); Installs = 1 }
+            @{ Package = "arm64"; System = "ARM64"; Supported = @("ARM64"); Installs = 1 }
+            @{ Package = "x86"; System = "x86"; Supported = @("x86", "AMD64", "ARM64"); Installs = 1 }
+        ) {
+            Mock Get-VcOperatingSystemArchitecture { $System }
+            Mock Start-Process { [PSCustomObject]@{ ExitCode = 0 } }
+            $Candidate = $Item.PSObject.Copy()
+            $Candidate.Architecture = $Package
+            $Candidate.SupportedArchitecture = $Supported
+            $Candidate | Install-VcRedist -Force -WarningVariable "W" -WarningAction "SilentlyContinue" | Out-Null
+            Should -Invoke Start-Process -Times $Installs -Exactly
+            if ($Installs -eq 0) {
+                ($W -join " ") | Should -Match "Incompatible architecture"
+            }
+        }
+
+        It "Rejects missing or empty supported architecture metadata" -ForEach @(
+            @{ Supported = $null }
+            @{ Supported = @() }
+            @{ Supported = @("") }
+        ) {
+            Mock Start-Process { [PSCustomObject]@{ ExitCode = 0 } }
+            $Candidate = $Item.PSObject.Copy()
+            $Candidate.SupportedArchitecture = $Supported
+            { $Candidate | Install-VcRedist } | Should -Throw "*SupportedArchitecture*"
+            Should -Invoke Start-Process -Times 0
+        }
+
+        It "Continues the pipeline after skipping an incompatible manifest entry" {
+            Mock Start-Process { [PSCustomObject]@{ ExitCode = 0 } }
+            $Candidates = @(Get-VcList -Release "14" -Source "Bundled" | Where-Object { $_.Architecture -in @("arm64", "x86") })
+            $Candidates.Count | Should -Be 2
+            foreach ($Candidate in $Candidates) {
+                $Candidate | Add-Member -NotePropertyName "Path" -NotePropertyValue $Installer
+            }
+            $Candidates | Install-VcRedist -WarningVariable "W" -WarningAction "SilentlyContinue" | Out-Null
+            Should -Invoke Start-Process -Times 1 -Exactly
+            ($W -join " ") | Should -Match "Incompatible architecture"
+        }
+
+        It "Rejects an object with no SupportedArchitecture property" {
+            Mock Start-Process { [PSCustomObject]@{ ExitCode = 0 } }
+            $Candidate = $Item.PSObject.Copy()
+            $Candidate.PSObject.Properties.Remove("SupportedArchitecture")
+            { $Candidate | Install-VcRedist } | Should -Throw "*SupportedArchitecture*"
+            Should -Invoke Start-Process -Times 0
         }
     }
 
