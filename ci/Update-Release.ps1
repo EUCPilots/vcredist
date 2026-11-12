@@ -30,14 +30,15 @@ if ($Prerelease) { $FullVersion += "-$Prerelease" }
 $ChangelogPath = Join-Path -Path $Root -ChildPath "docs/changelog.md"
 $Changelog = Get-Content -LiteralPath $ChangelogPath -Raw
 $Headings = [System.Text.RegularExpressions.Regex]::Matches($Changelog, "(?m)^## ([^\r\n]+)\r?$")
-if ($Headings.Count -eq 0 -or $Headings[0].Groups[1].Value -cne "VERSION" -or
-    @($Headings | Where-Object { $_.Groups[1].Value -eq "VERSION" }).Count -ne 1) {
-    throw "Prepare exactly one '## VERSION' section at the top of the changelog before releasing."
+if ($Headings.Count -eq 0 -or
+    ($Headings[0].Groups[1].Value -cne "VERSION" -and $Headings[0].Groups[1].Value -cne $FullVersion) -or
+    @($Headings | Where-Object { $_.Groups[1].Value -eq "VERSION" -or $_.Groups[1].Value -eq $FullVersion }).Count -ne 1) {
+    throw "Prepare exactly one '## VERSION' or '## $FullVersion' section at the top of the changelog before releasing."
 }
 $Start = $Headings[0].Index + $Headings[0].Length
 $End = $Changelog.Length
 if ($Headings.Count -gt 1) { $End = $Headings[1].Index }
-if (-not $Changelog.Substring($Start, $End - $Start).Trim()) { throw "The VERSION release notes are empty." }
+if (-not $Changelog.Substring($Start, $End - $Start).Trim()) { throw "The release notes for $FullVersion are empty." }
 $Document = & (Join-Path -Path $PSScriptRoot -ChildPath "New-VcVersionsDocument.ps1") -Root $Root -Version $FullVersion
 $ManifestPath = Join-Path -Path $Root -ChildPath "VcRedist/VcRedist.psd1"
 $Functions = @(Get-ChildItem -LiteralPath (Join-Path -Path $Root -ChildPath "VcRedist/Public") -Filter "*.ps1" | Select-Object -ExpandProperty BaseName)

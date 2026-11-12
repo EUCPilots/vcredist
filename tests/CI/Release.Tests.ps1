@@ -114,6 +114,18 @@ Describe "Release metadata and preparation" {
         $Release.Prerelease | Should -BeExactly "beta1"
     }
 
+    It "Accepts existing release notes for <FullVersion>" -ForEach @(
+        @{ Version = "1.0.1"; Prerelease = ""; FullVersion = "1.0.1" }
+        @{ Version = "2.0.0"; Prerelease = "beta2"; FullVersion = "2.0.0-beta2" }
+    ) {
+        $Changelog = "# Changelog`n`n## $FullVersion`n`n* Release changes`n`n## 1.0.0`n`n* Initial release"
+        [System.IO.File]::WriteAllText("$Root/docs/changelog.md", $Changelog)
+        $Release = & $UpdateScript -Root $Root -Version $Version -Prerelease $Prerelease
+        $Release.FullVersion | Should -BeExactly $FullVersion
+        $Release.Notes | Should -BeExactly "* Release changes"
+        [System.IO.File]::ReadAllText("$Root/docs/changelog.md") | Should -BeExactly $Changelog
+    }
+
     It "Rejects duplicate or lower stable versions" -ForEach @("1.0.0", "0.9.9") {
         { & $UpdateScript -Root $Root -Version $_ } | Should -Throw "*newer*"
     }
@@ -142,6 +154,24 @@ Describe "Release metadata and preparation" {
         (& $MetadataScript -Root $Root).Version | Should -BeExactly "1.0.0"
         Set-Content -LiteralPath "$Root/docs/changelog.md" -Value "# Changelog`n`n## VERSION`n`n## 1.0.0`n`n* Old"
         { & $UpdateScript -Root $Root -Version "1.0.1" } | Should -Throw "*empty*"
+    }
+
+    It "Rejects a different release heading before changing the manifest" {
+        Set-Content -LiteralPath "$Root/docs/changelog.md" -Value "# Changelog`n`n## 2.0.0-beta1`n`n* Old"
+        { & $UpdateScript -Root $Root -Version "2.0.0" -Prerelease "beta2" } | Should -Throw "*VERSION*"
+        (& $MetadataScript -Root $Root).Version | Should -BeExactly "1.0.0"
+    }
+
+    It "Rejects duplicate release headings and empty numbered notes" {
+        Set-Content -LiteralPath "$Root/docs/changelog.md" -Value "# Changelog`n`n## 1.0.1`n`n* Notes`n`n## VERSION`n`n* Other"
+        { & $UpdateScript -Root $Root -Version "1.0.1" } | Should -Throw "*exactly one*"
+        Set-Content -LiteralPath "$Root/docs/changelog.md" -Value "# Changelog`n`n## VERSION`n`n* Notes`n`n## 1.0.1`n`n* Other"
+        { & $UpdateScript -Root $Root -Version "1.0.1" } | Should -Throw "*exactly one*"
+        Set-Content -LiteralPath "$Root/docs/changelog.md" -Value "# Changelog`n`n## 1.0.1`n`n* Notes`n`n## 1.0.1`n`n* Other"
+        { & $UpdateScript -Root $Root -Version "1.0.1" } | Should -Throw "*exactly one*"
+        Set-Content -LiteralPath "$Root/docs/changelog.md" -Value "# Changelog`n`n## 1.0.1`n`n## 1.0.0`n`n* Old"
+        { & $UpdateScript -Root $Root -Version "1.0.1" } | Should -Throw "*empty*"
+        (& $MetadataScript -Root $Root).Version | Should -BeExactly "1.0.0"
     }
 
     It "Rejects mismatched tags, stale documentation and exports" {

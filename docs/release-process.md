@@ -265,10 +265,13 @@ When beta testing is complete:
 * A pushed `v*` tag also triggers publishing, but cannot bypass ancestry,
   metadata, tests, or environment approval. Prefer manual publishing and let it
   create the tag after validation.
-* Preparation requires `## VERSION`; publishing requires the **numbered version**
-  as the first changelog release. A new `## VERSION` or changed bundled JSON after
-  preparation can make a later `main` commit unsuitable for publishing. Pin the
-  intended merged release SHA rather than assuming the latest `main` is releasable.
+* Preparation accepts either `## VERSION` or the exact proposed release heading
+  (for example `## 5.1.0-beta1`) as the first changelog release, so notes already
+  numbered for that release need not be renamed when retrying preparation.
+  Publishing requires the **numbered version** as the first changelog release.
+  A new `## VERSION` or changed bundled JSON after preparation can make a later
+  `main` commit unsuitable for publishing. Pin the intended merged release SHA
+  rather than assuming the latest `main` is releasable.
 * Preparation and publishing each serialize their runs and do not automatically
   cancel an in-progress release. Avoid duplicate dispatches.
 * If preparation pushed its branch but PR creation failed, open the PR manually
