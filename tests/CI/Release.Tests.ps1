@@ -180,6 +180,21 @@ Describe "Gallery publishing recovery" {
         Should -Invoke Publish-Module -Times 0
     }
 
+    It "Emits opt-in verification diagnostics without leaking the publishing credential or success-stream values" {
+        $QuietOutput = @(& $PublishScript -Root $Root -Tag "v1.0.1" -Verbose:$false 4>&1)
+        @($QuietOutput | Where-Object { $_ -is [System.Management.Automation.VerboseRecord] }).Count | Should -Be 0
+
+        $Output = @(& $PublishScript -Root $Root -Tag "v1.0.1" -Verbose 4>&1)
+        $Messages = @($Output | Where-Object { $_ -is [System.Management.Automation.VerboseRecord] } | ForEach-Object { $_.Message }) -join "`n"
+        $Messages | Should -Match "Release metadata validated"
+        $Messages | Should -Match "SHA256 matches"
+        $Messages | Should -Match "matches the validated artifact"
+        $Messages | Should -Match "Removing temporary Gallery package"
+        ($Output | Out-String) | Should -Not -Match ([System.Text.RegularExpressions.Regex]::Escape($env:NUGETAPIKEY))
+        @($Output | Where-Object { $_ -isnot [System.Management.Automation.VerboseRecord] }).Count | Should -Be 0
+        Should -Invoke Publish-Module -Times 0
+    }
+
     It "Rejects existing packages with different or unexpected module files" {
         $Package = New-GalleryFixture -Root $Root -Different
         { & $PublishScript -Root $Root -Tag "v1.0.1" } | Should -Throw "*differs*"
@@ -203,7 +218,12 @@ Describe "Gallery publishing recovery" {
         }
         $script:Published = $false
         Mock Publish-Module { $script:Published = $true }
-        { & $PublishScript -Root $Root -Tag "v1.0.1" } | Should -Not -Throw
+        $Output = @(& $PublishScript -Root $Root -Tag "v1.0.1" -Verbose 4>&1)
+        $Messages = @($Output | Where-Object { $_ -is [System.Management.Automation.VerboseRecord] } | ForEach-Object { $_.Message }) -join "`n"
+        $Messages | Should -Match "not available \(HTTP 404\)"
+        $Messages | Should -Match "Publish-Module completed"
+        $Messages | Should -Match "Gallery verification attempt 1 of 6"
+        ($Output | Out-String) | Should -Not -Match ([System.Text.RegularExpressions.Regex]::Escape($env:NUGETAPIKEY))
         Should -Invoke Publish-Module -Times 1
         Should -Invoke Invoke-WebRequest -Times 2
     }

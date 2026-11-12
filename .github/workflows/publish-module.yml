@@ -140,7 +140,7 @@ jobs:
         env:
           NUGETAPIKEY: ${{ secrets.NUGETAPIKEY }}
           TAG: ${{ needs.release-metadata.outputs.tag }}
-        run: ./ci/Publish-Release.ps1 -Root "$env:GITHUB_WORKSPACE/staged" -Tag $env:TAG
+        run: ./ci/Publish-Release.ps1 -Root "$env:GITHUB_WORKSPACE/staged" -Tag $env:TAG -Verbose
       - name: Finalize GitHub release
         shell: pwsh
         env:

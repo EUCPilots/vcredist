@@ -242,6 +242,12 @@ When beta testing is complete:
 
 ## Other workflows and recovery
 
+* Publishing enables verbose diagnostics for the **Publish and verify Gallery
+  contents** step. Expand that step in the Actions log to see metadata validation,
+  dependency setup, package downloads, per-file SHA256 verification, retries, and
+  temporary-file cleanup. For a local invocation, add `-Verbose` to
+  `./ci/Publish-Release.ps1 -Root ./staged -Tag <exact-tag>`. The script requires
+  `NUGETAPIKEY` in the environment; diagnostics do not print its value.
 * **Validate module**: manual input `run_intune` defaults to `false`; set it to
   `true` for live Intune validation on a trusted branch. Publishing always requests
   these tests; ordinary PR validation does not receive the tenant secrets.
