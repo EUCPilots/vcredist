@@ -32,27 +32,33 @@ Import-Module -Name "PowerShellGet" -RequiredVersion "2.2.5" -Force
 Add-Type -AssemblyName "System.IO.Compression"
 $ModulePath = Join-Path -Path $Root -ChildPath "VcRedist"
 $PackagePath = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath "VcRedist-$([System.Guid]::NewGuid()).nupkg"
+# The package endpoint redirects unknown versions to the latest package instead of returning 404,
+# so the OData entry is used to determine whether this exact version exists.
+$EntryUri = "https://www.powershellgallery.com/api/v2/Packages(Id='VcRedist',Version='$($Metadata.FullVersion)')"
 $Uri = "https://www.powershellgallery.com/api/v2/package/VcRedist/$($Metadata.FullVersion)"
+$MaxAttempts = 20
+$RetrySeconds = 30
 
 function Test-GalleryPackage {
-    Write-Verbose -Message "Downloading Gallery package from '$Uri' to '$PackagePath'."
+    Write-Verbose -Message "Looking up Gallery package entry '$EntryUri'."
     try {
-        Invoke-WebRequest -Uri $Uri -OutFile $PackagePath -UseBasicParsing -ErrorAction "Stop" | Out-Null
+        Invoke-WebRequest -Uri $EntryUri -UseBasicParsing -ErrorAction "Stop" | Out-Null
     }
     catch {
         if ($_.Exception.Response -and [System.Int32]$_.Exception.Response.StatusCode -eq 404) {
-            Write-Verbose -Message "Gallery package '$($Metadata.FullVersion)' is not available (HTTP 404)."
+            Write-Verbose -Message "Gallery package '$($Metadata.FullVersion)' is not published (HTTP 404)."
             return $false
         }
-        Write-Verbose -Message "Gallery package download failed; propagating the error without publishing or retrying."
+        Write-Verbose -Message "Gallery package lookup failed; propagating the error without publishing or retrying."
         throw
     }
+    Write-Verbose -Message "Gallery lists '$($Metadata.FullVersion)'; downloading package from '$Uri' to '$PackagePath'."
+    Invoke-WebRequest -Uri $Uri -OutFile $PackagePath -UseBasicParsing -ErrorAction "Stop" | Out-Null
     $Stream = [System.IO.File]::OpenRead($PackagePath)
     $Archive = $null
     try {
         $Archive = New-Object -TypeName "System.IO.Compression.ZipArchive" -ArgumentList $Stream
-        # The Gallery redirects requests for unpublished versions to another (e.g. the latest) package,
-        # so confirm the downloaded package identity before comparing contents.
+        # Guards against a stale CDN or redirect returning a different package version.
         $NuspecEntries = @($Archive.Entries | Where-Object { $_.FullName -notmatch "/" -and $_.FullName -like "*.nuspec" })
         if ($NuspecEntries.Count -ne 1) { throw "Gallery package does not contain exactly one root .nuspec file; refusing to reuse this version." }
         $NuspecReader = New-Object -TypeName "System.IO.StreamReader" -ArgumentList $NuspecEntries[0].Open()
@@ -111,13 +117,13 @@ try {
         Publish-Module -Path $ModulePath -Repository "PSGallery" -NuGetApiKey $env:NUGETAPIKEY -ErrorAction "Stop"
         Write-Verbose -Message "Publish-Module completed; starting Gallery verification."
         $Verified = $false
-        for ($Attempt = 1; $Attempt -le 6; $Attempt++) {
-            Write-Verbose -Message "Gallery verification attempt $Attempt of 6."
+        for ($Attempt = 1; $Attempt -le $MaxAttempts; $Attempt++) {
+            Write-Verbose -Message "Gallery verification attempt $Attempt of $MaxAttempts."
             if (Test-GalleryPackage) { $Verified = $true; break }
-            Write-Information -MessageData "Gallery package is not available yet (attempt $Attempt of 6)." -InformationAction "Continue"
-            if ($Attempt -lt 6) {
-                Write-Verbose -Message "Waiting 20 seconds before the next Gallery verification attempt."
-                Start-Sleep -Seconds 20
+            Write-Information -MessageData "Gallery package is not available yet (attempt $Attempt of $MaxAttempts)." -InformationAction "Continue"
+            if ($Attempt -lt $MaxAttempts) {
+                Write-Verbose -Message "Waiting $RetrySeconds seconds before the next Gallery verification attempt."
+                Start-Sleep -Seconds $RetrySeconds
             }
         }
         if (-not $Verified) { throw "Gallery publication could not be verified. Leave the release draft and rerun the workflow once the package is available." }

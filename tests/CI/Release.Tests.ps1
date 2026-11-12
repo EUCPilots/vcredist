@@ -174,7 +174,7 @@ Describe "Gallery publishing recovery" {
         Mock Install-Module { throw "Unexpected dependency installation in unit tests." }
         Mock Publish-Module {}
         Mock Start-Sleep {}
-        Mock Invoke-WebRequest { Copy-Item -LiteralPath $Package -Destination $OutFile }
+        Mock Invoke-WebRequest { if ($OutFile) { Copy-Item -LiteralPath $Package -Destination $OutFile } }
     }
 
     AfterEach {
@@ -220,32 +220,41 @@ Describe "Gallery publishing recovery" {
     It "Publishes a missing version and verifies its package" {
         Mock Invoke-WebRequest {
             if (-not $script:Published) { throw (New-Object -TypeName "ReleaseHttpException" -ArgumentList 404) }
-            Copy-Item -LiteralPath $Package -Destination $OutFile
+            if ($OutFile) { Copy-Item -LiteralPath $Package -Destination $OutFile }
         }
         $script:Published = $false
         Mock Publish-Module { $script:Published = $true }
         $Output = @(& $PublishScript -Root $Root -Tag "v1.0.1" -Verbose 4>&1)
         $Messages = @($Output | Where-Object { $_ -is [System.Management.Automation.VerboseRecord] } | ForEach-Object { $_.Message }) -join "`n"
-        $Messages | Should -Match "not available \(HTTP 404\)"
+        $Messages | Should -Match "not published \(HTTP 404\)"
         $Messages | Should -Match "Publish-Module completed"
-        $Messages | Should -Match "Gallery verification attempt 1 of 6"
+        $Messages | Should -Match "Gallery verification attempt 1 of 20"
         ($Output | Out-String) | Should -Not -Match ([System.Text.RegularExpressions.Regex]::Escape($env:NUGETAPIKEY))
         Should -Invoke Publish-Module -Times 1
-        Should -Invoke Invoke-WebRequest -Times 2
+        Should -Invoke Invoke-WebRequest -Times 3 -Exactly
+        Should -Invoke Invoke-WebRequest -ParameterFilter { $Uri -like "*/Packages(Id='VcRedist',Version='1.0.1')" } -Times 2 -Exactly
+        Should -Invoke Invoke-WebRequest -ParameterFilter { $OutFile } -Times 1 -Exactly
     }
 
-    It "Does not mistake the Gallery's fallback to another version for the requested package" {
+    It "Does not mistake a redirect to another version for the requested package" {
         $Stale = New-GalleryFixture -Root $Root -Version "1.0.0"
         $script:Published = $false
+        $script:Downloads = 0
         Mock Invoke-WebRequest {
-            if ($script:Published) { Copy-Item -LiteralPath $Package -Destination $OutFile }
-            else { Copy-Item -LiteralPath $Stale -Destination $OutFile }
+            if (-not $OutFile) {
+                if (-not $script:Published) { throw (New-Object -TypeName "ReleaseHttpException" -ArgumentList 404) }
+                return
+            }
+            $script:Downloads++
+            if ($script:Downloads -eq 1) { Copy-Item -LiteralPath $Stale -Destination $OutFile }
+            else { Copy-Item -LiteralPath $Package -Destination $OutFile }
         }
         Mock Publish-Module { $script:Published = $true }
         { & $PublishScript -Root $Root -Tag "v1.0.1" } | Should -Not -Throw
-        Should -Invoke Publish-Module -Times 1
+        Should -Invoke Publish-Module -Times 1 -Exactly
+        Should -Invoke Start-Sleep -Times 1 -Exactly
 
-        Mock Invoke-WebRequest { Copy-Item -LiteralPath $Stale -Destination $OutFile }
+        Mock Invoke-WebRequest { if ($OutFile) { Copy-Item -LiteralPath $Stale -Destination $OutFile } }
         { & $PublishScript -Root $Root -Tag "v1.0.1" } | Should -Throw "*could not be verified*"
     }
 
@@ -253,7 +262,7 @@ Describe "Gallery publishing recovery" {
         Mock Invoke-WebRequest { throw (New-Object -TypeName "ReleaseHttpException" -ArgumentList 404) }
         { & $PublishScript -Root $Root -Tag "v1.0.1" } | Should -Throw "*could not be verified*"
         Should -Invoke Publish-Module -Times 1
-        Should -Invoke Start-Sleep -Times 5
+        Should -Invoke Start-Sleep -Times 19 -Exactly
     }
 
     It "Does not mistake Gallery network or authorization errors for a missing version" {

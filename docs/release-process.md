@@ -277,6 +277,12 @@ When beta testing is complete:
   of the same run** (for example `gh run rerun <run-id>`), not only failed jobs.
   The staged artifact expires after seven days; rerunning all jobs recreates it.
   Approval is required again when the environment job is reached.
+* Gallery existence is checked with the exact-version OData entry
+  (`api/v2/Packages(Id='VcRedist',Version='<full-version>')`), because the
+  `api/v2/package/VcRedist/<version>` download endpoint redirects unknown
+  versions to the latest package. After publishing, verification polls for up to
+  about 10 minutes (20 attempts, 30 seconds apart). If the Gallery takes longer,
+  re-run the workflow; the published package is then verified without republishing.
 * An existing Gallery version is reused only when every module file matches the
   tested artifact and no unexpected module files exist. A conflict requires a new
   version and release PR; never overwrite a package or move its tag.
