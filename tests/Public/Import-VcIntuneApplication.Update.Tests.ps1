@@ -77,12 +77,13 @@ InModuleScope VcRedist {
         }
 
         It "Adds the older-version file requirement for <Architecture>" -ForEach @(
-            @{ Architecture = "x86"; Redirect = $true }
-            @{ Architecture = "x64"; Redirect = $false }
-            @{ Architecture = "arm64"; Redirect = $false }
+            @{ Architecture = "x86"; Supported = @("x86", "AMD64", "ARM64"); Expected = "AllWithARM64"; Redirect = $true }
+            @{ Architecture = "x64"; Supported = @("AMD64"); Expected = "x64"; Redirect = $false }
+            @{ Architecture = "arm64"; Supported = @("ARM64"); Expected = "arm64"; Redirect = $false }
         ) {
             $Redist = $Item.PSObject.Copy()
             $Redist.Architecture = $Architecture
+            $Redist.SupportedArchitecture = $Supported
             Import-VcIntuneApplication -VcList $Redist -ImportAsUpdate | Out-Null
 
             Should -Invoke New-IntuneWin32AppRequirementRuleFile -Times 1 -ParameterFilter {
@@ -97,7 +98,7 @@ InModuleScope VcRedist {
             $Rules[0].detectionValue | Should -Be $Redist.Version
             $Rules[0].check32BitOn64System | Should -Be $Redirect
             $script:ImportedArguments.DetectionRule | Should -Be "detection"
-            $script:ImportedArguments.RequirementRule.architecture | Should -Be (Get-IntuneRequirementArchitecture -Architecture $Architecture)
+            $script:ImportedArguments.RequirementRule.architecture | Should -Be $Expected
         }
 
         It "Uses each bundled package's detection file and version for its update requirement" {
@@ -169,6 +170,14 @@ InModuleScope VcRedist {
             Mock Get-RequiredVcRedistUpdatesFromIntune { [PSCustomObject]@{ UpdateRequired = $false } }
             Import-VcIntuneApplication -VcList $Item -ImportAsUpdate | Out-Null
             Should -Invoke New-IntuneWin32AppRequirementRuleFile -Times 0
+            Should -Invoke Add-IntuneWin32App -Times 0
+        }
+
+        It "Rejects an unrepresentable architecture combination before packaging" {
+            $Redist = $Item.PSObject.Copy()
+            $Redist.SupportedArchitecture = @("AMD64", "ARM64")
+            { Import-VcIntuneApplication -VcList $Redist } | Should -Throw "*cannot represent*"
+            Should -Invoke New-IntuneWin32AppPackage -Times 0
             Should -Invoke Add-IntuneWin32App -Times 0
         }
     }

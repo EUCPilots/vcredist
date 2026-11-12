@@ -26,6 +26,7 @@ An application package will be created for each Visual C++ Redistributable with 
 
 This function requires the IntuneWin32App PowerShell module and supported Windows PowerShell only.
 Before using this function to import the Redistributables into an Intune tenant, authenticate first with Connect-MSIntuneGraph.
+The architecture requirement comes from each manifest entry's SupportedArchitecture list. IntuneWin32App 1.5.0 supports the ARM64-inclusive requirements used by the bundled manifest; unsupported combinations are rejected. Existing applications are not changed unless an update is imported.
 
 Use `-ImportAsUpdate` to add a file-version requirement based on each package's `DetectionFile`. The app is applicable only when the architecture-specific file exists and is older than the package version. It is not applicable to clean installs or devices with the same or a newer version. This does not change existing Intune apps or their assignments. Verify the detection file and version on target devices, particularly for older, unsupported redistributables that may use side-by-side assemblies. A remote manifest can provide different detection paths from the bundled manifest.
 

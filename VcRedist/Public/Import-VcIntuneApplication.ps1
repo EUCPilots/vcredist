@@ -65,6 +65,7 @@ function Import-VcIntuneApplication {
         }
 
         foreach ($VcRedist in $VcList) {
+            $RequirementArchitecture = Get-IntuneRequirementArchitecture -SupportedArchitecture $VcRedist.SupportedArchitecture
 
             # Check if the package already exists in Intune
             $AppDetails = Get-RequiredVcRedistUpdatesFromIntune -VcList $VcRedist
@@ -83,6 +84,14 @@ function Import-VcIntuneApplication {
                     $AdditionalRequirementRule = @(New-IntuneWin32AppRequirementRuleFile @AdditionalRequirementArgs)
                 }
 
+                # Requirement rule
+                $params = @{
+                    Architecture                   = $RequirementArchitecture
+                    MinimumSupportedWindowsRelease = $IntuneManifest.RequirementRule.MinimumRequiredOperatingSystem
+                    MinimumFreeDiskSpaceInMB       = $IntuneManifest.RequirementRule.SizeInMBValue
+                }
+                $RequirementRule = New-IntuneWin32AppRequirementRule @params
+
                 # Package MSI as .intunewin file
                 $OutputFolder = New-TemporaryFolder
                 $params = @{
@@ -92,14 +101,6 @@ function Import-VcIntuneApplication {
                 }
                 $Package = New-IntuneWin32AppPackage @params
                 Write-Verbose -Message "Created IntuneWin package: $($Package.Path)."
-
-                # Requirement rule
-                $params = @{
-                    Architecture                   = Get-IntuneRequirementArchitecture -Architecture $VcRedist.Architecture
-                    MinimumSupportedWindowsRelease = $IntuneManifest.RequirementRule.MinimumRequiredOperatingSystem
-                    MinimumFreeDiskSpaceInMB       = $IntuneManifest.RequirementRule.SizeInMBValue
-                }
-                $RequirementRule = New-IntuneWin32AppRequirementRule @params
 
                 # Create the detection rules for the Win32 app
                 $DetectionRules = New-IntuneWin32AppDetectionRule -VcList $VcRedist -IntuneManifest $IntuneManifest
