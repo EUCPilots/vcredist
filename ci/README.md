@@ -2,6 +2,8 @@
 
 Scripts used during workflows to validate this project.
 
+The manifest update workflow runs x86 and x64 checks on an AMD64 runner, then ARM64 checks on an ARM64 runner. The update script skips entries not supported by the runner's native architecture and fails if a compatible installation cannot be found.
+
 ## Release process
 
 Follow the [release process runbook](../docs/release-process.md) for branch creation,

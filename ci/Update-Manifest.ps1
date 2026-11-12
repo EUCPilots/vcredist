@@ -25,20 +25,32 @@ process {
     # Get an array of VcRedists from the current manifest and the installed VcRedists
     Write-Information -MessageData "$($PSStyle.Foreground.Cyan)`tGetting manifest from: $VcManifest."
     $CurrentManifest = Get-Content -Path $VcManifest -Raw | ConvertFrom-Json
+    & (Get-Module -Name "VcRedist") { param ($Manifest) Test-VcManifest -Manifest $Manifest | Out-Null } $CurrentManifest
     $InstalledVcRedists = Get-InstalledVcRedist
+    $OperatingSystemArchitecture = & (Get-Module -Name "VcRedist") { Get-VcOperatingSystemArchitecture }
 
     $Output = @()
     $FoundNewVersion = $false
     foreach ($Arch in $Architecture) {
         foreach ($Rls in $Release) {
 
+            $ManifestEntries = @($CurrentManifest.Entries | Where-Object {
+                $_.Supported -eq $true -and $_.Release -eq $Rls -and $_.Architecture -eq $Arch
+            })
+            $CompatibleEntries = @($ManifestEntries | Where-Object { $_.SupportedArchitecture -contains $OperatingSystemArchitecture })
+            if ($CompatibleEntries.Count -eq 0) {
+                Write-Information -MessageData "Skipping VcRedist $Rls $Arch on $OperatingSystemArchitecture."
+                continue
+            }
+
             Write-Information -MessageData "$($PSStyle.Foreground.Cyan)`tInstalling VcRedist $Rls $Arch."
-            $VcList = Get-VcList -Release $Rls -Architecture $Arch -Source "Bundled" | Save-VcRedist -Path $Path | Install-VcRedist -Silent
+            $VcList = Get-VcList -Release $Rls -Architecture $Arch -Source "Bundled" |
+                Where-Object { $_.SupportedArchitecture -contains $OperatingSystemArchitecture } |
+                Save-VcRedist -Path $Path | Install-VcRedist -Silent
             $InstalledVcRedists = Get-InstalledVcRedist | Where-Object { $_.Name -notmatch "Debug Runtime" }
 
             # Filter the VcRedists for the target version and compare against what has been installed
-            foreach ($ManifestVcRedist in ($CurrentManifest.Entries | `
-                        Where-Object { $_.Supported -eq $true -and $_.Release -eq $Rls -and $_.Architecture -eq $Arch })) {
+            foreach ($ManifestVcRedist in $CompatibleEntries) {
 
                 if ($Arch -eq "arm64" -and $Rls -eq "14") {
                     $InstalledItem = $InstalledVcRedists | `
@@ -51,9 +63,13 @@ process {
                     $InstalledItem = $InstalledVcRedists | `
                         Sort-Object -Property { [System.Version]$_.Version } -Descending | `
                         Where-Object { $_.Architecture -eq $ManifestVcRedist.Architecture } | `
-                        Where-Object { $_.Release -eq $ManifestVcRedist.Release }
+                        Where-Object { $_.Release -eq $ManifestVcRedist.Release } | `
+                        Select-Object -First 1
                 }
 
+                if ($null -eq $InstalledItem) {
+                    throw "No installed VcRedist found for $Rls $Arch on $OperatingSystemArchitecture."
+                }
                 Write-Information -MessageData "$($PSStyle.Foreground.Cyan)`t$($InstalledItem.Version)"
                 Write-Information -MessageData "$($PSStyle.Foreground.Cyan)`t$($ManifestVcRedist.Version)"
 

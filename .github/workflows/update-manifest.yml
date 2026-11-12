@@ -17,7 +17,68 @@ permissions:
   pull-requests: write
 
 jobs:
+  update-manifest-amd64:
+    runs-on: windows-2025
+    name: 'Update AMD64 manifest entries'
+    outputs:
+      changes_detected: ${{ steps.commit.outputs.changes_detected }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Ensure manifest-update branch exists
+        shell: pwsh
+        run: |
+          git fetch origin
+          if (git ls-remote --heads origin manifest-update) {
+            git switch manifest-update
+            git pull origin manifest-update
+          }
+          else {
+            git switch -c manifest-update
+            git push --set-upstream origin manifest-update
+          }
+
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v7
+        with:
+          gpg_private_key: ${{ secrets.GPGKEY }}
+          passphrase: ${{ secrets.GPGPASSPHRASE }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+          git_config_global: true
+          git_tag_gpgsign: true
+          git_push_gpgsign: false
+          git_committer_name: ${{ secrets.COMMIT_NAME }}
+          git_committer_email: ${{ secrets.COMMIT_EMAIL }}
+
+      - name: Validate VcRedist 14 x86 and x64
+        shell: pwsh
+        run: |
+          Import-Module "${{ github.workspace }}\VcRedist" -Force
+          Get-InstalledVcRedist | Uninstall-VcRedist -Confirm:$false -Verbose
+          New-Item -Path "$env:RUNNER_TEMP\VcRedist" -ItemType "Directory" -Force | Out-Null
+          $params = @{
+              Release      = "14"
+              Architecture = @("x86", "x64")
+              Path         = "$env:RUNNER_TEMP\VcRedist"
+              VcManifest   = "${{ env.MANIFEST_FILE }}"
+          }
+          . ${{ github.workspace }}\ci\Update-Manifest.ps1 @params
+
+      - name: Commit changes
+        id: commit
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "Update manifest AMD64 ${{ github.run_number }}"
+          commit_user_name: ${{ secrets.COMMIT_NAME }}
+          commit_user_email: ${{ secrets.COMMIT_EMAIL }}
+
   update-manifest:
+    needs: update-manifest-amd64
     runs-on: windows-11-arm
     name: 'Update manifest'
     outputs:
@@ -74,30 +135,6 @@ jobs:
           Get-InstalledVcRedist | Uninstall-VcRedist -Confirm:$False -Verbose
 
       # Validate VcRedist 14 and update the manifest
-      - name: Validate VcRedist 14 x86, x64
-        shell: pwsh
-        run: |
-          $Release = "14"
-          $Architecture = "x86", "x64"
-          Import-Module "${{ github.workspace }}\VcRedist" -Force
-          New-Item -Path "$env:RUNNER_TEMP\VcRedist" -ItemType "Directory" -ErrorAction "SilentlyContinue" | Out-Null
-          Get-VcList -Release $Release -Architecture $Architecture | Save-VcRedist -Path "$env:RUNNER_TEMP\VcRedist" | Install-VcRedist
-          $params = @{
-              Release      = $Release
-              Architecture = $Architecture
-              Path         = "$env:RUNNER_TEMP\VcRedist"
-              VcManifest   = "${{ env.MANIFEST_FILE }}"
-          }
-          . ${{ github.workspace }}\ci\Update-Manifest.ps1 @params
-
-      # Uninstall existing VcRedists
-      - name: Uninstall VcRedists
-        shell: pwsh
-        run: |
-          Import-Module ${{ github.workspace }}\VcRedist -Force
-          Get-InstalledVcRedist | Uninstall-VcRedist -Confirm:$False -Verbose
-
-      # Validate VcRedist 14 and update the manifest
       - name: Validate VcRedist 14 arm64
         shell: pwsh
         run: |
@@ -105,7 +142,6 @@ jobs:
           $Architecture = "arm64"
           Import-Module "${{ github.workspace }}\VcRedist" -Force
           New-Item -Path "$env:RUNNER_TEMP\VcRedist" -ItemType "Directory" -ErrorAction "SilentlyContinue" | Out-Null
-          Get-VcList -Release $Release -Architecture $Architecture | Save-VcRedist -Path "$env:RUNNER_TEMP\VcRedist" | Install-VcRedist
           $params = @{
               Release      = $Release
               Architecture = $Architecture
@@ -142,8 +178,9 @@ jobs:
     runs-on: ubuntu-latest
     name: 'Create pull request'
     needs:
+      - update-manifest-amd64
       - update-manifest
-    if: needs.update-manifest.outputs.changes_detected == 'true'
+    if: needs.update-manifest-amd64.outputs.changes_detected == 'true' || needs.update-manifest.outputs.changes_detected == 'true'
 
     steps:
       - uses: actions/checkout@v7
