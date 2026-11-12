@@ -51,6 +51,21 @@ function Test-GalleryPackage {
     $Archive = $null
     try {
         $Archive = New-Object -TypeName "System.IO.Compression.ZipArchive" -ArgumentList $Stream
+        # The Gallery redirects requests for unpublished versions to another (e.g. the latest) package,
+        # so confirm the downloaded package identity before comparing contents.
+        $NuspecEntries = @($Archive.Entries | Where-Object { $_.FullName -notmatch "/" -and $_.FullName -like "*.nuspec" })
+        if ($NuspecEntries.Count -ne 1) { throw "Gallery package does not contain exactly one root .nuspec file; refusing to reuse this version." }
+        $NuspecReader = New-Object -TypeName "System.IO.StreamReader" -ArgumentList $NuspecEntries[0].Open()
+        try { [System.Xml.XmlDocument]$Nuspec = $NuspecReader.ReadToEnd() }
+        finally { $NuspecReader.Dispose() }
+        $PackageId = [System.String]$Nuspec.package.metadata.id
+        $PackageVersion = [System.String]$Nuspec.package.metadata.version
+        Write-Verbose -Message "Downloaded package identity: '$PackageId' version '$PackageVersion'."
+        if ($PackageId -ne "VcRedist") { throw "Gallery returned package '$PackageId' instead of 'VcRedist'; refusing to reuse this version." }
+        if ($PackageVersion -ne $Metadata.FullVersion) {
+            Write-Verbose -Message "Gallery returned version '$PackageVersion' instead of '$($Metadata.FullVersion)'; treating the requested version as not available."
+            return $false
+        }
         $Files = @(Get-ChildItem -LiteralPath $ModulePath -Recurse -File)
         Write-Verbose -Message "Verifying $($Files.Count) staged module files from '$ModulePath' against the downloaded package."
         foreach ($File in $Files) {

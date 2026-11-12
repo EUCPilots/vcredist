@@ -39,6 +39,7 @@ public class ReleaseHttpException : System.Exception {
     function New-GalleryFixture {
         param (
             [System.String] $Root,
+            [System.String] $Version = "1.0.1",
             [System.Management.Automation.SwitchParameter] $Different,
             [System.Management.Automation.SwitchParameter] $Extra,
             [System.Management.Automation.SwitchParameter] $Missing
@@ -62,7 +63,12 @@ public class ReleaseHttpException : System.Exception {
                 }
                 finally { $EntryStream.Dispose() }
             }
-            $null = $Archive.CreateEntry("VcRedist.nuspec")
+            $NuspecStream = $Archive.CreateEntry("VcRedist.nuspec").Open()
+            try {
+                $Bytes = [System.Text.Encoding]::UTF8.GetBytes("<?xml version=`"1.0`"?><package xmlns=`"http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd`"><metadata><id>VcRedist</id><version>$Version</version></metadata></package>")
+                $NuspecStream.Write($Bytes, 0, $Bytes.Length)
+            }
+            finally { $NuspecStream.Dispose() }
             $null = $Archive.CreateEntry("[Content_Types].xml")
             $null = $Archive.CreateEntry("_rels/.rels")
             if ($Extra) { $null = $Archive.CreateEntry("extra.ps1") }
@@ -226,6 +232,21 @@ Describe "Gallery publishing recovery" {
         ($Output | Out-String) | Should -Not -Match ([System.Text.RegularExpressions.Regex]::Escape($env:NUGETAPIKEY))
         Should -Invoke Publish-Module -Times 1
         Should -Invoke Invoke-WebRequest -Times 2
+    }
+
+    It "Does not mistake the Gallery's fallback to another version for the requested package" {
+        $Stale = New-GalleryFixture -Root $Root -Version "1.0.0"
+        $script:Published = $false
+        Mock Invoke-WebRequest {
+            if ($script:Published) { Copy-Item -LiteralPath $Package -Destination $OutFile }
+            else { Copy-Item -LiteralPath $Stale -Destination $OutFile }
+        }
+        Mock Publish-Module { $script:Published = $true }
+        { & $PublishScript -Root $Root -Tag "v1.0.1" } | Should -Not -Throw
+        Should -Invoke Publish-Module -Times 1
+
+        Mock Invoke-WebRequest { Copy-Item -LiteralPath $Stale -Destination $OutFile }
+        { & $PublishScript -Root $Root -Tag "v1.0.1" } | Should -Throw "*could not be verified*"
     }
 
     It "Fails explicitly when Gallery verification never becomes available" {
