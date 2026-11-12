@@ -16,6 +16,9 @@ The Microsoft Visual C++ Redistributables are a core component of any Windows de
 
 Full documentation for the module is located at [https://vcredist.com/](https://vcredist.com/)
 
+For maintainers, the [release process](docs/release-process.md) covers development
+PRs, beta releases, stable releases, and manual versus automated workflow steps.
+
 ### PowerShell Gallery
 
 The VcRedist module is published to the PowerShell Gallery and can be found here: [VcRedist](https://www.powershellgallery.com/packages/VcRedist/). Install the module from the gallery with:

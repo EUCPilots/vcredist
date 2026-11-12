@@ -4,18 +4,16 @@ Scripts used during workflows to validate this project.
 
 ## Release process
 
-1. Develop on a branch and open a PR to `main`. The **Validation gate** must pass before merging.
-2. Maintain a nonempty `## VERSION` section at the top of [the changelog](../docs/changelog.md).
-3. Dispatch **Prepare module release** on `main` with a three-component version, an optional lowercase prerelease label (`beta1`, `rc1`), and an open release issue number.
-4. Review and merge the generated `release/<version>` PR after **Validation gate** passes. The workflow updates the manifest, changelog and redistributable documentation together; it never pushes directly to `main`.
-5. Dispatch **Publish module to PowerShell Gallery** on `main`, specifying the exact tag (`v4.1.529`, or `v5.0.0-beta1`). Optionally supply the full SHA of a merged release commit. [Push-Tag.ps1](./Push-Tag.ps1) dispatches this same gated workflow for the current commit.
-6. Publishing validates that exact commit, including live Intune tests, then waits for approval in the `powershell-gallery` environment. After approval it creates the exact tag and a draft GitHub release, publishes the tested artifact, verifies the Gallery package contents, and finalizes the release.
+Follow the [release process runbook](../docs/release-process.md) for branch creation,
+commits and PRs, beta iterations, stable promotion, workflow inputs, approvals, and
+recovery. Release preparation creates a versioned PR; merging it does not publish.
+Publishing validates the merged commit and requires environment approval.
 
 Existing tags also trigger publishing, but cannot bypass ancestry, metadata, tests or approval. Manual publishing from development branches is rejected. Publishing never bumps the version.
 
 ### Validation
 
-[validate-module.yml](../.github/workflows/validate-module.yml) runs for all branch pushes and PRs to `main`, including documentation/workflow-only changes. It is also reusable by publishing. It stages an immutable module artifact before testing; all four Windows runner/shell combinations test those files. The analyzer is a reusable required job, not just a SARIF report. Obsolete CI runs may be cancelled manually; releases are serialized and never automatically cancelled.
+[validate-module.yml](../.github/workflows/validate-module.yml) runs for branch pushes and PRs to `main` that change `VcRedist/**` or `tests/**`. Documentation/workflow-only changes require manual dispatch; see the [trigger exception](../docs/release-process.md#2-develop-commit-and-merge-a-pr). It is also reusable by publishing. It stages an immutable module artifact before testing; all four Windows runner/shell combinations test those files. The analyzer is a reusable required job, not just a SARIF report. Obsolete CI runs may be cancelled manually; releases are serialized and never automatically cancelled.
 
 Pester is pinned to **5.7.1**, PSScriptAnalyzer to **1.25.0**, MSAL.PS to **4.37.0.0**, IntuneWin32App to **1.5.0**, and publishing uses PowerShellGet **2.2.5**. Dependency installation fails explicitly. Secret-free validation excludes `Intune`-tagged live tests; these run separately on manual request or during publishing. Architecture-specific tests retain their existing skips. Both failed tests and incomplete module-test discovery fail the gate: every script must have two validation cases, every function two cases, plus the two metadata checks.
 
