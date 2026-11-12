@@ -1,6 +1,6 @@
 # Changelog
 
-## VERSION
+## 5.0.2-beta2
 
 * Separates read-only module validation, release PR preparation, and approved Gallery publishing
 * Tests release artifacts on Windows PowerShell 5.1 and PowerShell 7, on x64 and ARM64
