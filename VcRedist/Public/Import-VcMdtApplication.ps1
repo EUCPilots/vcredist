@@ -14,10 +14,6 @@ function Import-VcMdtApplication {
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSObject] $VcList,
 
-        [Parameter(Mandatory = $false)]
-        [System.ObsoleteAttribute("This parameter is not longer supported. The Path property must be on the object passed to -VcList.")]
-        [System.String] $Path,
-
         [Parameter(Mandatory = $true, Position = 2)]
         [ValidateScript( { if (Test-Path -Path $_ -PathType "Container") { $true } else { throw "Cannot find path $_" } })]
         [ValidateNotNullOrEmpty()]

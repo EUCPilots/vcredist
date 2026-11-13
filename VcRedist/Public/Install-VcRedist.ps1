@@ -14,10 +14,6 @@ function Install-VcRedist {
         [System.Management.Automation.PSObject] $VcList,
 
         [Parameter(Mandatory = $false)]
-        [System.ObsoleteAttribute("This parameter is not longer supported. The Path property must be on the object passed to -VcList.")]
-        [System.String] $Path,
-
-        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter] $Silent,
 
         [Parameter(Mandatory = $false)]
