@@ -31,7 +31,11 @@ InModuleScope VcRedist {
             Mock Test-PSCore { $false }
             Mock Get-Module { [PSCustomObject]@{ Name = "IntuneWin32App" } } -ParameterFilter { $Name -eq "IntuneWin32App" }
             Mock Get-RequiredVcRedistUpdatesFromIntune { $null }
-            Mock New-TemporaryFolder { Join-Path -Path $TestDrive -ChildPath "package" }
+            Mock New-TemporaryFolder {
+                $OutputFolder = Join-Path -Path $TestDrive -ChildPath "package"
+                New-Item -Path $OutputFolder -ItemType "Directory" -Force | Out-Null
+                $OutputFolder
+            }
             Mock New-IntuneWin32AppIcon { "icon" }
             Mock New-IntuneWin32AppPackage { [PSCustomObject]@{ Path = "package.intunewin" } }
             Mock New-IntuneWin32AppRequirementRule { [ordered]@{ architecture = $Architecture } }
@@ -50,6 +54,7 @@ InModuleScope VcRedist {
                     AdditionalRequirementRule = $AdditionalRequirementRule
                     DetectionRule = $DetectionRule
                     RequirementRule = $RequirementRule
+                    InstallCommandLine = $InstallCommandLine
                 }
                 [PSCustomObject]@{ id = "app" }
             }
@@ -74,6 +79,22 @@ InModuleScope VcRedist {
         It "Does not add a requirement when the switch is explicitly false" {
             Import-VcIntuneApplication -VcList $Item -ImportAsUpdate:$false | Out-Null
             Should -Invoke New-IntuneWin32AppRequirementRuleFile -Times 0
+        }
+
+        It "Uses the saved setup filename in the install command" {
+            Import-VcIntuneApplication -VcList $Item | Out-Null
+            $script:ImportedArguments.InstallCommandLine | Should -Be "$(Split-Path -Path $Item.Path -Leaf) $($Item.SilentInstall)"
+        }
+
+        It "Removes the temporary package folder after a successful import" {
+            Import-VcIntuneApplication -VcList $Item | Out-Null
+            Should -Invoke Remove-Item -Times 1 -ParameterFilter { $LiteralPath -eq (Join-Path -Path $TestDrive -ChildPath "package") }
+        }
+
+        It "Removes the temporary package folder when app creation fails" {
+            Mock Add-IntuneWin32App { throw "Upload failed" }
+            { Import-VcIntuneApplication -VcList $Item } | Should -Throw "*Upload failed*"
+            Should -Invoke Remove-Item -Times 1 -ParameterFilter { $LiteralPath -eq (Join-Path -Path $TestDrive -ChildPath "package") }
         }
 
         It "Adds the older-version file requirement for <Architecture>" -ForEach @(

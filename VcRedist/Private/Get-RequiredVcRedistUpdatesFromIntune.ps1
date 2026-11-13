@@ -44,28 +44,23 @@ function Get-RequiredVcRedistUpdatesFromIntune {
         [System.Management.Automation.PSObject] $VcList
     )
 
-    begin {
-        # Get the existing VcRedist Win32 applications from Intune
-        $ExistingIntuneApps = Get-VcRedistAppsFromIntune -VcList $VcList
-    }
-
     process {
-        foreach ($Application in $ExistingIntuneApps) {
-            $VcRedist = $VcList | Where-Object { $_.PackageId -eq $Application.packageId }
-            if ($null -eq $VcRedist) {
-                Write-Verbose -Message "No matching VcRedist found for application with ID: $($Application.Id). Skipping."
-                continue
-            }
-            else {
-                $Update = $false
-                if ([System.Version]$VcRedist.Version -gt [System.Version]$Application.displayVersion) {
-                    $Update = $true
-                    Write-Verbose -Message "Update required for $($Application.displayName): $($VcRedist.Version) > $($Application.displayVersion)."
+        foreach ($Redist in $VcList) {
+            $ExistingIntuneApps = Get-VcRedistAppsFromIntune -VcList $Redist
+            foreach ($Application in $ExistingIntuneApps) {
+                $IntuneVersion = $null
+                if (-not [System.Version]::TryParse([System.String]$Application.displayVersion, [ref]$IntuneVersion)) {
+                    throw [System.IO.InvalidDataException]::New("Intune application '$($Application.displayName)' has an invalid display version: '$($Application.displayVersion)'.")
+                }
+
+                $Update = [System.Version]$Redist.Version -gt $IntuneVersion
+                if ($Update) {
+                    Write-Verbose -Message "Update required for $($Application.displayName): $($Redist.Version) > $($Application.displayVersion)."
                 }
                 $Object = [PSCustomObject]@{
                     "AppId"          = $Application.Id
                     "IntuneVersion"  = $Application.displayVersion
-                    "UpdateVersion"  = $VcRedist.Version
+                    "UpdateVersion"  = $Redist.Version
                     "UpdateRequired" = $Update
                 }
                 Write-Output -InputObject $Object
