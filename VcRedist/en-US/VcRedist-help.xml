@@ -751,7 +751,7 @@
         <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none">
           <maml:name>CMPath</maml:name>
           <maml:description>
-            <maml:para>Specify a UNC path where the Visual C++ Redistributables will be distributed from</maml:para>
+            <maml:para>Specify an existing UNC directory where the Visual C++ Redistributables will be distributed from</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -822,7 +822,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>NoCopy</maml:name>
           <maml:description>
-            <maml:para>Do not copy the Visual C++ Redistributable binaries when importing applications into Configuration Manager.</maml:para>
+            <maml:para>Do not copy the Visual C++ Redistributable binaries when importing applications into Configuration Manager. The installer must already exist at its expected content location.</maml:para>
           </maml:description>
           <dev:type>
             <maml:name>SwitchParameter</maml:name>
@@ -894,7 +894,7 @@
       <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none">
         <maml:name>CMPath</maml:name>
         <maml:description>
-          <maml:para>Specify a UNC path where the Visual C++ Redistributables will be distributed from</maml:para>
+          <maml:para>Specify an existing UNC directory where the Visual C++ Redistributables will be distributed from</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -942,7 +942,7 @@
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
         <maml:name>NoCopy</maml:name>
         <maml:description>
-          <maml:para>Do not copy the Visual C++ Redistributable binaries when importing applications into Configuration Manager.</maml:para>
+          <maml:para>Do not copy the Visual C++ Redistributable binaries when importing applications into Configuration Manager. The installer must already exist at its expected content location.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
         <dev:type>
