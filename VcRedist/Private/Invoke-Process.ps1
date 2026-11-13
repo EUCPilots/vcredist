@@ -113,6 +113,8 @@ function Invoke-Process {
                 $startProcessParams.ArgumentList = $quotedArguments -join " "
             }
             $cmd = Start-Process @startProcessParams
+            # Retain the handle so Windows PowerShell 5.1 can read the exit code after the process exits.
+            [void]$cmd.Handle
 
             $stopReason = $null
             $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()

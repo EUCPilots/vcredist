@@ -72,6 +72,24 @@ InModuleScope VcRedist {
 				{ Invoke-Process @params } | Should -Not -Throw
 			}
 
+			It "Retains exit code <ExitCode> for a short-lived process" -TestCases @(
+				@{ ExitCode = 0; ArgumentList = @("/?") }
+				@{ ExitCode = 1; ArgumentList = @("/q", "VcRedist-Nonexistent-Executable-93F11FA9.exe") }
+			) {
+				param (
+					[System.Int32] $ExitCode,
+					[System.String[]] $ArgumentList
+				)
+
+				$params = @{
+					FilePath         = "$env:SystemRoot\System32\where.exe"
+					ArgumentList     = $ArgumentList
+					SuccessExitCodes = @($ExitCode)
+				}
+
+				{ Invoke-Process @params } | Should -Not -Throw
+			}
+
 			It "Stops a process that exceeds its timeout" {
 				$params = @{
 					FilePath       = $script:PowerShellExe
