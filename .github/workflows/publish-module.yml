@@ -130,7 +130,7 @@ jobs:
             echo "Release already exists; preserving its current draft state until Gallery verification."
           elif printf '%s\n' "$RESPONSE" | grep -Eq '^HTTP/[0-9.]+ 404'; then
             gh release create "$TAG" --verify-tag --draft --prerelease="$PRERELEASE" \
-              --title "VcRedist $TAG" --notes "Validated commit: $SHA. Gallery publication pending."
+              --title "$TAG" --notes "Validated commit: $SHA. Gallery publication pending."
           else
             printf '%s\n' "$RESPONSE" >&2
             exit 1
