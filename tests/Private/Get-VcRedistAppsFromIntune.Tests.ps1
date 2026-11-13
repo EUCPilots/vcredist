@@ -9,8 +9,7 @@ InModuleScope VcRedist {
     Describe "Get-VcRedistAppsFromIntune" {
         BeforeAll {
             function Get-IntuneWin32App { }
-            function Remove-IntuneWin32App { param ($Id) }
-            $script:Redist = Get-VcList -Source "Bundled" -Release "14" -Architecture "x64" -WarningAction "SilentlyContinue" |
+            $Redist = Get-VcList -Source "Bundled" -Release "14" -Architecture "x64" -WarningAction "SilentlyContinue" |
                 Select-Object -First 1
         }
 
@@ -80,6 +79,12 @@ InModuleScope VcRedist {
     }
 
     Describe "Intune functions with pipeline input" {
+        BeforeAll {
+            function Remove-IntuneWin32App { param ($Id) }
+            $Redist = Get-VcList -Source "Bundled" -Release "14" -Architecture "x64" -WarningAction "SilentlyContinue" |
+                Select-Object -First 1
+        }
+
         BeforeEach {
             $script:RedistA = $Redist.PSObject.Copy()
             $script:RedistB = $Redist.PSObject.Copy()
@@ -102,6 +107,8 @@ InModuleScope VcRedist {
             Should -Invoke Get-VcRedistAppsFromIntune -Times 2
             Should -Invoke Remove-IntuneWin32App -Times 2
             $script:RemovedIds.Count | Should -Be 2
+            $script:RemovedIds | Should -Contain "app-$($RedistA.PackageId)"
+            $script:RemovedIds | Should -Contain "app-$($RedistB.PackageId)"
         }
 
         It "Does not remove Intune apps with WhatIf" {
