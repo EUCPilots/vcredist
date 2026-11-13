@@ -18,7 +18,7 @@ function Test-VcManifest {
     )
 
     $Required = @("Name", "ProductCode", "Version", "URI", "Release", "Architecture", "Install",
-        "SilentInstall", "SilentUninstall", "UninstallKey", "PackageId", "DetectionFile", "Supported", "SupportedArchitecture")
+        "SilentInstall", "SilentUninstall", "SupportedArchitecture", "UninstallKey", "PackageId", "DetectionFile", "Supported", "SupportedArchitecture")
 
     if ($null -eq $Manifest) { throw "Manifest is empty." }
     foreach ($Property in "SchemaVersion", "Updated", "Entries") {
