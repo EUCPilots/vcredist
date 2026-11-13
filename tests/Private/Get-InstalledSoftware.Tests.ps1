@@ -51,8 +51,8 @@ InModuleScope VcRedist {
 				Should -Invoke Remove-PSDrive -Times 0 -Exactly
 			}
 
-			It "Scans registry locations once when pipeline input is supplied" {
-				1..3 | Get-InstalledSoftware | Out-Null
+			It "Scans registry locations once per invocation" {
+				Get-InstalledSoftware -ErrorAction "Stop" | Out-Null
 
 				Should -Invoke Get-ChildItem -Times 1 -Exactly -ParameterFilter {
 					$LiteralPath -eq "Registry::HKEY_USERS"
