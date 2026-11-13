@@ -110,7 +110,20 @@ function Update-VcMdtApplication {
                                 $ContentLocation = [System.IO.Path]::Combine((Resolve-Path -Path $MdtPath), "Applications", "$Publisher VcRedist", $VcRedist.Release, $VcRedist.Version, $VcRedist.Architecture)
                                 $params = @{
                                     FilePath         = "$env:SystemRoot\System32\robocopy.exe"
-                                    ArgumentList     = "`"$SourceFolder`" `"$ContentLocation`" *.exe /S /XJ /R:1 /W:1 /NP /NJH /NJS /NFL /NDL"
+                                    ArgumentList     = @(
+                                        $SourceFolder
+                                        $ContentLocation
+                                        "*.exe"
+                                        "/S"
+                                        "/XJ"
+                                        "/R:1"
+                                        "/W:1"
+                                        "/NP"
+                                        "/NJH"
+                                        "/NJS"
+                                        "/NFL"
+                                        "/NDL"
+                                    )
                                     SuccessExitCodes = 0..7
                                 }
                                 $result = Invoke-Process @params

@@ -42,7 +42,11 @@ InModuleScope VcRedist {
             Update-VcMdtApplication -VcList $VcRedist -MdtPath $TestDrive -WarningAction "SilentlyContinue"
 
             Should -Invoke Invoke-Process -Times 1 -ParameterFilter {
-                $ArgumentList -match '^".+" ".+" \*\.exe /S'
+                $ArgumentList.Count -ge 4 -and
+                    $ArgumentList[0] -and
+                    $ArgumentList[1] -and
+                    $ArgumentList[2] -eq "*.exe" -and
+                    $ArgumentList[3] -eq "/S"
             }
             Should -Invoke Set-ItemProperty -Times 1
         }

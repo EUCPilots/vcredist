@@ -162,7 +162,20 @@ function Import-VcConfigMgrApplication {
                                     try {
                                         $invokeProcessParams = @{
                                             FilePath         = "$env:SystemRoot\System32\robocopy.exe"
-                                            ArgumentList     = "`"$SourceFolder`" `"$ContentLocation`" `"$InstallerName`" /S /XJ /R:1 /W:1 /NP /NJH /NJS /NFL /NDL"
+                                            ArgumentList     = @(
+                                                $SourceFolder
+                                                $ContentLocation
+                                                $InstallerName
+                                                "/S"
+                                                "/XJ"
+                                                "/R:1"
+                                                "/W:1"
+                                                "/NP"
+                                                "/NJH"
+                                                "/NJS"
+                                                "/NFL"
+                                                "/NDL"
+                                            )
                                             SuccessExitCodes = 0..7
                                         }
                                         Invoke-Process @invokeProcessParams | Out-Null
