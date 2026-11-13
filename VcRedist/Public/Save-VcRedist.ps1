@@ -37,7 +37,9 @@ function Save-VcRedist {
     )
 
     begin {
-        $DownloadTimeout = [System.Int32](Get-VcConfig).Download.TimeoutSeconds
+        $Config = Get-VcConfig
+        $DownloadTimeout = [System.Int32]$Config.Download.TimeoutSeconds
+        $DownloadAllowedHosts = [System.String[]]$Config.Download.AllowedHosts
         $ShowProgressBar = $PSBoundParameters.ContainsKey("Verbose") -or $PSBoundParameters.ContainsKey("ShowProgress")
 
         # Create the target path if it does not exist; fail before any download if it is not a usable folder
@@ -133,6 +135,7 @@ function Save-VcRedist {
                             Uri          = $VcRedist.URI
                             OutFile      = $TempFile
                             UserAgent    = $UserAgent
+                            AllowedHosts = $DownloadAllowedHosts
                             TimeoutSec   = $DownloadTimeout
                             ShowProgress = $ShowProgressBar
                         }

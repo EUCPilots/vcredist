@@ -26,6 +26,7 @@ function Test-VcRedistUri {
     )
 
     begin {
+        $AllowedHosts = [System.String[]](Get-VcConfig).Download.AllowedHosts
         $ShowProgressBar = $PSBoundParameters.ContainsKey("Verbose") -or $PSBoundParameters.ContainsKey("ShowProgress")
     }
 
@@ -39,11 +40,12 @@ function Test-VcRedistUri {
             }
 
             $Result = $false
-            if (Test-VcDownloadUri -Uri $Object.URI) {
+            if (Test-VcDownloadUri -Uri $Object.URI -AllowedHosts $AllowedHosts) {
                 try {
                     $params = @{
                         Uri          = $Object.URI
                         Method       = "Head"
+                        AllowedHosts = $AllowedHosts
                         TimeoutSec   = 30
                         ShowProgress = $ShowProgressBar
                     }
