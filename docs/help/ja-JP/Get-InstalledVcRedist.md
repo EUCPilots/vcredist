@@ -13,7 +13,7 @@ schema: 2.0.0
 ## SYNTAX
 
 ```
-Get-InstalledVcRedist [-ExportAll] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-InstalledVcRedist [-Export <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -31,26 +31,27 @@ Get-InstalledVcRedist
 
 ### EXAMPLE 2
 ```
-Get-InstalledVcRedist -ExportAll
+Get-InstalledVcRedist -Export All
 ```
 
 説明: 追加および最小ランタイムを含め、現在のシステムにインストールされている Microsoft Visual C++ Redistributable を返します。
 
 ## PARAMETERS
 
-### -ExportAll
-通常は「プログラムと機能」に表示されない追加および最小ランタイムを含め、インストール済みの Redistributable をすべてエクスポートします。
+### -Export
+返すインストール済み Visual C++ Redistributable を指定します。Supported は主要な Redistributable エントリのみを返し、All は通常「プログラムと機能」に表示されない追加および最小ランタイム コンポーネントも含めます。既定値は Supported です。
 
 ```yaml
-Type: SwitchParameter
+Type: String
 Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: Named
-Default value: False
+Default value: Supported
 Accept pipeline input: False
 Accept wildcard characters: False
+Accepted values: Supported, All
 ```
 
 ### -ProgressAction

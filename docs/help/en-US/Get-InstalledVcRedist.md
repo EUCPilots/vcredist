@@ -13,7 +13,7 @@ Returns the installed Visual C++ Redistributables.
 ## SYNTAX
 
 ```
-Get-InstalledVcRedist [-ExportAll] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-InstalledVcRedist [[-Export] <String>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -31,26 +31,27 @@ Description: Returns the installed Microsoft Visual C++ Redistributables from th
 
 ### EXAMPLE 2
 ```
-Get-InstalledVcRedist -ExportAll
+Get-InstalledVcRedist -Export All
 ```
 
 Description: Returns the installed Microsoft Visual C++ Redistributables from the current system including the Additional and Minimum Runtimes.
 
 ## PARAMETERS
 
-### -ExportAll
-Export all installed Redistributables including the Additional and Minimum Runtimes typically hidden from Programs and Features.
+### -Export
+Defines the installed Visual C++ Redistributables to return. Supported returns primary Redistributable entries; All also includes the Additional and Minimum Runtime components typically hidden from Programs and Features. Defaults to Supported.
 
 ```yaml
-Type: SwitchParameter
+Type: String
 Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: Named
-Default value: False
+Default value: Supported
 Accept pipeline input: False
 Accept wildcard characters: False
+Accepted values: Supported, All
 ```
 
 ### -ProgressAction

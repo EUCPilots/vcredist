@@ -233,15 +233,20 @@
       <command:syntaxItem>
         <maml:name>Get-InstalledVcRedist</maml:name>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
-          <maml:name>ExportAll</maml:name>
+          <maml:name>Export</maml:name>
           <maml:description>
-            <maml:para>Exporta todos los redistribuibles instalados, incluidos los runtimes adicionales y mínimos que suelen estar ocultos en Programas y características.</maml:para>
+            <maml:para>Define qué Redistribuibles de Visual C++ instalados se devuelven. Supported devuelve solo las entradas principales; All también incluye los componentes de runtime adicionales y mínimos que suelen estar ocultos en Programas y características. El valor predeterminado es Supported.</maml:para>
           </maml:description>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" command:variableLength="false">Supported</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">All</command:parameterValue>
+          </command:parameterValueGroup>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
-            <maml:name>SwitchParameter</maml:name>
+            <maml:name>String</maml:name>
             <maml:uri />
           </dev:type>
-          <dev:defaultValue>False</dev:defaultValue>
+          <dev:defaultValue>Supported</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
           <maml:name>ProgressAction</maml:name>
@@ -259,16 +264,16 @@
     </command:syntax>
     <command:parameters>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
-        <maml:name>ExportAll</maml:name>
+        <maml:name>Export</maml:name>
         <maml:description>
-          <maml:para>Exporta todos los redistribuibles instalados, incluidos los runtimes adicionales y mínimos que suelen estar ocultos en Programas y características.</maml:para>
+          <maml:para>Define qué Redistribuibles de Visual C++ instalados se devuelven. Supported devuelve solo las entradas principales; All también incluye los componentes de runtime adicionales y mínimos que suelen estar ocultos en Programas y características. El valor predeterminado es Supported.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
-          <maml:name>SwitchParameter</maml:name>
+          <maml:name>String</maml:name>
           <maml:uri />
         </dev:type>
-        <dev:defaultValue>False</dev:defaultValue>
+        <dev:defaultValue>Supported</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
         <maml:name>ProgressAction</maml:name>
@@ -309,7 +314,7 @@
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
-        <dev:code>Get-InstalledVcRedist -ExportAll</dev:code>
+        <dev:code>Get-InstalledVcRedist -Export All</dev:code>
         <dev:remarks>
           <maml:para>Descripción: Devuelve los Redistribuibles de Microsoft Visual C++ instalados en el sistema actual, incluidos los runtimes adicionales y mínimos.</maml:para>
         </dev:remarks>
