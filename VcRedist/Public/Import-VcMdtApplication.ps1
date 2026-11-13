@@ -139,11 +139,9 @@ function Import-VcMdtApplication {
             $VcMatched = $existingVcRedists | Where-Object { $_.Name -eq $ApplicationName }
 
             # Remove the matched VcRedist application
-            if ($PSBoundParameters.ContainsKey("Force")) {
-                if ($VcMatched.UninstallKey -eq $VcRedist.ProductCode) {
-                    if ($PSCmdlet.ShouldProcess($VcMatched.Name, "Remove")) {
-                        Remove-Item -Path $("$MdtTargetFolder\$($VcMatched.Name)") -Force
-                    }
+            if ($Force.IsPresent -and $null -ne $VcMatched) {
+                if ($PSCmdlet.ShouldProcess($VcMatched.Name, "Remove")) {
+                    Remove-Item -Path "$MdtTargetFolder\$($VcMatched.Name)" -Force
                 }
             }
 

@@ -90,7 +90,10 @@ function Update-VcMdtApplication {
                     Path        = $MdtTargetFolder
                     ErrorAction = "Continue"
                 }
-                $ExistingVcRedist = Get-ChildItem @params | Where-Object { $_.ShortName -match "$($VcRedist.Release) $($VcRedist.Architecture)" }
+                $ExpectedShortName = "$($VcRedist.Name) $($VcRedist.Architecture)"
+                $ExistingVcRedist = Get-ChildItem @params | Where-Object { $_.ShortName -eq $ExpectedShortName } |
+                    Sort-Object -Property @{ Expression = { [System.Version]$_.Version }; Descending = $true } |
+                    Select-Object -First 1
 
                 if ($null -ne $ExistingVcRedist) {
                     try {
@@ -110,28 +113,21 @@ function Update-VcMdtApplication {
                                 $SourceFolder = $(Split-Path -Path $VcRedist.Path -Parent)
                                 $ContentLocation = [System.IO.Path]::Combine((Resolve-Path -Path $MdtPath), "Applications", "$Publisher VcRedist", $VcRedist.Release, $VcRedist.Version, $VcRedist.Architecture)
                                 $params = @{
-                                    FilePath     = "$env:SystemRoot\System32\robocopy.exe"
-                                    ArgumentList = "*.exe `"$SourceFolder`" `"$ContentLocation`" /S /XJ /R:1 /W:1 /NP /NJH /NJS /NFL /NDL"
+                                    FilePath         = "$env:SystemRoot\System32\robocopy.exe"
+                                    ArgumentList     = "`"$SourceFolder`" `"$ContentLocation`" *.exe /S /XJ /R:1 /W:1 /NP /NJH /NJS /NFL /NDL"
                                     SuccessExitCodes = 0..7
                                 }
                                 $result = Invoke-Process @params
                             }
                             catch {
-                                $ExeTarget = Join-Path -Path $ContentLocation -ChildPath $(Split-Path -Path $VcRedist.URI -Leaf)
-                                if (Test-Path -Path $ExeTarget) {
-                                    Write-Verbose -Message "Copy successful: '$ExeTarget'."
-                                }
-                                else {
-                                    Write-Warning -Message "Failed to copy Redistributables from '$SourceFolder' to '$ContentLocation'."
-                                    Write-Warning -Message "Captured error (if any): [$result]."
-                                    throw $_
-                                }
+                                Write-Warning -Message "Failed to copy Redistributables from '$SourceFolder' to '$ContentLocation'."
+                                throw $_
                             }
 
                             # Check the existing command line on the application and update
                             if ($PSCmdlet.ShouldProcess($ExistingVcRedist.PSPath, "Update CommandLine")) {
                                 $params = @{
-                                    Path  = (Join-Path -Path $MdtTargetFolder -ChildPath $ExistingVcRedist.Name)
+                                    Path  = "$MdtTargetFolder\$($ExistingVcRedist.Name)"
                                     Name  = "CommandLine"
                                     Value = ".\$(Split-Path -Path $VcRedist.URI -Leaf) $(if ($Silent.IsPresent) { $VcRedist.SilentInstall } else { $VcRedist.Install })"
                                 }
@@ -141,7 +137,7 @@ function Update-VcMdtApplication {
                             # Update ProductCode
                             if ($PSCmdlet.ShouldProcess($ExistingVcRedist.PSPath, "Update UninstallKey")) {
                                 $sipParams = @{
-                                    Path  = (Join-Path -Path $MdtTargetFolder -ChildPath $ExistingVcRedist.Name)
+                                    Path  = "$MdtTargetFolder\$($ExistingVcRedist.Name)"
                                     Name  = "UninstallKey"
                                     Value = $VcRedist.ProductCode
                                 }
@@ -151,7 +147,7 @@ function Update-VcMdtApplication {
                             # Update Version number
                             if ($PSCmdlet.ShouldProcess($ExistingVcRedist.PSPath, "Update Version")) {
                                 $sipParams = @{
-                                    Path  = (Join-Path -Path $MdtTargetFolder -ChildPath $ExistingVcRedist.Name)
+                                    Path  = "$MdtTargetFolder\$($ExistingVcRedist.Name)"
                                     Name  = "Version"
                                     Value = $VcRedist.Version
                                 }
@@ -160,7 +156,7 @@ function Update-VcMdtApplication {
 
                             if ($PSCmdlet.ShouldProcess($ExistingVcRedist.PSPath, "Update Source")) {
                                 $sipParams = @{
-                                    Path  = (Join-Path -Path $MdtTargetFolder -ChildPath $ExistingVcRedist.Name)
+                                    Path  = "$MdtTargetFolder\$($ExistingVcRedist.Name)"
                                     Name  = "Source"
                                     Value = $ExistingVcRedist.Source -replace "(\d+(\.\d+){1,4})", $VcRedist.Version
                                 }
@@ -169,7 +165,7 @@ function Update-VcMdtApplication {
 
                             if ($PSCmdlet.ShouldProcess($ExistingVcRedist.PSPath, "Update WorkingDirectory")) {
                                 $sipParams = @{
-                                    Path  = (Join-Path -Path $MdtTargetFolder -ChildPath $ExistingVcRedist.Name)
+                                    Path  = "$MdtTargetFolder\$($ExistingVcRedist.Name)"
                                     Name  = "WorkingDirectory"
                                     Value = $ExistingVcRedist.WorkingDirectory -replace "(\d+(\.\d+){1,4})", $VcRedist.Version
                                 }
@@ -178,7 +174,7 @@ function Update-VcMdtApplication {
 
                             if ($PSCmdlet.ShouldProcess($ExistingVcRedist.PSPath, "Update Name")) {
                                 $sipParams = @{
-                                    Path  = (Join-Path -Path $MdtTargetFolder -ChildPath $ExistingVcRedist.Name)
+                                    Path  = "$MdtTargetFolder\$($ExistingVcRedist.Name)"
                                     Name  = "Name"
                                     Value = $ExistingVcRedist.Name -replace "(\d+(\.\d+){1,4})", $VcRedist.Version
                                 }
