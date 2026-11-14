@@ -39,8 +39,8 @@ function Invoke-Process {
         [System.String] $FilePath,
 
         [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [System.String[]] $ArgumentList,
+        [ValidateNotNull()]
+        [System.Object[]] $ArgumentList,
 
         # Exit codes treated as success. Some tools (e.g. robocopy) use non-zero codes for success
         [Parameter()]

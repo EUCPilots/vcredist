@@ -41,6 +41,38 @@ InModuleScope VcRedist {
 				Invoke-Process @params | Should -Be "value with spaces"
 			}
 
+			It "Preserves empty arguments" {
+				$ArgumentScriptPath = Join-Path -Path $TestDrive -ChildPath "WriteArgumentCount.ps1"
+				Set-Content -LiteralPath $ArgumentScriptPath -Value '[Console]::Write($args.Count)' -Encoding "UTF8"
+				$params = @{
+					FilePath     = $script:PowerShellExe
+					ArgumentList = @("-NoProfile", "-File", $ArgumentScriptPath, "")
+				}
+
+				Invoke-Process @params | Should -Be "1"
+			}
+
+			It "Accepts an empty argument list" {
+				$params = @{
+					FilePath         = "$env:SystemRoot\System32\whoami.exe"
+					ArgumentList     = @()
+					SuccessExitCodes = @(0)
+				}
+
+				{ Invoke-Process @params } | Should -Not -Throw
+			}
+
+			It "Rejects null arguments before starting the process" {
+				Mock Start-Process { throw "Process should not have started." }
+				$params = @{
+					FilePath     = $script:PowerShellExe
+					ArgumentList = @("argument", $null)
+				}
+
+				{ Invoke-Process @params } | Should -Throw
+				Should -Invoke Start-Process -Times 0
+			}
+
 			It "Writes successful process standard error to the error stream" {
 				$params = @{
 					FilePath     = $script:PowerShellExe
