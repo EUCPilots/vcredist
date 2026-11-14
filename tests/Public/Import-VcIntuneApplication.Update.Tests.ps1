@@ -6,7 +6,7 @@
 param ()
 
 InModuleScope VcRedist {
-    Describe "Import-VcIntuneApplication update requirements" {
+    Describe "Import-VcIntuneApplication update requirements" -Tag "Intune" {
         BeforeAll {
             function New-IntuneWin32AppIcon { param ($FilePath) }
             function New-IntuneWin32AppPackage { param ($SourceFolder, $SetupFile, $OutputFolder) }
@@ -31,7 +31,11 @@ InModuleScope VcRedist {
             Mock Test-PSCore { $false }
             Mock Get-Module { [PSCustomObject]@{ Name = "IntuneWin32App" } } -ParameterFilter { $Name -eq "IntuneWin32App" }
             Mock Get-RequiredVcRedistUpdatesFromIntune { $null }
-            Mock New-TemporaryFolder { Join-Path -Path $TestDrive -ChildPath "package" }
+            Mock New-TemporaryFolder {
+                $OutputFolder = Join-Path -Path $TestDrive -ChildPath "package"
+                New-Item -Path $OutputFolder -ItemType "Directory" -Force | Out-Null
+                $OutputFolder
+            }
             Mock New-IntuneWin32AppIcon { "icon" }
             Mock New-IntuneWin32AppPackage { [PSCustomObject]@{ Path = "package.intunewin" } }
             Mock New-IntuneWin32AppRequirementRule { [ordered]@{ architecture = $Architecture } }
@@ -50,6 +54,7 @@ InModuleScope VcRedist {
                     AdditionalRequirementRule = $AdditionalRequirementRule
                     DetectionRule = $DetectionRule
                     RequirementRule = $RequirementRule
+                    InstallCommandLine = $InstallCommandLine
                 }
                 [PSCustomObject]@{ id = "app" }
             }
@@ -76,13 +81,30 @@ InModuleScope VcRedist {
             Should -Invoke New-IntuneWin32AppRequirementRuleFile -Times 0
         }
 
+        It "Uses the saved setup filename in the install command" {
+            Import-VcIntuneApplication -VcList $Item | Out-Null
+            $script:ImportedArguments.InstallCommandLine | Should -Be "$(Split-Path -Path $Item.Path -Leaf) $($Item.SilentInstall)"
+        }
+
+        It "Removes the temporary package folder after a successful import" {
+            Import-VcIntuneApplication -VcList $Item | Out-Null
+            Should -Invoke Remove-Item -Times 1 -ParameterFilter { $LiteralPath -eq (Join-Path -Path $TestDrive -ChildPath "package") }
+        }
+
+        It "Removes the temporary package folder when app creation fails" {
+            Mock Add-IntuneWin32App { throw "Upload failed" }
+            { Import-VcIntuneApplication -VcList $Item } | Should -Throw "*Upload failed*"
+            Should -Invoke Remove-Item -Times 1 -ParameterFilter { $LiteralPath -eq (Join-Path -Path $TestDrive -ChildPath "package") }
+        }
+
         It "Adds the older-version file requirement for <Architecture>" -ForEach @(
-            @{ Architecture = "x86"; Redirect = $true }
-            @{ Architecture = "x64"; Redirect = $false }
-            @{ Architecture = "arm64"; Redirect = $false }
+            @{ Architecture = "x86"; Supported = @("x86", "AMD64", "ARM64"); Expected = "AllWithARM64"; Redirect = $true }
+            @{ Architecture = "x64"; Supported = @("AMD64"); Expected = "x64"; Redirect = $false }
+            @{ Architecture = "arm64"; Supported = @("ARM64"); Expected = "arm64"; Redirect = $false }
         ) {
             $Redist = $Item.PSObject.Copy()
             $Redist.Architecture = $Architecture
+            $Redist.SupportedArchitecture = $Supported
             Import-VcIntuneApplication -VcList $Redist -ImportAsUpdate | Out-Null
 
             Should -Invoke New-IntuneWin32AppRequirementRuleFile -Times 1 -ParameterFilter {
@@ -97,7 +119,7 @@ InModuleScope VcRedist {
             $Rules[0].detectionValue | Should -Be $Redist.Version
             $Rules[0].check32BitOn64System | Should -Be $Redirect
             $script:ImportedArguments.DetectionRule | Should -Be "detection"
-            $script:ImportedArguments.RequirementRule.architecture | Should -Be (Get-IntuneRequirementArchitecture -Architecture $Architecture)
+            $script:ImportedArguments.RequirementRule.architecture | Should -Be $Expected
         }
 
         It "Uses each bundled package's detection file and version for its update requirement" {
@@ -169,6 +191,14 @@ InModuleScope VcRedist {
             Mock Get-RequiredVcRedistUpdatesFromIntune { [PSCustomObject]@{ UpdateRequired = $false } }
             Import-VcIntuneApplication -VcList $Item -ImportAsUpdate | Out-Null
             Should -Invoke New-IntuneWin32AppRequirementRuleFile -Times 0
+            Should -Invoke Add-IntuneWin32App -Times 0
+        }
+
+        It "Rejects an unrepresentable architecture combination before packaging" {
+            $Redist = $Item.PSObject.Copy()
+            $Redist.SupportedArchitecture = @("AMD64", "ARM64")
+            { Import-VcIntuneApplication -VcList $Redist } | Should -Throw "*cannot represent*"
+            Should -Invoke New-IntuneWin32AppPackage -Times 0
             Should -Invoke Add-IntuneWin32App -Times 0
         }
     }

@@ -1,0 +1,27 @@
+﻿TOPIC
+    about_vcredist
+
+SHORT DESCRIPTION
+    Administración del ciclo de vida de los Redistribuibles de Microsoft Visual C++.
+
+LONG DESCRIPTION
+    VcRedist es un módulo de PowerShell para administrar el ciclo de vida de los
+    Redistribuibles de Visual C++. VcRedist descarga los redistribuibles compatibles (y
+    no compatibles) para su instalación local, la implementación de imágenes maestras o
+    su importación como aplicaciones en Microsoft Deployment Toolkit, Microsoft
+    Endpoint Configuration Manager o Microsoft Intune. Admite instalaciones pasivas y
+    silenciosas, así como desinstalaciones, de los Redistribuibles de Visual C++.
+
+NOTE
+    Consulta la lista de Redistribuibles de Microsoft Visual C++ compatibles: https://support.microsoft.com/en-au/help/2977003/the-latest-supported-visual-c-downloads.
+    Consulta la documentación de VcRedist: https://vcredist.com/.
+
+TROUBLESHOOTING NOTE
+    Consulta los problemas conocidos: https://vcredist.com/known-issues.
+
+SEE ALSO
+    Evergreen: https://stealthpuppy.com/Evergreen/index.
+
+KEYWORDS
+    - VcRedist, Visual C++ Redistributables, Microsoft
+

@@ -17,7 +17,7 @@ BeforeDiscovery {
     }
 }
 
-Describe "Remove-VcIntuneApplication" -Skip:$Skip {
+Describe "Remove-VcIntuneApplication" -Skip:$Skip -Tag "Intune" {
     BeforeAll {
     }
 

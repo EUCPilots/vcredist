@@ -65,6 +65,7 @@ function Import-VcIntuneApplication {
         }
 
         foreach ($VcRedist in $VcList) {
+            $RequirementArchitecture = Get-IntuneRequirementArchitecture -SupportedArchitecture $VcRedist.SupportedArchitecture
 
             # Check if the package already exists in Intune
             $AppDetails = Get-RequiredVcRedistUpdatesFromIntune -VcList $VcRedist
@@ -83,70 +84,77 @@ function Import-VcIntuneApplication {
                     $AdditionalRequirementRule = @(New-IntuneWin32AppRequirementRuleFile @AdditionalRequirementArgs)
                 }
 
-                # Package MSI as .intunewin file
-                $OutputFolder = New-TemporaryFolder
-                $params = @{
-                    SourceFolder = $(Split-Path -Path $VcRedist.Path -Parent)
-                    SetupFile    = $(Split-Path -Path $VcRedist.Path -Leaf)
-                    OutputFolder = $OutputFolder
-                }
-                $Package = New-IntuneWin32AppPackage @params
-                Write-Verbose -Message "Created IntuneWin package: $($Package.Path)."
-
                 # Requirement rule
                 $params = @{
-                    Architecture                   = Get-IntuneRequirementArchitecture -Architecture $VcRedist.Architecture
+                    Architecture                   = $RequirementArchitecture
                     MinimumSupportedWindowsRelease = $IntuneManifest.RequirementRule.MinimumRequiredOperatingSystem
                     MinimumFreeDiskSpaceInMB       = $IntuneManifest.RequirementRule.SizeInMBValue
                 }
                 $RequirementRule = New-IntuneWin32AppRequirementRule @params
 
-                # Create the detection rules for the Win32 app
-                $DetectionRules = New-IntuneWin32AppDetectionRule -VcList $VcRedist -IntuneManifest $IntuneManifest
-
-                # Construct a table of default parameters for Win32 app
-                $DisplayName = "$($IntuneManifest.Information.Publisher) $($VcRedist.Name) $($VcRedist.Version) $($VcRedist.Architecture)"
-                Write-Verbose -Message "Creating Win32 app for $DisplayName."
-
-                # Create a Notes property with identifying information
-                $Notes = [PSCustomObject] @{
-                    "CreatedBy" = "VcRedist"
-                    "Guid"      = $VcRedist.PackageId
-                    "Date"      = $(Get-Date -Format "yyyy-MM-dd")
-                } | ConvertTo-Json -Compress
-
-                $Win32AppArgs = @{
-                    "FilePath"                 = $Package.Path
-                    "DisplayName"              = $DisplayName
-                    "Description"              = "$($IntuneManifest.Information.Description). $DisplayName"
-                    "AppVersion"               = $VcRedist.Version
-                    "Notes"                    = $Notes
-                    "Publisher"                = $IntuneManifest.Information.Publisher
-                    "InformationURL"           = $IntuneManifest.Information.InformationURL
-                    "PrivacyURL"               = $IntuneManifest.Information.PrivacyURL
-                    "CompanyPortalFeaturedApp" = $false
-                    "InstallExperience"        = $IntuneManifest.Program.InstallExperience
-                    "RestartBehavior"          = $IntuneManifest.Program.DeviceRestartBehavior
-                    "DetectionRule"            = $DetectionRules
-                    "RequirementRule"          = $RequirementRule
-                    "InstallCommandLine"       = "$(Split-Path -Path $VcRedist.URI -Leaf) $($VcRedist.SilentInstall)"
-                    "UninstallCommandLine"     = $VcRedist.SilentUninstall
+                $OutputFolder = New-TemporaryFolder
+                if ([System.String]::IsNullOrWhiteSpace([System.String]$OutputFolder)) {
+                    throw [System.IO.IOException]::New("Unable to create a temporary folder for the Intune package.")
                 }
-                if ($null -ne $Icon) {
-                    $Win32AppArgs.Add("Icon", $Icon)
-                }
-                if ($ImportAsUpdate) {
-                    $Win32AppArgs.Add("AdditionalRequirementRule", $AdditionalRequirementRule)
-                }
-                $Application = Add-IntuneWin32App @Win32AppArgs
-                if ($null -ne $Application) {
-                    # Exclude the largeIcon property from the output
-                    $Application | Select-Object -Property * -ExcludeProperty "largeIcon" | Write-Output
-                }
+                try {
+                    $params = @{
+                        SourceFolder = Split-Path -Path $VcRedist.Path -Parent
+                        SetupFile    = Split-Path -Path $VcRedist.Path -Leaf
+                        OutputFolder = $OutputFolder
+                    }
+                    $Package = New-IntuneWin32AppPackage @params -ErrorAction "Stop"
+                    Write-Verbose -Message "Created IntuneWin package: $($Package.Path)."
 
-                # Clean up the temporary intunewin package
-                Write-Verbose -Message "Removing temporary output folder: $OutputFolder."
-                Remove-Item -LiteralPath $OutputFolder -Recurse -Force -ErrorAction "SilentlyContinue"
+                    $DetectionRules = New-IntuneWin32AppDetectionRule -VcList $VcRedist -IntuneManifest $IntuneManifest -ErrorAction "Stop"
+
+                    $DisplayName = "$($IntuneManifest.Information.Publisher) $($VcRedist.Name) $($VcRedist.Version) $($VcRedist.Architecture)"
+                    Write-Verbose -Message "Creating Win32 app for $DisplayName."
+
+                    $Notes = [PSCustomObject] @{
+                        "CreatedBy" = "VcRedist"
+                        "Guid"      = $VcRedist.PackageId
+                        "Date"      = $(Get-Date -Format "yyyy-MM-dd")
+                    } | ConvertTo-Json -Compress
+
+                    $Win32AppArgs = @{
+                        "FilePath"                 = $Package.Path
+                        "DisplayName"              = $DisplayName
+                        "Description"              = "$($IntuneManifest.Information.Description). $DisplayName"
+                        "AppVersion"               = $VcRedist.Version
+                        "Notes"                    = $Notes
+                        "Publisher"                = $IntuneManifest.Information.Publisher
+                        "InformationURL"           = $IntuneManifest.Information.InformationURL
+                        "PrivacyURL"               = $IntuneManifest.Information.PrivacyURL
+                        "CompanyPortalFeaturedApp" = $false
+                        "InstallExperience"        = $IntuneManifest.Program.InstallExperience
+                        "RestartBehavior"          = $IntuneManifest.Program.DeviceRestartBehavior
+                        "DetectionRule"            = $DetectionRules
+                        "RequirementRule"          = $RequirementRule
+                        "InstallCommandLine"       = "$([System.IO.Path]::GetFileName($VcRedist.Path)) $($VcRedist.SilentInstall)"
+                        "UninstallCommandLine"     = $VcRedist.SilentUninstall
+                    }
+                    if ($null -ne $Icon) {
+                        $Win32AppArgs.Add("Icon", $Icon)
+                    }
+                    if ($ImportAsUpdate) {
+                        $Win32AppArgs.Add("AdditionalRequirementRule", $AdditionalRequirementRule)
+                    }
+                    $Application = Add-IntuneWin32App @Win32AppArgs -ErrorAction "Stop"
+                    if ($null -ne $Application) {
+                        $Application | Select-Object -Property * -ExcludeProperty "largeIcon" | Write-Output
+                    }
+                }
+                finally {
+                    if (Test-Path -LiteralPath $OutputFolder -PathType "Container") {
+                        Write-Verbose -Message "Removing temporary output folder: $OutputFolder."
+                        try {
+                            Remove-Item -LiteralPath $OutputFolder -Recurse -Force -ErrorAction "Stop"
+                        }
+                        catch {
+                            Write-Warning -Message "Unable to remove temporary output folder '$OutputFolder': $($_.Exception.Message)"
+                        }
+                    }
+                }
             }
             elseif (-not $ImportRequired) {
                 Write-Verbose -Message "No update required for $($VcRedist.Name) $($VcRedist.Version) $($VcRedist.Architecture)."

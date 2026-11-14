@@ -7,7 +7,7 @@
 param ()
 
 InModuleScope VcRedist {
-    Describe -Name "New-MdtDrive" {
+    Describe -Name "New-MdtDrive" -Tag "MDT" {
         BeforeAll {
             function Add-MDTPersistentDrive { param ([Parameter(ValueFromPipeline)] $InputObject) process { $InputObject } }
             function Get-MdtPersistentDrive { }

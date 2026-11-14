@@ -1,21 +1,21 @@
 function Get-InstalledSoftware {
     <#
         .SYNOPSIS
-            Retrieves a list of all software installed
+            Retrieves software registered in machine and loaded-user uninstall keys.
 
         .EXAMPLE
             Get-InstalledSoftware
 
-            This example retrieves all software installed on the local computer
+            This example retrieves software registered on the local computer and in loaded user profiles.
 
         .PARAMETER Name
-            The software title you"d like to limit the query to.
+            The literal software title prefix to limit the query to.
 
         .NOTES
             Author: Adam Bertram
             URL: https://4sysops.com/archives/find-the-product-guid-of-installed-software-with-powershell/
     #>
-    [CmdletBinding(SupportsShouldProcess = $false)]
+    [CmdletBinding()]
     [OutputType([System.Management.Automation.PSObject])]
     param (
         [Parameter()]
@@ -23,44 +23,82 @@ function Get-InstalledSoftware {
         [System.String] $Name
     )
 
-    process {
-        $UninstallKeys = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall", "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
-        $null = New-PSDrive -Name "HKU" -PSProvider "Registry" -Root "Registry::HKEY_USERS" -ErrorAction "SilentlyContinue"
+    $UninstallKeys = @(
+        "Registry::HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall"
+        "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
+    )
 
-        $UninstallKeys += Get-ChildItem -Path "HKU:" -ErrorAction "SilentlyContinue" | `
-            Where-Object { $_.Name -match "S-\d-\d+-(\d+-){1,14}\d+$" } | `
-            ForEach-Object { "HKU:\$($_.PSChildName)\Software\Microsoft\Windows\CurrentVersion\Uninstall" }
-
-        foreach ($UninstallKey in $UninstallKeys) {
-            if ($PSBoundParameters.ContainsKey("Name")) {
-                $WhereBlock = { ($_.PSChildName -match "^{[A-Z0-9]{8}-([A-Z0-9]{4}-){3}[A-Z0-9]{12}}$") -and ($_.GetValue("DisplayName") -like "$Name*") }
-            }
-            else {
-                $WhereBlock = { ($_.PSChildName -match "^{[A-Z0-9]{8}-([A-Z0-9]{4}-){3}[A-Z0-9]{12}}$") -and ($_.GetValue("DisplayName")) }
-            }
-
-            $SelectProperties = @(
-                @{n = "Publisher"; e = { $_.GetValue("Publisher") } },
-                @{n = "Name"; e = { $_.GetValue("DisplayName") } },
-                @{n = "Version"; e = { $_.GetValue("DisplayVersion") } },
-                @{n = "ProductCode"; e = { $_.PSChildName } },
-                @{n = "BundleCachePath"; e = { $_.GetValue("BundleCachePath") } },
-                @{n = "Architecture"; e = { if ($_.GetValue("DisplayName") -like "*x64*") { "x64" } else { "x86" } } },
-                @{n = "Release"; e = { if ($_.GetValue("DisplayName") -match [RegEx]"(\d{4})\s+") { $matches[0].Trim(" ") } elseif ($_.GetValue("DisplayName") -match [RegEx]"v(\d+)") { $matches[1].Trim(" ") } } },
-                @{n = "UninstallString"; e = { $_.GetValue("UninstallString") } },
-                @{n = "QuietUninstallString"; e = { $_.GetValue("QuietUninstallString") } },
-                @{n = "UninstallKey"; e = { $UninstallKey } }
-            )
-
-            $params = @{
-                Path        = $UninstallKey
-                ErrorAction = "SilentlyContinue"
-            }
-            Get-ChildItem @params | Where-Object $WhereBlock | Select-Object -Property $SelectProperties
+    try {
+        $LoadedUserHives = Get-ChildItem -LiteralPath "Registry::HKEY_USERS" -ErrorAction "Stop" |
+            Where-Object { $_.PSChildName -match "^S-\d-\d+-(\d+-){1,14}\d+$" }
+        $UninstallKeys += $LoadedUserHives | ForEach-Object {
+            "Registry::HKEY_USERS\$($_.PSChildName)\Software\Microsoft\Windows\CurrentVersion\Uninstall"
         }
     }
+    catch {
+        $PSCmdlet.WriteError($_)
+    }
 
-    end {
-        Remove-PSDrive -Name "HKU" -ErrorAction "SilentlyContinue"
+    $NamePattern = if ($PSBoundParameters.ContainsKey("Name")) {
+        [System.Management.Automation.WildcardPattern]::Escape($Name) + "*"
+    }
+
+    foreach ($UninstallKey in $UninstallKeys) {
+        try {
+            if (-not (Test-Path -LiteralPath $UninstallKey -ErrorAction "Stop")) {
+                continue
+            }
+
+            $UninstallEntries = Get-ChildItem -LiteralPath $UninstallKey -ErrorAction "Stop"
+        }
+        catch {
+            $PSCmdlet.WriteError($_)
+            continue
+        }
+
+        foreach ($UninstallEntry in $UninstallEntries) {
+            $DisplayName = $UninstallEntry.GetValue("DisplayName")
+            if ([System.String]::IsNullOrWhiteSpace($DisplayName)) {
+                continue
+            }
+            if ($NamePattern -and $DisplayName -notlike $NamePattern) {
+                continue
+            }
+
+            $Architecture = $null
+            if ($DisplayName -match "(?i)\barm64\b") {
+                $Architecture = "arm64"
+            }
+            elseif ($DisplayName -match "(?i)\b(?:x64|amd64)\b") {
+                $Architecture = "x64"
+            }
+            elseif ($DisplayName -match "(?i)\bx86\b") {
+                $Architecture = "x86"
+            }
+
+            $Release = if ($DisplayName -match "(\d{4})\s+") {
+                $Matches[1]
+            }
+            elseif ($DisplayName -match "v(\d+)") {
+                $Matches[1]
+            }
+
+            $ProductCode = if ($UninstallEntry.PSChildName -match "^\{[A-Fa-f0-9]{8}(-[A-Fa-f0-9]{4}){3}-[A-Fa-f0-9]{12}\}$") {
+                $UninstallEntry.PSChildName
+            }
+
+            [PSCustomObject]@{
+                Publisher          = $UninstallEntry.GetValue("Publisher")
+                Name               = $DisplayName
+                Version            = $UninstallEntry.GetValue("DisplayVersion")
+                ProductCode        = $ProductCode
+                BundleCachePath    = $UninstallEntry.GetValue("BundleCachePath")
+                Architecture       = $Architecture
+                Release            = $Release
+                UninstallString    = $UninstallEntry.GetValue("UninstallString")
+                QuietUninstallString = $UninstallEntry.GetValue("QuietUninstallString")
+                UninstallKey       = $UninstallKey
+            }
+        }
     }
 }

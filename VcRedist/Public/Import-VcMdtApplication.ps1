@@ -14,10 +14,6 @@ function Import-VcMdtApplication {
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSObject] $VcList,
 
-        [Parameter(Mandatory = $false)]
-        [System.ObsoleteAttribute("This parameter is not longer supported. The Path property must be on the object passed to -VcList.")]
-        [System.String] $Path,
-
         [Parameter(Mandatory = $true, Position = 2)]
         [ValidateScript( { if (Test-Path -Path $_ -PathType "Container") { $true } else { throw "Cannot find path $_" } })]
         [ValidateNotNullOrEmpty()]
@@ -119,7 +115,15 @@ function Import-VcMdtApplication {
 
             # Set variables
             Write-Verbose -Message "processing: '$($VcRedist.Name) $($VcRedist.Architecture)'."
-            $supportedPlatform = if ($VcRedist.Architecture -eq "x86") {
+            $SupportedArchitecture = @(Get-VcSupportedArchitecture -SupportedArchitecture $VcRedist.SupportedArchitecture)
+            if ($SupportedArchitecture -notcontains "x86" -and $SupportedArchitecture -notcontains "AMD64") {
+                Write-Warning -Message "Skipping '$($VcRedist.Name) $($VcRedist.Architecture)': MDT does not support ARM64 deployment."
+                continue
+            }
+            if ($SupportedArchitecture -contains "x86" -and $SupportedArchitecture -notcontains "AMD64") {
+                throw "MDT platform restrictions cannot safely represent x86-only support for '$($VcRedist.Name)'."
+            }
+            $supportedPlatform = if ($SupportedArchitecture -contains "x86") {
                 $null
             }
             else {
@@ -131,11 +135,9 @@ function Import-VcMdtApplication {
             $VcMatched = $existingVcRedists | Where-Object { $_.Name -eq $ApplicationName }
 
             # Remove the matched VcRedist application
-            if ($PSBoundParameters.ContainsKey("Force")) {
-                if ($VcMatched.UninstallKey -eq $VcRedist.ProductCode) {
-                    if ($PSCmdlet.ShouldProcess($VcMatched.Name, "Remove")) {
-                        Remove-Item -Path $("$MdtTargetFolder\$($VcMatched.Name)") -Force
-                    }
+            if ($Force.IsPresent -and $null -ne $VcMatched) {
+                if ($PSCmdlet.ShouldProcess($VcMatched.Name, "Remove")) {
+                    Remove-Item -Path "$MdtTargetFolder\$($VcMatched.Name)" -Force
                 }
             }
 

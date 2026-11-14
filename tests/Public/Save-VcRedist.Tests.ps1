@@ -22,7 +22,7 @@ Describe -Name "Save-VcRedist" -ForEach $SupportedReleases {
         elseif ($env:RUNNER_TEMP) {
             $Path = Join-Path -Path $env:RUNNER_TEMP -ChildPath "Downloads"
         }
-        New-Item -Path $Path -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" > $Null
+        New-Item -Path $Path -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" > $null
 
 		#region Functions used in tests
 		function Test-VcDownload {
@@ -88,7 +88,7 @@ Describe -Name "Save-VcRedist pipeline" -ForEach $SupportedReleases {
         elseif ($env:RUNNER_TEMP) {
             $Path = Join-Path -Path $env:RUNNER_TEMP -ChildPath "Downloads"
         }
-        New-Item -Path $Path -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" > $Null
+        New-Item -Path $Path -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" > $null
 		Push-Location -Path $Path
 	}
 

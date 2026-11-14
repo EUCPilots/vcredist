@@ -39,8 +39,36 @@ Describe -Name "Get-VcList" {
             }
         }
 
+        It "Uses the URI filename literally and ignores its query string" {
+            InModuleScope VcRedist {
+                Mock Get-VcManifest {
+                    [PSCustomObject]@{
+                        Entries = @(
+                            [PSCustomObject]@{
+                                Name            = "Test"
+                                Supported       = $true
+                                Release         = "2022"
+                                Architecture    = "x64"
+                                URI             = 'https://download.microsoft.com/vc_redist%241.exe?token=$1'
+                                SilentUninstall = "start #Installer code #ProductCode"
+                                ProductCode     = '$2'
+                            }
+                        )
+                    }
+                }
+
+                $Item = Get-VcList -Release "2022" -Architecture "x64" -Source "Bundled"
+                $Item.SilentUninstall | Should -Be 'start vc_redist$1.exe code $2'
+            }
+        }
+
         It "Rejects an invalid release" {
             { Get-VcList -Release "abc" -Source "Bundled" } | Should -Throw
+        }
+
+        It "Rejects empty release and architecture filters" {
+            { Get-VcList -Release @() -Source "Bundled" } | Should -Throw
+            { Get-VcList -Architecture @() -Source "Bundled" } | Should -Throw
         }
     }
 }

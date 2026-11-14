@@ -20,7 +20,7 @@ InModuleScope VcRedist {
 	BeforeAll {
 	}
 
-	Describe -Name "Edit-MdtDrive" -Skip:$Skip {
+	Describe -Name "Edit-MdtDrive" -Skip:$Skip -Tag "MDT" {
 		Context "Validate Edit-MdtDrive" {
 			It "Should not throw when sent a valid string" {
 				{ Edit-MdtDrive -Drive "DS009" } | Should -Not -Throw

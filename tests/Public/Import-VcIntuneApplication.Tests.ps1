@@ -20,7 +20,7 @@ BeforeDiscovery {
 BeforeAll {
 }
 
-Describe -Name "Import-VcIntuneApplication without IntuneWin32App" -ForEach $SupportedReleases -Skip:$Skip {
+Describe -Name "Import-VcIntuneApplication without IntuneWin32App" -ForEach $SupportedReleases -Skip:$Skip -Tag "Intune" {
 	Context "Validate Import-VcIntuneApplication fail scenarios" {
 		It "Should fail without IntuneWin32App" {
 			{ Import-VcIntuneApplication -VcList (Get-VcList -Release $_) } | Should -Throw
@@ -28,7 +28,7 @@ Describe -Name "Import-VcIntuneApplication without IntuneWin32App" -ForEach $Sup
 	}
 }
 
-Describe -Name "Import-VcIntuneApplication imports VcRedists" -ForEach $SupportedReleases -Skip:$Skip {
+Describe -Name "Import-VcIntuneApplication imports VcRedists" -ForEach $SupportedReleases -Skip:$Skip -Tag "Intune" {
 	BeforeAll {
 		& "$env:GITHUB_WORKSPACE/ci/Install-IntuneTestDependencies.ps1"
 	}

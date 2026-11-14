@@ -39,7 +39,7 @@ Describe -Name "AMD64 specific tests" -Skip:$SkipAmd {
             elseif ($env:RUNNER_TEMP) {
                 $Path = Join-Path -Path $env:RUNNER_TEMP -ChildPath "Downloads"
             }
-            New-Item -Path $Path -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" > $Null
+            New-Item -Path $Path -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" > $null
 
             $VcList = Get-VcList -Release $Release -Architecture @("x86", "x64") | Save-VcRedist -Path $Path
             Install-VcRedist -VcList $VcList -Silent | Out-Null
@@ -72,7 +72,7 @@ Describe -Name "ARM64 specific tests" -Skip:$SkipArm {
             elseif ($env:RUNNER_TEMP) {
                 $Path = Join-Path -Path $env:RUNNER_TEMP -ChildPath "Downloads"
             }
-            New-Item -Path $Path -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" > $Null
+            New-Item -Path $Path -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" > $null
 
             $VcList = Get-VcList -Release $Release -Architecture @("x86", "arm64") | Save-VcRedist -Path $Path
             Install-VcRedist -VcList $VcList -Silent | Out-Null

@@ -14,10 +14,6 @@ function Import-VcConfigMgrApplication {
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSObject] $VcList,
 
-        [Parameter(Mandatory = $false)]
-        [System.ObsoleteAttribute("This parameter is not longer supported. The Path property must be on the object passed to -VcList.")]
-        [System.String] $Path,
-
         [Parameter(Mandatory = $true, Position = 2)]
         [ValidateNotNullOrEmpty()]
         [System.String] $CMPath,
@@ -76,8 +72,18 @@ function Import-VcConfigMgrApplication {
         #endregion
 
         #region Validate $CMPath
-        if (Resolve-Path -Path $CMPath) {
-            $CMPath = $CMPath.TrimEnd("\")
+        if ($CMPath -notmatch "^\\\\[^\\]+\\[^\\]+(?:\\.*)?$") {
+            $Msg = "'$CMPath' must be a UNC path to an existing FileSystem directory."
+            throw [System.ArgumentException]::New($Msg)
+        }
+        $ResolvedCMPath = Resolve-Path -LiteralPath $CMPath -ErrorAction "SilentlyContinue"
+        if ($null -ne $ResolvedCMPath) {
+            $CMPathItem = Get-Item -LiteralPath $ResolvedCMPath.ProviderPath -ErrorAction "Stop"
+            if ($CMPathItem.Provider.Name -ne "FileSystem" -or -not $CMPathItem.PSIsContainer) {
+                $Msg = "'$CMPath' must be an existing FileSystem directory."
+                throw [System.ArgumentException]::New($Msg)
+            }
+            $CMPath = $ResolvedCMPath.ProviderPath.TrimEnd("\")
 
             # Create the folder for importing the Redistributables into
             if ($AppFolder.Length -gt 0) {
@@ -111,6 +117,8 @@ function Import-VcConfigMgrApplication {
         try {
             foreach ($VcRedist in $VcList) {
                 Write-Verbose -Message "Importing VcRedist app: 'Visual C++ Redistributable $($VcRedist.Release) $($VcRedist.Architecture) $($VcRedist.Version)'"
+                $SupportedArchitecture = @(Get-VcSupportedArchitecture -SupportedArchitecture $VcRedist.SupportedArchitecture)
+                $app = $null
 
                 # Import as an application into ConfigMgr
                 if ($PSCmdlet.ShouldProcess("'$($VcRedist.Name)' in $CMPath", "Import ConfigMgr app")) {
@@ -118,45 +126,77 @@ function Import-VcConfigMgrApplication {
                     # Create the ConfigMgr application with properties from the manifest
                     if ((Get-Item -Path $DestCmFolder).PSDrive.Name -eq $SMSSiteCode) {
                         if ($PSCmdlet.ShouldProcess($VcRedist.Name + " $($VcRedist.Architecture)", "Creating ConfigMgr application")) {
+                            Set-Location -Path $DestCmFolder -ErrorAction "Stop"
+                            $ArchitectureRequirement = New-VcConfigMgrArchitectureRequirement -SupportedArchitecture $SupportedArchitecture
 
                             # Build paths
                             $SourceFolder = $(Split-Path -Path $VcRedist.Path -Parent)
                             $ContentLocation = [System.IO.Path]::Combine($CMPath, $VcRedist.Release, $VcRedist.Version, $VcRedist.Architecture)
 
                             #region Copy VcRedists to the network location. Use robocopy for robustness
-                            if ($PSBoundParameters.ContainsKey("NoCopy")) {
+                            $InstallerName = Split-Path -Path $VcRedist.Path -Leaf
+                            $Target = Join-Path -Path $ContentLocation -ChildPath $InstallerName
+                            $ContentReady = $false
+                            if ($NoCopy.IsPresent) {
                                 Write-Warning -Message "NoCopy specified, skipping copy to $ContentLocation. Ensure VcRedists exist in the target."
+                                if (-not (Test-Path -LiteralPath $Target -PathType "Leaf")) {
+                                    $Msg = "The installer '$Target' is missing. Remove -NoCopy or place the installer in the target location."
+                                    throw [System.IO.FileNotFoundException]::New($Msg)
+                                }
+                                $ContentReady = $true
                             }
                             else {
                                 if ($PSCmdlet.ShouldProcess("'$($VcRedist.Path)' to '$($ContentLocation)'", "Copy")) {
-                                    if (!(Test-Path -Path $ContentLocation)) {
-                                        New-Item -Path $ContentLocation -ItemType "Directory" -ErrorAction "SilentlyContinue" | Out-Null
+                                    if (-not (Test-Path -LiteralPath $VcRedist.Path -PathType "Leaf")) {
+                                        $Msg = "The source installer '$($VcRedist.Path)' does not exist or is not a file."
+                                        throw [System.IO.FileNotFoundException]::New($Msg)
+                                    }
+                                    if (-not (Test-Path -LiteralPath $ContentLocation -PathType "Container")) {
+                                        New-Item -Path $ContentLocation -ItemType "Directory" -Force -ErrorAction "Stop" | Out-Null
+                                    }
+                                    if (-not (Test-Path -LiteralPath $ContentLocation -PathType "Container")) {
+                                        $Msg = "Unable to create the content directory '$ContentLocation'."
+                                        throw [System.IO.DirectoryNotFoundException]::New($Msg)
                                     }
 
                                     try {
                                         $invokeProcessParams = @{
-                                            FilePath     = "$env:SystemRoot\System32\robocopy.exe"
-                                            ArgumentList = "`"$SourceFolder`" `"$ContentLocation`" `"$(Split-Path -Path $VcRedist.Path -Leaf)`" /S /XJ /R:1 /W:1 /NP /NJH /NJS /NFL /NDL"
+                                            FilePath         = "$env:SystemRoot\System32\robocopy.exe"
+                                            ArgumentList     = @(
+                                                $SourceFolder
+                                                $ContentLocation
+                                                $InstallerName
+                                                "/S"
+                                                "/XJ"
+                                                "/R:1"
+                                                "/W:1"
+                                                "/NP"
+                                                "/NJH"
+                                                "/NJS"
+                                                "/NFL"
+                                                "/NDL"
+                                            )
                                             SuccessExitCodes = 0..7
                                         }
                                         Invoke-Process @invokeProcessParams | Out-Null
                                     }
                                     catch [System.Exception] {
-                                        $Err = $_
-                                        $Target = Join-Path -Path $ContentLocation -ChildPath $(Split-Path -Path $VcRedist.Path -Leaf)
-                                        if (Test-Path -Path $Target) {
-                                            Write-Verbose -Message "Copy successful: '$Target'."
-                                        }
-                                        else {
-                                            Write-Warning -Message "Failed to copy Redistributables from '$($VcRedist.Path)' to '$ContentLocation'."
-                                            Write-Warning -Message $Err.Exception.Message
-                                        }
+                                        $Msg = "Failed to copy Redistributable '$($VcRedist.Path)' to '$ContentLocation': $($_.Exception.Message)"
+                                        throw [System.IO.IOException]::New($Msg, $_.Exception)
                                     }
+                                    if (-not (Test-Path -LiteralPath $Target -PathType "Leaf")) {
+                                        $Msg = "Robocopy completed without creating the expected installer '$Target'."
+                                        throw [System.IO.IOException]::New($Msg)
+                                    }
+                                    $ContentReady = $true
                                 }
                             }
                             #endregion
 
-                            $app = $null
+                            if (-not $ContentReady -and -not $WhatIfPreference) {
+                                continue
+                            }
+
                             try {
                                 # Change to the SMS Application folder before importing the applications
                                 Write-Verbose -Message "Setting location to: $DestCmFolder"
@@ -184,8 +224,6 @@ function Import-VcConfigMgrApplication {
                                 Write-Warning -Message "Failed to create application $($VcRedist.Name) $($VcRedist.Architecture)."
                                 Write-Warning -Message $_.Exception.Message
                             }
-                            # Write app detail to the pipeline
-                            if ($null -ne $app) { Write-Output -InputObject $app }
                         }
 
                         # Add a deployment type to the application
@@ -210,6 +248,7 @@ function Import-VcConfigMgrApplication {
                                     InstallCommand           = "$(Split-Path -Path $VcRedist.Path -Leaf) $(if ($Silent) { $VcRedist.SilentInstall } else { $VcRedist.Install })"
                                     ContentLocation          = $ContentLocation
                                     AddDetectionClause       = $detectionClause
+                                    AddRequirement           = $ArchitectureRequirement
                                     DeploymentTypeName       = "SCRIPT_$($VcRedist.Name)"
                                     UserInteractionMode      = "Hidden"
                                     UninstallCommand         = $VcRedist.SilentUninstall
@@ -217,13 +256,15 @@ function Import-VcConfigMgrApplication {
                                     InstallationBehaviorType = "InstallForSystem"
                                     Comment                  = "Generated by $($MyInvocation.MyCommand). https://vcredist.com"
                                 }
-                                Add-CMScriptDeploymentType @cmScriptParams | Out-Null
+                                Add-CMScriptDeploymentType @cmScriptParams -ErrorAction "Stop" | Out-Null
                             }
                             catch [System.Exception] {
                                 Write-Warning -Message "Failed to add script deployment type."
                                 Write-Warning -Message $_.Exception.Message
+                                throw
                             }
                         }
+                        if ($null -ne $app) { Write-Output -InputObject $app }
                     }
                 }
             }

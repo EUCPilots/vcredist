@@ -19,6 +19,7 @@ InModuleScope VcRedist {
 						URI             = "https://download.microsoft.com/vc_redist.x64.exe"
 						Release         = "14"
 						Architecture    = "x64"
+						SupportedArchitecture = @("AMD64")
 						Install         = "/install"
 						SilentInstall   = "/install /quiet"
 						SilentUninstall = "uninstall"
@@ -58,9 +59,27 @@ InModuleScope VcRedist {
 			$M = New-TestManifest; $M.Entries[0].Supported = "true"
 			{ Test-VcManifest -Manifest $M } | Should -Throw "*Supported*"
 		}
+		It "Rejects invalid supported architectures" -ForEach @(
+			@{ Value = $null }
+			@{ Value = @() }
+			@{ Value = @("") }
+			@{ Value = @("AMD64", "unknown") }
+			@{ Value = "AMD64" }
+		) {
+			$M = New-TestManifest; $M.Entries[0].SupportedArchitecture = $Value
+			{ Test-VcManifest -Manifest $M } | Should -Throw "*SupportedArchitecture*"
+		}
 		It "Throws for an invalid version" {
 			$M = New-TestManifest; $M.Entries[0].Version = "abc"
 			{ Test-VcManifest -Manifest $M } | Should -Throw "*Version*"
+		}
+		It "Rejects an invalid release" {
+			$M = New-TestManifest; $M.Entries[0].Release = "../14"
+			{ Test-VcManifest -Manifest $M } | Should -Throw "*Release*"
+		}
+		It "Rejects an invalid architecture" {
+			$M = New-TestManifest; $M.Entries[0].Architecture = "AMD64"
+			{ Test-VcManifest -Manifest $M } | Should -Throw "*Architecture*"
 		}
 		It "Throws for a URI that is not HTTPS" {
 			$M = New-TestManifest; $M.Entries[0].URI = "http://download.microsoft.com/a.exe"

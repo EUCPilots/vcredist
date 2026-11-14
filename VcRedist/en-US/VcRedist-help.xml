@@ -233,15 +233,20 @@
       <command:syntaxItem>
         <maml:name>Get-InstalledVcRedist</maml:name>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
-          <maml:name>ExportAll</maml:name>
+          <maml:name>Export</maml:name>
           <maml:description>
-            <maml:para>Export all installed Redistributables including the Additional and Minimum Runtimes typically hidden from Programs and Features.</maml:para>
+            <maml:para>Defines the installed Visual C++ Redistributables to return. Supported returns primary Redistributable entries; All also includes the Additional and Minimum Runtime components typically hidden from Programs and Features. Defaults to Supported.</maml:para>
           </maml:description>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" command:variableLength="false">Supported</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">All</command:parameterValue>
+          </command:parameterValueGroup>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
-            <maml:name>SwitchParameter</maml:name>
+            <maml:name>String</maml:name>
             <maml:uri />
           </dev:type>
-          <dev:defaultValue>False</dev:defaultValue>
+          <dev:defaultValue>Supported</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
           <maml:name>ProgressAction</maml:name>
@@ -259,16 +264,16 @@
     </command:syntax>
     <command:parameters>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
-        <maml:name>ExportAll</maml:name>
+        <maml:name>Export</maml:name>
         <maml:description>
-          <maml:para>Export all installed Redistributables including the Additional and Minimum Runtimes typically hidden from Programs and Features.</maml:para>
+          <maml:para>Defines the installed Visual C++ Redistributables to return. Supported returns primary Redistributable entries; All also includes the Additional and Minimum Runtime components typically hidden from Programs and Features. Defaults to Supported.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
-          <maml:name>SwitchParameter</maml:name>
+          <maml:name>String</maml:name>
           <maml:uri />
         </dev:type>
-        <dev:defaultValue>False</dev:defaultValue>
+        <dev:defaultValue>Supported</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
         <maml:name>ProgressAction</maml:name>
@@ -309,7 +314,7 @@
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
-        <dev:code>Get-InstalledVcRedist -ExportAll</dev:code>
+        <dev:code>Get-InstalledVcRedist -Export All</dev:code>
         <dev:remarks>
           <maml:para>Description: Returns the installed Microsoft Visual C++ Redistributables from the current system including the Additional and Minimum Runtimes.</maml:para>
         </dev:remarks>
@@ -408,7 +413,7 @@
     </command:details>
     <maml:description>
       <maml:para>This function reads the Visual C++ Redistributables listed in an internal manifest into an object that can be passed to other VcRedist functions.</maml:para>
-      <maml:para>The manifest is read from the VcRedist repository, so manifest updates do not require a module update. If the remote manifest is unavailable, invalid or older than the bundled manifest, the manifest included in the module is used.</maml:para>
+      <maml:para>By default, `-Source Auto` tries to read the manifest from the VcRedist repository, so manifest updates do not require a module update. If the remote manifest is unavailable, invalid or older than the bundled manifest, the manifest included in the module is used. Because the remote manifest may change independently of the installed module, use `-Source Bundled` for repeatable offline runs.</maml:para>
       <maml:para>A complete listing of the supported and all known redistributables is included in the module. By default, Get-VcList will only return a list of the supported Visual C++ Redistributables. To return any of the unsupported Redistributables, the -Export parameter is required with the output filtered with Where-Object.</maml:para>
       <maml:para>The internal manifest can be exported with Export-VcManifest.</maml:para>
     </maml:description>
@@ -541,7 +546,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>Source</maml:name>
           <maml:description>
-            <maml:para>Selects the manifest source. `Auto` (default) uses the remote manifest hosted in the VcRedist repository and falls back to the bundled manifest on any failure, or when the remote manifest is older. `Remote` fails if the remote manifest is unavailable. `Bundled` uses only the manifest included in the module.</maml:para>
+            <maml:para>Selects the manifest source. `Auto` (default) tries the remote manifest hosted in the VcRedist repository and falls back to the bundled manifest on any failure, or when the remote manifest is older. `Remote` fails if the remote manifest is unavailable. `Bundled` uses only the manifest included in the module.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -628,7 +633,7 @@
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
         <maml:name>Source</maml:name>
         <maml:description>
-          <maml:para>Selects the manifest source. `Auto` (default) uses the remote manifest hosted in the VcRedist repository and falls back to the bundled manifest on any failure, or when the remote manifest is older. `Remote` fails if the remote manifest is unavailable. `Bundled` uses only the manifest included in the module.</maml:para>
+          <maml:para>Selects the manifest source. `Auto` (default) tries the remote manifest hosted in the VcRedist repository and falls back to the bundled manifest on any failure, or when the remote manifest is older. `Remote` fails if the remote manifest is unavailable. `Bundled` uses only the manifest included in the module and is recommended for repeatable offline runs.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -722,7 +727,7 @@
       </maml:description>
     </command:details>
     <maml:description>
-      <maml:para>Creates an application in a Configuration Manager site for each Visual C++ Redistributable and includes setting whether the Redistributable can run on 32-bit or 64-bit Windows and the Uninstall key for detecting whether the Redistributable is installed.</maml:para>
+      <maml:para>Creates an application in a Configuration Manager site for each Visual C++ Redistributable and includes an architecture requirement based on SupportedArchitecture and the Uninstall key for detecting whether the Redistributable is installed. The function creates or reuses a site-wide script global condition that detects the native Windows architecture on target devices.</maml:para>
       <maml:para>Use Get-VcList and Save-VcRedist to download the Redistributable and create the array of Redistributables for importing into ConfigMgr.</maml:para>
       <maml:para>Applications will be imported into the ConfigMgr with the default properties similar to the following:</maml:para>
       <maml:para>Location: Applications\VcRedists Name: Visual C++ Redistributable 2019 x86 14.28.29913.0 Administrator comments: Microsoft Visual C++ Redistributable 2019 x86 14.28.29913.0 imported by Import-VcConfigMgrApplication Publisher: Microsoft Software version: 14.28.29913.0 Language: en-US Date published: 18/03/2021 Localized application name: Visual C++ Redistributable 2019 x86 14.28.29913.0 User documentation: https://visualstudio.microsoft.com/vs/support/ Link text: https://www.visualstudio.com/downloads/ Privacy URL: https://go.microsoft.com/fwlink/?LinkId=521839 Keywords: Visual C++ Redistributable</maml:para>
@@ -746,7 +751,7 @@
         <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none">
           <maml:name>CMPath</maml:name>
           <maml:description>
-            <maml:para>Specify a UNC path where the Visual C++ Redistributables will be distributed from</maml:para>
+            <maml:para>Specify an existing UNC directory where the Visual C++ Redistributables will be distributed from</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -817,7 +822,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>NoCopy</maml:name>
           <maml:description>
-            <maml:para>Do not copy the Visual C++ Redistributable binaries when importing applications into Configuration Manager.</maml:para>
+            <maml:para>Do not copy the Visual C++ Redistributable binaries when importing applications into Configuration Manager. The installer must already exist at its expected content location.</maml:para>
           </maml:description>
           <dev:type>
             <maml:name>SwitchParameter</maml:name>
@@ -889,7 +894,7 @@
       <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none">
         <maml:name>CMPath</maml:name>
         <maml:description>
-          <maml:para>Specify a UNC path where the Visual C++ Redistributables will be distributed from</maml:para>
+          <maml:para>Specify an existing UNC directory where the Visual C++ Redistributables will be distributed from</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -937,7 +942,7 @@
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
         <maml:name>NoCopy</maml:name>
         <maml:description>
-          <maml:para>Do not copy the Visual C++ Redistributable binaries when importing applications into Configuration Manager.</maml:para>
+          <maml:para>Do not copy the Visual C++ Redistributable binaries when importing applications into Configuration Manager. The installer must already exist at its expected content location.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
         <dev:type>
@@ -1065,7 +1070,7 @@ Import-VcConfigMgrApplication -VcList $VcList -CMPath "\\server\share\VcRedist" 
       <maml:para>Creates an application in a Microsoft Intune tenant for each Visual C++ Redistributable and includes properties such as target Silent command, Uninstall command, Detection (via Registry) and Requirements.</maml:para>
       <maml:para>Use Get-VcList and Save-VcRedist to download the Redistributables and create the array for importing into Microsoft Intune.</maml:para>
       <maml:para>An application package will be created for each Visual C++ Redistributable with properties including Name, Description, Publisher, App Version, Information URL, Privacy URL, Notes, Logo, Install command, Uninstall command, Install behavior, Operating system architecture, Minimum operating system, and Detection rules.</maml:para>
-      <maml:para>This function requires the IntuneWin32App PowerShell module and supported Windows PowerShell only. Before using this function to import the Redistributables into an Intune tenant, authenticate first with Connect-MSIntuneGraph.</maml:para>
+      <maml:para>This function requires the IntuneWin32App PowerShell module and supported Windows PowerShell only. Before using this function to import the Redistributables into an Intune tenant, authenticate first with Connect-MSIntuneGraph. The architecture requirement comes from the manifest SupportedArchitecture list. IntuneWin32App 1.5.0 supports the ARM64-inclusive requirements used by the bundled manifest; unsupported combinations are rejected. Existing applications are not changed unless an update is imported.</maml:para>
       <maml:para>Use -ImportAsUpdate to add a file-version requirement based on each package's DetectionFile. The app is applicable only when the architecture-specific file exists and is older than the package version. It is not applicable to clean installs or devices with the same or a newer version. This does not change existing Intune apps or their assignments. Verify the detection file and version on target devices, particularly for older, unsupported redistributables that may use side-by-side assemblies. A remote manifest can provide different detection paths from the bundled manifest.</maml:para>
     </maml:description>
     <command:syntax>
@@ -1131,6 +1136,7 @@ Import-VcConfigMgrApplication -VcList $VcList -CMPath "\\server\share\VcRedist" 
       </command:syntaxItem>
     </command:syntax>
     <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
       <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
         <maml:name>VcList</maml:name>
         <maml:description>
@@ -1256,6 +1262,7 @@ Get-VcList | Save-VcRedist -Path "C:\Temp\VcRedist" | Import-VcIntuneApplication
     </command:details>
     <maml:description>
       <maml:para>Creates an application in a Microsoft Deployment Toolkit share for each Visual C++ Redistributable and includes properties such as target Silent command line, Platform and Uninstall key.</maml:para>
+      <maml:para>Supported platforms are derived from the manifest. ARM64-only packages are skipped with a warning because MDT does not support ARM64 deployment.</maml:para>
       <maml:para>Use Get-VcList and Save-VcRedist to download the Redistributables and create the array for importing into MDT.</maml:para>
       <maml:para>Applications will be imported into the MDT Deployment share with the default properties similar to the following:</maml:para>
       <maml:para>Location: Applications\VcRedists Name: Visual C++ Redistributable 2019 x86 14.28.29913.0 Comments: Generated by Import-VcMdtApplication Short name: Visual C++ Redistributable for Visual Studio 2019 x86 Version: 14.28.29913.0 Publisher: Microsoft Language: en-US Source directory: .\Applications\Microsoft VcRedist\2019\14.28.29913.0\x86 Quiet install command: .\VC_redist.x86.exe /install /quiet /norestart Working directory: .\Applications\Microsoft VcRedist\2019\14.28.29913.0\x86 Uninstall registry key name: {03d1453c-7d5c-479c-afea-8482f406e036} Hide this application in the Deployment Wizard: Yes</maml:para>
@@ -1624,7 +1631,7 @@ Import-VcMdtApplication -VcList $VcList -MdtPath \\server\deployment -Bundle</de
       </maml:description>
     </command:details>
     <maml:description>
-      <maml:para>Installs the Microsoft Visual C++ Redistributables from a list created by Get-VcList and downloaded into a folder structure locally with Save-VcRedist. Supports both passive and silent installation of the Redistributables. Useful for Windows deployments including creating gold images via HashiCorp Packer where the Redistributables can be downloaded and installed at runtime.</maml:para>
+      <maml:para>Installs the Microsoft Visual C++ Redistributables from a list created by Get-VcList and downloaded into a folder structure locally with Save-VcRedist. Supports both passive and silent installation of the Redistributables. Useful for Windows deployments including creating gold images via HashiCorp Packer where the Redistributables can be downloaded and installed at runtime. Installers whose manifest SupportedArchitecture list does not include the native Windows architecture are skipped with a warning, even when using -Force. Each input object must include a non-empty SupportedArchitecture list.</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
@@ -2361,29 +2368,6 @@ Remove-VcIntuneApplication -VcList $VcList -Confirm:$false</dev:code>
           </dev:type>
           <dev:defaultValue>[System.Management.Automation.PSCredential]::Empty</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
-          <maml:name>ForceWebRequest</maml:name>
-          <maml:description>
-            <maml:para>Force the use of Invoke-WebRequest instead of Start-BitsTransfer. Included for backwards compatibility only.</maml:para>
-          </maml:description>
-          <dev:type>
-            <maml:name>SwitchParameter</maml:name>
-            <maml:uri />
-          </dev:type>
-          <dev:defaultValue>False</dev:defaultValue>
-        </command:parameter>
-        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
-          <maml:name>Priority</maml:name>
-          <maml:description>
-            <maml:para>Force the priority when using Start-BitsTransfer. Included for backwards compatibility only.</maml:para>
-          </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
-          <dev:type>
-            <maml:name>String</maml:name>
-            <maml:uri />
-          </dev:type>
-          <dev:defaultValue>Foreground</dev:defaultValue>
-        </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
           <maml:name>WhatIf</maml:name>
           <maml:description>
@@ -2480,30 +2464,6 @@ Remove-VcIntuneApplication -VcList $VcList -Confirm:$false</dev:code>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>(Resolve-Path -Path $PWD)</dev:defaultValue>
-      </command:parameter>
-      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
-        <maml:name>ForceWebRequest</maml:name>
-        <maml:description>
-          <maml:para>Force the use of Invoke-WebRequest instead of Start-BitsTransfer. Included for backwards compatibility only.</maml:para>
-        </maml:description>
-        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
-        <dev:type>
-          <maml:name>SwitchParameter</maml:name>
-          <maml:uri />
-        </dev:type>
-        <dev:defaultValue>False</dev:defaultValue>
-      </command:parameter>
-      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
-        <maml:name>Priority</maml:name>
-        <maml:description>
-          <maml:para>Force the priority when using Start-BitsTransfer. Included for backwards compatibility only.</maml:para>
-        </maml:description>
-        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
-        <dev:type>
-          <maml:name>String</maml:name>
-          <maml:uri />
-        </dev:type>
-        <dev:defaultValue>Foreground</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none">
         <maml:name>Proxy</maml:name>

@@ -1,24 +1,28 @@
 function Get-IntuneRequirementArchitecture {
     <#
         .SYNOPSIS
-            Maps a VcRedist architecture to a value accepted by New-IntuneWin32AppRequirementRule -Architecture.
+            Maps supported Windows architectures to an IntuneWin32App requirement value.
 
-        .PARAMETER Architecture
-            The VcRedist architecture: x86, x64 or ARM64.
+        .PARAMETER SupportedArchitecture
+            The supported Windows architectures from the manifest.
     #>
     [CmdletBinding()]
     [OutputType([System.String])]
     param (
         [Parameter(Mandatory = $true, Position = 0)]
         [ValidateNotNullOrEmpty()]
-        [System.String] $Architecture
+        [System.Object] $SupportedArchitecture
     )
 
-    # x86 installers run on both 32-bit and 64-bit Windows; "All" is no longer a valid value
-    switch ($Architecture) {
-        "x86" { Write-Output -InputObject "x64x86" }
-        "x64" { Write-Output -InputObject "x64" }
-        "ARM64" { Write-Output -InputObject "arm64" }
-        default { throw [System.ArgumentException]::New("Unsupported architecture for an Intune requirement rule: '$Architecture'.") }
+    $Supported = @(Get-VcSupportedArchitecture -SupportedArchitecture $SupportedArchitecture)
+    if ($Supported.Count -eq 3) { return "AllWithARM64" }
+    if ($Supported.Count -eq 2 -and $Supported -contains "x86" -and $Supported -contains "AMD64") { return "x64x86" }
+    if ($Supported.Count -eq 1) {
+        switch ($Supported[0]) {
+            "x86" { return "x86" }
+            "AMD64" { return "x64" }
+            "ARM64" { return "arm64" }
+        }
     }
+    throw [System.ArgumentException]::New("IntuneWin32App cannot represent the SupportedArchitecture combination '$($Supported -join ", ")'.")
 }

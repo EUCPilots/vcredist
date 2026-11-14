@@ -15,7 +15,7 @@ This output can then be passed to other functions that require the downloaded in
 ## SYNTAX
 
 ```
-Save-VcRedist [-VcList] <PSObject> [[-Path] <String>] [-ForceWebRequest] [-Priority <String>]
+Save-VcRedist [-VcList] <PSObject> [[-Path] <String>]
  [[-Proxy] <String>] [[-ProxyCredential] <PSCredential>] [-UserAgent <String>] [-ShowProgress] [-SkipAuthenticodeValidation]
  [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
@@ -104,38 +104,6 @@ Aliases:
 Required: False
 Position: 2
 Default value: (Resolve-Path -Path $PWD)
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ForceWebRequest
-Force the use of Invoke-WebRequest instead of Start-BitsTransfer.
-Included for backwards compatibility only.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Priority
-Force the priority when using Start-BitsTransfer.
-Included for backwards compatibility only.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: Foreground
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

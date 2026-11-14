@@ -13,8 +13,8 @@ Import-Module ./VcRedist/VcRedist.psd1 -Force     # or ./Import.ps1
 # Install/upgrade Pester
 ./tests/Install-Pester.ps1
 
-# Full suite (CI also enables code coverage on ./VcRedist)
-Invoke-Pester -Path ./tests
+# Full default suite (excludes Intune, MDT, and ConfigMgr tagged tests)
+./ci/Test-Module.ps1
 
 # Single test file / single test by name
 Invoke-Pester -Path ./tests/Public/Get-VcList.Tests.ps1
@@ -24,7 +24,7 @@ Invoke-Pester -Path ./tests/Public/Get-VcList.Tests.ps1 -FullNameFilter "*2022*"
 Invoke-ScriptAnalyzer -Path ./VcRedist -Recurse -Settings ./.rules/PSScriptAnalyzerSettings.psd1
 ```
 
-Tests import the module themselves via `BeforeDiscovery`/`BeforeAll`, so import it first. Test layout mirrors source: `tests/Public/<Function>.Tests.ps1`, `tests/Private/<Function>.Tests.ps1`, plus `Manifest.Tests.ps1` and `Module.Tests.ps1`. Disabled tests are renamed to `*.Tests.ps1.txt`. Intune tests need `TENANT_ID`/`CLIENT_ID`/`CLIENT_SECRET` env vars; MDT and ConfigMgr tests use stubbed/mocked cmdlets and need no installed product.
+Tests import the module themselves via `BeforeDiscovery`/`BeforeAll`, so import it first. Test layout mirrors source: `tests/Public/<Function>.Tests.ps1`, `tests/Private/<Function>.Tests.ps1`, plus `Manifest.Tests.ps1` and `Module.Tests.ps1`. Disabled tests are renamed to `*.Tests.ps1.txt`. Intune tests need `TENANT_ID`/`CLIENT_ID`/`CLIENT_SECRET` env vars; run those with `./ci/Test-Module.ps1 -Intune`. MDT and ConfigMgr tests are tagged separately and excluded from the default runner; select them explicitly with Pester's `-Tag` filter.
 
 ## Architecture
 

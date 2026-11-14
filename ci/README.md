@@ -2,6 +2,8 @@
 
 Scripts used during workflows to validate this project.
 
+The manifest update workflow runs x86 and x64 checks on an AMD64 runner, then ARM64 checks on an ARM64 runner. The update script skips entries not supported by the runner's native architecture and fails if a compatible installation cannot be found.
+
 ## Release process
 
 Follow the [release process runbook](../docs/release-process.md) for branch creation,
@@ -15,9 +17,9 @@ Existing tags also trigger publishing, but cannot bypass ancestry, metadata, tes
 
 [validate-module.yml](../.github/workflows/validate-module.yml) runs for branch pushes and PRs to `main` that change `VcRedist/**` or `tests/**`. Documentation/workflow-only changes require manual dispatch; see the [trigger exception](../docs/release-process.md#2-develop-commit-and-merge-a-pr). It is also reusable by publishing. It stages an immutable module artifact before testing; all four Windows runner/shell combinations test those files. The analyzer is a reusable required job, not just a SARIF report. Obsolete CI runs may be cancelled manually; releases are serialized and never automatically cancelled.
 
-Pester is pinned to **5.7.1**, PSScriptAnalyzer to **1.25.0**, MSAL.PS to **4.37.0.0**, IntuneWin32App to **1.5.0**, and publishing uses PowerShellGet **2.2.5**. Dependency installation fails explicitly. Secret-free validation excludes `Intune`-tagged live tests; these run separately on manual request or during publishing. Architecture-specific tests retain their existing skips. Both failed tests and incomplete module-test discovery fail the gate: every script must have two validation cases, every function two cases, plus the two metadata checks.
+Pester is pinned to **5.7.1**, PSScriptAnalyzer to **1.25.0**, MSAL.PS to **4.37.0.0**, IntuneWin32App to **1.5.0**, and publishing uses PowerShellGet **2.2.5**. Dependency installation fails explicitly. Secret-free validation excludes `Intune`, `MDT`, and `ConfigMgr`-tagged tests; Intune-tagged tests, including live integration tests, run separately on manual request or during publishing. Architecture-specific tests retain their existing skips. Both failed tests and incomplete module-test discovery fail the gate: every script must have two validation cases, every function two cases, plus the two metadata checks.
 
-Run the shared test entry point on a disposable Windows machine: the existing integration suite installs and uninstalls redistributables and MDT.
+Run the shared test entry point on a disposable Windows machine: the default integration suite installs and uninstalls redistributables. MDT and ConfigMgr tests are opt-in and can be selected with Pester's `-Tag` filter.
 
 ```powershell
 ./ci/Test-Module.ps1

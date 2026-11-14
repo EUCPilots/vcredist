@@ -18,7 +18,7 @@ function Test-VcManifest {
     )
 
     $Required = @("Name", "ProductCode", "Version", "URI", "Release", "Architecture", "Install",
-        "SilentInstall", "SilentUninstall", "UninstallKey", "PackageId", "DetectionFile", "Supported")
+        "SilentInstall", "SilentUninstall", "SupportedArchitecture", "UninstallKey", "PackageId", "DetectionFile", "Supported", "SupportedArchitecture")
 
     if ($null -eq $Manifest) { throw "Manifest is empty." }
     foreach ($Property in "SchemaVersion", "Updated", "Entries") {
@@ -40,6 +40,18 @@ function Test-VcManifest {
             if ($null -eq $Entry.PSObject.Properties[$Property] -or $null -eq $Entry.$Property -or ($Entry.$Property -is [System.String] -and [System.String]::IsNullOrWhiteSpace($Entry.$Property))) {
                 throw "Manifest entry '$($Entry.Name)' is missing a value for '$Property'."
             }
+        }
+        if ($Entry.Release -isnot [System.String] -or $Entry.Release -notmatch "^[0-9]{2,4}$") {
+            throw "Manifest entry '$($Entry.Name)' has an invalid Release '$($Entry.Release)'."
+        }
+        if ($Entry.Architecture -isnot [System.String] -or @("x86", "x64", "arm64") -notcontains $Entry.Architecture) {
+            throw "Manifest entry '$($Entry.Name)' has an invalid Architecture '$($Entry.Architecture)'."
+        }
+        try {
+            Get-VcSupportedArchitecture -SupportedArchitecture $Entry.SupportedArchitecture | Out-Null
+        }
+        catch {
+            throw "Manifest entry '$($Entry.Name)' has invalid SupportedArchitecture: $($_.Exception.Message)"
         }
         if ($Entry.Supported -isnot [System.Boolean]) { throw "Manifest entry '$($Entry.Name)' property 'Supported' must be a boolean." }
         $Version = $null

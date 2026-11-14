@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       run_intune:
-        description: Run live Intune integration tests (requires tenant credentials)
+        description: Run Intune-tagged tests, including live integration tests (requires tenant credentials)
         type: boolean
         default: false
   workflow_call:

@@ -17,7 +17,7 @@ BeforeDiscovery {
 	}
 }
 
-Describe -Name "Validate Import-VcConfigMgrApplication" -ForEach $SupportedReleases -Skip:$Skip {
+Describe -Name "Validate Import-VcConfigMgrApplication" -ForEach $SupportedReleases -Skip:$Skip -Tag "ConfigMgr" {
 	BeforeAll {
 		$Release = $_
 		$Path = $([System.IO.Path]::Combine($env:RUNNER_TEMP, "Downloads"))

@@ -14,15 +14,17 @@ function Remove-VcIntuneApplication {
     )
 
     begin {
-        # Get the existing VcRedist Win32 applications from Intune
-        $ExistingIntuneApps = Get-VcRedistAppsFromIntune -VcList $VcList
+        $RemovedAppIds = [System.Collections.Generic.HashSet[System.String]]::new([System.StringComparer]::OrdinalIgnoreCase)
     }
 
     process {
-        foreach ($Application in $ExistingIntuneApps) {
-            if ($PSCmdlet.ShouldProcess($Application.displayName, "Remove")) {
-                Write-Verbose -Message "Removing application: $($Application.displayName) with ID: $($Application.Id)."
-                Remove-IntuneWin32App -Id $Application.Id
+        foreach ($Redist in $VcList) {
+            $ExistingIntuneApps = Get-VcRedistAppsFromIntune -VcList $Redist
+            foreach ($Application in $ExistingIntuneApps) {
+                if ($RemovedAppIds.Add([System.String]$Application.Id) -and $PSCmdlet.ShouldProcess($Application.displayName, "Remove")) {
+                    Write-Verbose -Message "Removing application: $($Application.displayName) with ID: $($Application.Id)."
+                    Remove-IntuneWin32App -Id $Application.Id -ErrorAction "Stop"
+                }
             }
         }
     }

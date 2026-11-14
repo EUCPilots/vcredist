@@ -33,14 +33,14 @@ function Get-VcRedistAppsFromIntune {
     )
 
     begin {
-        $DisplayNamePattern = "^Microsoft Visual C*"
-        $NotesPattern = '^{"CreatedBy":"VcRedist","Guid":.*}$'
+        $ModuleBase = $MyInvocation.MyCommand.Module.ModuleBase
+        $IntuneManifestPath = Join-Path -Path $ModuleBase -ChildPath "Intune.json"
+        $IntuneManifest = Get-Content -LiteralPath $IntuneManifestPath -Raw -ErrorAction "Stop" | ConvertFrom-Json -ErrorAction "Stop"
+        $ExpectedPublisher = [System.String]$IntuneManifest.Information.Publisher
 
         # Get the existing Win32 applications from Intune
         Write-Verbose -Message "Retrieving existing Win32 applications from Intune."
-        $ExistingIntuneApps = Get-IntuneWin32App | `
-            Where-Object { $_.displayName -match $DisplayNamePattern -and $_.notes -match $NotesPattern } | `
-            Select-Object -Property * -ExcludeProperty "largeIcon"
+        $ExistingIntuneApps = @(Get-IntuneWin32App -ErrorAction "Stop" | Select-Object -Property * -ExcludeProperty "largeIcon")
         if ($ExistingIntuneApps.Count -gt 0) {
             Write-Verbose -Message "Found $($ExistingIntuneApps.Count) existing Visual C++ applications in Intune."
         }
@@ -49,11 +49,59 @@ function Get-VcRedistAppsFromIntune {
     process {
         Write-Verbose -Message "Filtering existing applications to match VcList PackageId."
         foreach ($Application in $ExistingIntuneApps) {
-            if (($Application.notes | ConvertFrom-Json -ErrorAction "Stop").Guid -in $VcList.PackageId) {
+            if ([System.String]$Application.Publisher -ine $ExpectedPublisher) {
+                continue
+            }
 
-                # Add the packageId to the application object for easier reference
-                $Application | Add-Member -MemberType "NoteProperty" -Name "packageId" -Value $($Application.notes | ConvertFrom-Json -ErrorAction "Stop").Guid -Force
+            $MatchingRedists = @(
+                foreach ($Redist in $VcList) {
+                    $DisplayNamePrefix = "$ExpectedPublisher $($Redist.Name) "
+                    if ([System.String]$Application.displayName -ilike "$([System.Management.Automation.WildcardPattern]::Escape($DisplayNamePrefix))*") {
+                        $Redist
+                    }
+                }
+            )
+            if ($MatchingRedists.Count -eq 0) {
+                continue
+            }
+
+            try {
+                $Notes = ConvertFrom-Json -InputObject $Application.notes -ErrorAction "Stop"
+            }
+            catch {
+                Write-Warning -Message "Skipping Intune application '$($Application.displayName)' because its VcRedist metadata is invalid: $($_.Exception.Message)"
+                continue
+            }
+            if ($Notes.CreatedBy -cne "VcRedist" -or [System.String]::IsNullOrWhiteSpace([System.String]$Notes.Guid)) {
+                continue
+            }
+
+            foreach ($Redist in $MatchingRedists) {
+                if ([System.String]$Notes.Guid -ine [System.String]$Redist.PackageId) {
+                    continue
+                }
+
+                $DisplayNamePrefix = "$ExpectedPublisher $($Redist.Name) "
+                $DisplayNameSuffix = " $($Redist.Architecture)"
+                $DisplayName = [System.String]$Application.displayName
+                if (-not $DisplayName.StartsWith($DisplayNamePrefix, [System.StringComparison]::OrdinalIgnoreCase) -or
+                    -not $DisplayName.EndsWith($DisplayNameSuffix, [System.StringComparison]::OrdinalIgnoreCase)) {
+                    continue
+                }
+
+                $VersionText = $DisplayName.Substring($DisplayNamePrefix.Length, $DisplayName.Length - $DisplayNamePrefix.Length - $DisplayNameSuffix.Length)
+                $ParsedVersion = $null
+                if (-not [System.Version]::TryParse($VersionText, [ref]$ParsedVersion)) {
+                    continue
+                }
+                if ([System.String]::IsNullOrWhiteSpace([System.String]$Application.Id)) {
+                    Write-Warning -Message "Skipping Intune application '$DisplayName' because it has no application ID."
+                    continue
+                }
+
+                $Application | Add-Member -MemberType "NoteProperty" -Name "packageId" -Value ([System.String]$Notes.Guid) -Force
                 Write-Output -InputObject $Application
+                break
             }
         }
     }

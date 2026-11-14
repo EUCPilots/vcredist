@@ -1,24 +1,24 @@
 <#
     .SYNOPSIS
-        Pester tests for Get-VcRedistAppsFromIntune
+        Pester tests for Get-RequiredVcRedistUpdatesFromIntune
 #>
 [CmdletBinding()]
 param ()
 
 InModuleScope VcRedist {
-    Describe "Get-VcRedistAppsFromIntune" {
+    Describe "Get-RequiredVcRedistUpdatesFromIntune" -Tag "Intune" {
         Context "Basic Functionality" {
             It "Should not throw when called with no parameters" {
-                { Get-VcRedistAppsFromIntune } | Should -Not -Throw
+                { Get-RequiredVcRedistUpdatesFromIntune } | Should -Not -Throw
             }
             It "Should return an array or $null" {
-                $result = Get-VcRedistAppsFromIntune
+                $result = Get-RequiredVcRedistUpdatesFromIntune
                 ($result -is [System.Array] -or $null -eq $result) | Should -BeTrue
             }
         }
         Context "Parameter validation" {
             It "Should throw when VcList is missing" {
-                { Get-VcRedistAppsFromIntune } | Should -Throw
+                { Get-RequiredVcRedistUpdatesFromIntune } | Should -Throw
             }
         }
     }

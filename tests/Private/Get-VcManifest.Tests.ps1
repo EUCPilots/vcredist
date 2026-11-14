@@ -19,6 +19,7 @@ InModuleScope VcRedist {
 						URI             = $Uri
 						Release         = "14"
 						Architecture    = "x64"
+						SupportedArchitecture = @("AMD64")
 						Install         = "/install"
 						SilentInstall   = "/install /quiet"
 						SilentUninstall = "uninstall"
@@ -34,6 +35,9 @@ InModuleScope VcRedist {
 		$Older = New-TestManifestJson -Updated $BundledUpdated.AddDays(-1).ToString("yyyy-MM-ddTHH:mm:ssZ")
 		$Future = New-TestManifestJson -Updated "2099-01-01T00:00:00Z" -SchemaVersion "2.0"
 		$BadHost = New-TestManifestJson -Updated "2099-01-01T00:00:00Z" -Uri "https://evil.example.com/a.exe"
+		$MissingArchitecture = $Newer | ConvertFrom-Json
+		$MissingArchitecture.Entries[0].PSObject.Properties.Remove("SupportedArchitecture")
+		$MissingArchitecture = $MissingArchitecture | ConvertTo-Json -Depth 5
 	}
 
 	Describe -Name "Get-VcManifest" {
@@ -89,6 +93,11 @@ InModuleScope VcRedist {
 			It "Falls back when an entry URI is not on the allowed host list" {
 				Mock Invoke-VcWebRequest { [PSCustomObject]@{ Content = $BadHost } }
 				(Get-VcManifest -WarningAction SilentlyContinue).Source | Should -BeExactly "Bundled"
+			}
+			It "Falls back when supported architecture metadata is missing" {
+				Mock Invoke-VcWebRequest { [PSCustomObject]@{ Content = $MissingArchitecture } }
+				(Get-VcManifest -WarningAction SilentlyContinue).Source | Should -BeExactly "Bundled"
+				{ Get-VcManifest -Source "Remote" } | Should -Throw "*SupportedArchitecture*"
 			}
 
 			It "Throws instead of falling back when -Source Remote is used" {

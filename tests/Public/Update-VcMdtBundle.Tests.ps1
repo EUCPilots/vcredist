@@ -16,7 +16,7 @@ BeforeDiscovery {
 	}
 }
 
-Describe -Name "Update-VcMdtBundle" -Skip:$Skip {
+Describe -Name "Update-VcMdtBundle" -Skip:$Skip -Tag "MDT" {
 	BeforeAll {
 		# Install the MDT Workbench
 		& "$env:GITHUB_WORKSPACE\tests\Install-Mdt.ps1"

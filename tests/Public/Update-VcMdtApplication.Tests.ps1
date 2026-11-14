@@ -17,7 +17,7 @@ BeforeDiscovery {
 	}
 }
 
-Describe -Name "Update-VcMdtApplication with <Release>" -ForEach $SupportedReleases -Skip:$Skip {
+Describe -Name "Update-VcMdtApplication with <Release>" -ForEach $SupportedReleases -Skip:$Skip -Tag "MDT" {
 	BeforeAll {
 		# Install the MDT Workbench
 		& "$env:GITHUB_WORKSPACE\tests\Install-Mdt.ps1"
@@ -57,7 +57,7 @@ Describe -Name "Update-VcMdtApplication with <Release>" -ForEach $SupportedRelea
 	}
 }
 
-Describe -Name "Update-VcMdtApplication updates an existing application" -Skip:$Skip {
+Describe -Name "Update-VcMdtApplication updates an existing application" -Skip:$Skip -Tag "MDT" {
 	BeforeAll {
 		if ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") {
 			$Skip = $false

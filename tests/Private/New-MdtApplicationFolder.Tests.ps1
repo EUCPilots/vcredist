@@ -7,7 +7,7 @@
 param ()
 
 InModuleScope VcRedist {
-    Describe -Name "New-MdtApplicationFolder" {
+    Describe -Name "New-MdtApplicationFolder" -Tag "MDT" {
         It "Returns true without creating a folder that exists" {
             Mock Test-Path { $true }
             Mock New-Item { }

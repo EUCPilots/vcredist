@@ -1,0 +1,3670 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<helpItems schema="maml" xmlns="http://msh">
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Export-VcManifest</command:name>
+      <command:verb>Export</command:verb>
+      <command:noun>VcManifest</command:noun>
+      <maml:description>
+        <maml:para>Visual C++ Redistributable の JSON マニフェストを外部ファイルにエクスポートします。</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>VcRedist モジュールに含まれる Visual C++ Redistributable の JSON マニフェストを読み込み、JSON を外部ファイルにエクスポートします。 これにより、カスタム シナリオ向けに JSON マニフェストを編集できます。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Export-VcManifest</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>マニフェスト JSON ファイルのエクスポート先フォルダーのパスです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>コマンドレットの実行前に確認を求めます。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+          <maml:name>ProgressAction</maml:name>
+          <maml:description>
+            <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+          <dev:type>
+            <maml:name>ActionPreference</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Proxy</maml:name>
+          <maml:description>
+            <maml:para>マニフェストの取得またはコンテンツのダウンロードに使用するプロキシ サーバーを指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>ProxyCredential</maml:name>
+          <maml:description>
+            <maml:para>-Proxy で指定したプロキシ サーバーを使用する権限を持つユーザー アカウントを指定します。省略した場合は、既定のプロキシ資格情報が使用されます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSCredential</command:parameterValue>
+          <dev:type>
+            <maml:name>PSCredential</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Source</maml:name>
+          <maml:description>
+            <maml:para>マニフェストのソースを選択します。`Auto` (既定) は VcRedist リポジトリでホストされるリモート マニフェストを使用し、何らかのエラーが発生した場合、またはリモート マニフェストが古い場合はバンドルされたマニフェストにフォールバックします。`Remote` はリモート マニフェストを利用できない場合に失敗します。`Bundled` はモジュールに含まれるマニフェストのみを使用します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>コマンドレットを実行した場合の動作を表示します。 コマンドレットは実行されません。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>マニフェスト JSON ファイルのエクスポート先フォルダーのパスです。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>コマンドレットの実行前に確認を求めます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+        <maml:name>ProgressAction</maml:name>
+        <maml:description>
+          <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+        <dev:type>
+          <maml:name>ActionPreference</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Proxy</maml:name>
+        <maml:description>
+          <maml:para>マニフェストの取得またはコンテンツのダウンロードに使用するプロキシ サーバーを指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>ProxyCredential</maml:name>
+        <maml:description>
+          <maml:para>-Proxy で指定したプロキシ サーバーを使用する権限を持つユーザー アカウントを指定します。省略した場合は、既定のプロキシ資格情報が使用されます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">PSCredential</command:parameterValue>
+        <dev:type>
+          <maml:name>PSCredential</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Source</maml:name>
+        <maml:description>
+          <maml:para>マニフェストのソースを選択します。`Auto` (既定) は VcRedist リポジトリでホストされるリモート マニフェストを使用し、何らかのエラーが発生した場合、またはリモート マニフェストが古い場合はバンドルされたマニフェストにフォールバックします。`Remote` はリモート マニフェストを利用できない場合に失敗します。`Bundled` はモジュールに含まれるマニフェストのみを使用します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>コマンドレットを実行した場合の動作を表示します。 コマンドレットは実行されません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Author: Aaron Parker</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+        <dev:code>Export-VcManifest -Path "C:\Temp"</dev:code>
+        <dev:remarks>
+          <maml:para>説明: サポート対象の Visual C++ Redistributable の一覧を C:\Temp\VisualCRedistributables.json にエクスポートします。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Redistributable マニフェストをエクスポートする:</maml:linkText>
+        <maml:uri>https://vcredist.com/export-vcmanifest/</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Get-InstalledVcRedist</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>InstalledVcRedist</command:noun>
+      <maml:description>
+        <maml:para>インストール済みの Visual C++ Redistributable を返します。</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>レジストリを照会してローカル システムにインストールされた Visual C++ Redistributable を検索し、その一覧をパイプラインに返します。 既定では主要な Redistributable エントリが含まれます。また、レジストリに記載された追加および最小 Redistributable コンポーネントもエクスポートできます。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-InstalledVcRedist</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Export</maml:name>
+          <maml:description>
+            <maml:para>返すインストール済み Visual C++ Redistributable を指定します。Supported は主要な Redistributable エントリのみを返し、All は通常「プログラムと機能」に表示されない追加および最小ランタイム コンポーネントも含めます。既定値は Supported です。</maml:para>
+          </maml:description>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" command:variableLength="false">Supported</command:parameterValue>
+            <command:parameterValue required="false" command:variableLength="false">All</command:parameterValue>
+          </command:parameterValueGroup>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>Supported</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+          <maml:name>ProgressAction</maml:name>
+          <maml:description>
+            <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+          <dev:type>
+            <maml:name>ActionPreference</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Export</maml:name>
+        <maml:description>
+          <maml:para>返すインストール済み Visual C++ Redistributable を指定します。Supported は主要な Redistributable エントリのみを返し、All は通常「プログラムと機能」に表示されない追加および最小ランタイム コンポーネントも含めます。既定値は Supported です。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Supported</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+        <maml:name>ProgressAction</maml:name>
+        <maml:description>
+          <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+        <dev:type>
+          <maml:name>ActionPreference</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Author: Aaron Parker</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+        <dev:code>Get-InstalledVcRedist</dev:code>
+        <dev:remarks>
+          <maml:para>説明: 現在のシステムにインストールされている Microsoft Visual C++ Redistributable を返します。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
+        <dev:code>Get-InstalledVcRedist -Export All</dev:code>
+        <dev:remarks>
+          <maml:para>説明: 追加および最小ランタイムを含め、現在のシステムにインストールされている Microsoft Visual C++ Redistributable を返します。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>ローカルにインストールされた Redistributable を取得する:</maml:linkText>
+        <maml:uri>https://vcredist.com/get-installedvcredist/</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Get-VcIntuneApplication</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>VcIntuneApplication</command:noun>
+      <maml:description>
+        <maml:para>VcRedist によってインポートされた Microsoft Visual C++ Redistributable の一覧を Microsoft Intune に照会します。</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>VcRedist によってインポートされた Microsoft Visual C++ Redistributable の一覧を Microsoft Intune に照会し、その一覧をパイプラインに返します。 この関数は、VcRedist によって Intune にインポートされた Visual C++ Redistributable パッケージのみを返します。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-VcIntuneApplication</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+          <maml:name>ProgressAction</maml:name>
+          <maml:description>
+            <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+          <dev:type>
+            <maml:name>ActionPreference</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+        <maml:name>ProgressAction</maml:name>
+        <maml:description>
+          <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+        <dev:type>
+          <maml:name>ActionPreference</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Author: Aaron Parker</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+        <dev:code>Get-VcIntuneApplication</dev:code>
+        <dev:remarks>
+          <maml:para>説明: Microsoft Intune に Microsoft Visual C++ Redistributable パッケージを照会し、結果をパイプラインに返します。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Intune に Redistributable を照会する:</maml:linkText>
+        <maml:uri>https://vcredist.com/Get-VcIntuneApplication/</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Get-VcList</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>VcList</command:noun>
+      <maml:description>
+        <maml:para>他の VcRedist 関数で使用する Microsoft Visual C++ Redistributable のオブジェクトを返します。</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>この関数は、内部マニフェストに記載された Visual C++ Redistributable を読み込み、他の VcRedist 関数に渡せるオブジェクトにします。</maml:para>
+      <maml:para>マニフェストは VcRedist リポジトリから読み込まれるため、マニフェストを更新する際にモジュールを更新する必要はありません。リモート マニフェストを利用できない場合、無効な場合、またはバンドルされたマニフェストより古い場合は、モジュールに含まれるマニフェストが使用されます。</maml:para>
+      <maml:para>サポート対象および既知のすべての再頒布可能パッケージの一覧がモジュールに含まれています。 既定では、Get-VcList はサポート対象の Visual C++ Redistributable の一覧のみを返します。 サポート対象外の Redistributable を返すには、-Export パラメーターを指定し、Where-Object で出力をフィルターする必要があります。</maml:para>
+      <maml:para>内部マニフェストは Export-VcManifest でエクスポートできます。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-VcList</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
+          <maml:name>Release</maml:name>
+          <maml:description>
+            <maml:para>返す Redistributable のリリース (またはバージョン) を指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+          <dev:type>
+            <maml:name>String[]</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>@("2012", "2013", "2022")</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
+          <maml:name>Architecture</maml:name>
+          <maml:description>
+            <maml:para>返す Redistributable のプロセッサ アーキテクチャを指定します。 x86 または x64 を指定できます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+          <dev:type>
+            <maml:name>String[]</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>@("x86", "x64")</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+          <maml:name>ProgressAction</maml:name>
+          <maml:description>
+            <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+          <dev:type>
+            <maml:name>ActionPreference</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Proxy</maml:name>
+          <maml:description>
+            <maml:para>マニフェストの取得またはコンテンツのダウンロードに使用するプロキシ サーバーを指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>ProxyCredential</maml:name>
+          <maml:description>
+            <maml:para>-Proxy で指定したプロキシ サーバーを使用する権限を持つユーザー アカウントを指定します。省略した場合は、既定のプロキシ資格情報が使用されます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSCredential</command:parameterValue>
+          <dev:type>
+            <maml:name>PSCredential</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Source</maml:name>
+          <maml:description>
+            <maml:para>マニフェストのソースを選択します。`Auto` (既定) は VcRedist リポジトリでホストされるリモート マニフェストを使用し、何らかのエラーが発生した場合、またはリモート マニフェストが古い場合はバンドルされたマニフェストにフォールバックします。`Remote` はリモート マニフェストを利用できない場合に失敗します。`Bundled` はモジュールに含まれるマニフェストのみを使用します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Get-VcList</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
+          <maml:name>Export</maml:name>
+          <maml:description>
+            <maml:para>エクスポートする Visual C++ Redistributable の一覧を指定します。All、Supported、または Unsupported を選択できます。 既定では、サポート対象の Redistributable がエクスポートされます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>Supported</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+          <maml:name>ProgressAction</maml:name>
+          <maml:description>
+            <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+          <dev:type>
+            <maml:name>ActionPreference</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Proxy</maml:name>
+          <maml:description>
+            <maml:para>マニフェストの取得またはコンテンツのダウンロードに使用するプロキシ サーバーを指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>ProxyCredential</maml:name>
+          <maml:description>
+            <maml:para>-Proxy で指定したプロキシ サーバーを使用する権限を持つユーザー アカウントを指定します。省略した場合は、既定のプロキシ資格情報が使用されます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSCredential</command:parameterValue>
+          <dev:type>
+            <maml:name>PSCredential</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Source</maml:name>
+          <maml:description>
+            <maml:para>マニフェストのソースを選択します。`Auto` (既定) は VcRedist リポジトリでホストされるリモート マニフェストを使用し、何らかのエラーが発生した場合、またはリモート マニフェストが古い場合はバンドルされたマニフェストにフォールバックします。`Remote` はリモート マニフェストを利用できない場合に失敗します。`Bundled` はモジュールに含まれるマニフェストのみを使用します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
+        <maml:name>Release</maml:name>
+        <maml:description>
+          <maml:para>返す Redistributable のリリース (またはバージョン) を指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>@("2012", "2013", "2022")</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
+        <maml:name>Architecture</maml:name>
+        <maml:description>
+          <maml:para>返す Redistributable のプロセッサ アーキテクチャを指定します。 x86 または x64 を指定できます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>@("x86", "x64")</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
+        <maml:name>Export</maml:name>
+        <maml:description>
+          <maml:para>エクスポートする Visual C++ Redistributable の一覧を指定します。All、Supported、または Unsupported を選択できます。 既定では、サポート対象の Redistributable がエクスポートされます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Supported</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+        <maml:name>ProgressAction</maml:name>
+        <maml:description>
+          <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+        <dev:type>
+          <maml:name>ActionPreference</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Proxy</maml:name>
+        <maml:description>
+          <maml:para>マニフェストの取得またはコンテンツのダウンロードに使用するプロキシ サーバーを指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>ProxyCredential</maml:name>
+        <maml:description>
+          <maml:para>-Proxy で指定したプロキシ サーバーを使用する権限を持つユーザー アカウントを指定します。省略した場合は、既定のプロキシ資格情報が使用されます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">PSCredential</command:parameterValue>
+        <dev:type>
+          <maml:name>PSCredential</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Source</maml:name>
+        <maml:description>
+          <maml:para>マニフェストのソースを選択します。`Auto` (既定) は VcRedist リポジトリでホストされるリモート マニフェストを使用し、何らかのエラーが発生した場合、またはリモート マニフェストが古い場合はバンドルされたマニフェストにフォールバックします。`Remote` はリモート マニフェストを利用できない場合に失敗します。`Bundled` はモジュールに含まれるマニフェストのみを使用します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Author: Aaron Parker</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+        <dev:code>Get-VcList</dev:code>
+        <dev:remarks>
+          <maml:para>説明: 埋め込みマニフェストからサポート対象の Visual C++ Redistributable のオブジェクトを返します。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
+        <dev:code>Get-VcList</dev:code>
+        <dev:remarks>
+          <maml:para>説明: 埋め込みマニフェストから、サポート対象の Visual C++ Redistributable のうち、2012、2013、2022 の x86 および x64 バージョンを返します。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 3 --------------------------</maml:title>
+        <dev:code>Get-VcList -Export All</dev:code>
+        <dev:remarks>
+          <maml:para>説明: サポート対象外のバージョンを含む、埋め込みマニフェスト内のすべての Visual C++ Redistributable の一覧を返します。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 4 --------------------------</maml:title>
+        <dev:code>Get-VcList -Export Supported</dev:code>
+        <dev:remarks>
+          <maml:para>説明: 埋め込みマニフェストからサポート対象の Visual C++ Redistributable の完全な一覧を返します。 これは、パラメーターを指定せずに Get-VcList を実行する場合と同じです。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 5 --------------------------</maml:title>
+        <dev:code>Get-VcList -Export Unsupported | Where-Object { $_.Release -eq "2008" }</dev:code>
+        <dev:remarks>
+          <maml:para>説明: 埋め込みマニフェストからサポート対象外の Visual C++ Redistributable の完全な一覧を取得し、そのうち 2008 バージョンをフィルターします。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 6 --------------------------</maml:title>
+        <dev:code>Get-VcList -Release 2013, 2019 -Architecture x86</dev:code>
+        <dev:remarks>
+          <maml:para>説明: 埋め込みマニフェストのサポート対象 Redistributable 一覧から、2013 および 2019 の x86 Visual C++ Redistributable を返します。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 7 --------------------------</maml:title>
+        <dev:code>Get-VcList -Source Bundled</dev:code>
+        <dev:remarks>
+          <maml:para>説明: リモート マニフェストに接続せず、モジュールに含まれるマニフェストのみを使用して、サポート対象の Visual C++ Redistributable を返します。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Visual C++ Redistributable の一覧を取得する:</maml:linkText>
+        <maml:uri>https://vcredist.com/get-vclist/</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Import-VcConfigMgrApplication</command:name>
+      <command:verb>Import</command:verb>
+      <command:noun>VcConfigMgrApplication</command:noun>
+      <maml:description>
+        <maml:para>ConfigMgr サイトに Visual C++ Redistributable アプリケーションを作成します。</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>各 Visual C++ Redistributable について Configuration Manager サイトにアプリケーションを作成し、Redistributable を 32 ビットまたは 64 ビット Windows のどちらで実行できるか、およびインストール状態の検出に使用するアンインストール キーを設定します。 各展開の種類には SupportedArchitecture に基づくアーキテクチャ要件が設定されます。この関数は、対象デバイスのネイティブ Windows アーキテクチャを検出するサイト全体のスクリプト グローバル条件を作成または再利用します。</maml:para>
+      <maml:para>Get-VcList と Save-VcRedist を使用して Redistributable をダウンロードし、ConfigMgr にインポートする Redistributable の配列を作成します。</maml:para>
+      <maml:para>アプリケーションは、次のような既定のプロパティで ConfigMgr にインポートされます。</maml:para>
+      <maml:para>Location: Applications\VcRedists Name: Visual C++ Redistributable 2019 x86 14.28.29913.0 Administrator comments: Microsoft Visual C++ Redistributable 2019 x86 14.28.29913.0 imported by Import-VcConfigMgrApplication Publisher: Microsoft Software version: 14.28.29913.0 Language: en-US Date published: 18/03/2021 Localized application name: Visual C++ Redistributable 2019 x86 14.28.29913.0 User documentation: https://visualstudio.microsoft.com/vs/support/ Link text: https://www.visualstudio.com/downloads/ Privacy URL: https://go.microsoft.com/fwlink/?LinkId=521839 Keywords: Visual C++ Redistributable</maml:para>
+      <maml:para>Deployment type: Name: SCRIPT_Visual C++ Redistributable for Visual Studio 2019 Technology: Script Installer Administrator comments: Generated by Import-VcConfigMgrApplication Content location: \configmgr\Applications\VcRedists\2019\14.28.29913.0\x86\ Installation program: VC_redist.x86.exe /install /quiet /norestart Uninstall program: "%ProgramData%\Package Cache\{03d1453c-7d5c-479c-afea-8482f406e036}\VC_redist.x86.exe" /uninstall /quiet /noreboot Detection method: (Registry path)</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Import-VcConfigMgrApplication</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
+          <maml:name>VcList</maml:name>
+          <maml:description>
+            <maml:para>Save-VcRedist から取得した Visual C++ Redistributable の詳細を含む配列です。 Save-VcRedist は、Get-VcList からエクスポートされた配列に、インストーラー実行ファイルを指す Path プロパティを追加します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+          <dev:type>
+            <maml:name>PSObject</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none">
+          <maml:name>CMPath</maml:name>
+          <maml:description>
+            <maml:para>Visual C++ Redistributable の配布元となる UNC パスを指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none">
+          <maml:name>SMSSiteCode</maml:name>
+          <maml:description>
+            <maml:para>ConfigMgr アプリの作成に使用するサイト コードを指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="5" aliases="none">
+          <maml:name>AppFolder</maml:name>
+          <maml:description>
+            <maml:para>Visual C++ Redistributable をサブフォルダーにインポートします。 既定値は "VcRedists" です。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>VcRedists</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="6" aliases="none">
+          <maml:name>Publisher</maml:name>
+          <maml:description>
+            <maml:para>Configuration Manager アプリケーションで使用する発行元文字列を任意で指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>Microsoft</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="7" aliases="none">
+          <maml:name>Keyword</maml:name>
+          <maml:description>
+            <maml:para>Configuration Manager アプリケーションに追加するキーワードを指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>Visual C++ Redistributable</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Silent</maml:name>
+          <maml:description>
+            <maml:para>UI を表示しない VcRedist の完全なサイレント インストール用コマンド ラインを追加します。 既定のインストールはパッシブです。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>NoCopy</maml:name>
+          <maml:description>
+            <maml:para>Configuration Manager にアプリケーションをインポートする際に、Visual C++ Redistributable バイナリをコピーしません。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>コマンドレットを実行した場合の動作を表示します。 コマンドレットは実行されません。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>コマンドレットの実行前に確認を求めます。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>このパラメーターは廃止され、無視されます。-VcList に渡すオブジェクトに Path プロパティが必要です。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+          <maml:name>ProgressAction</maml:name>
+          <maml:description>
+            <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+          <dev:type>
+            <maml:name>ActionPreference</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
+        <maml:name>VcList</maml:name>
+        <maml:description>
+          <maml:para>Save-VcRedist から取得した Visual C++ Redistributable の詳細を含む配列です。 Save-VcRedist は、Get-VcList からエクスポートされた配列に、インストーラー実行ファイルを指す Path プロパティを追加します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        <dev:type>
+          <maml:name>PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none">
+        <maml:name>CMPath</maml:name>
+        <maml:description>
+          <maml:para>Visual C++ Redistributable の配布元となる UNC パスを指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none">
+        <maml:name>SMSSiteCode</maml:name>
+        <maml:description>
+          <maml:para>ConfigMgr アプリの作成に使用するサイト コードを指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="5" aliases="none">
+        <maml:name>AppFolder</maml:name>
+        <maml:description>
+          <maml:para>Visual C++ Redistributable をサブフォルダーにインポートします。 既定値は "VcRedists" です。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>VcRedists</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Silent</maml:name>
+        <maml:description>
+          <maml:para>UI を表示しない VcRedist の完全なサイレント インストール用コマンド ラインを追加します。 既定のインストールはパッシブです。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>NoCopy</maml:name>
+        <maml:description>
+          <maml:para>Configuration Manager にアプリケーションをインポートする際に、Visual C++ Redistributable バイナリをコピーしません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="6" aliases="none">
+        <maml:name>Publisher</maml:name>
+        <maml:description>
+          <maml:para>Configuration Manager アプリケーションで使用する発行元文字列を任意で指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Microsoft</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="7" aliases="none">
+        <maml:name>Keyword</maml:name>
+        <maml:description>
+          <maml:para>Configuration Manager アプリケーションに追加するキーワードを指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Visual C++ Redistributable</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>コマンドレットを実行した場合の動作を表示します。 コマンドレットは実行されません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>コマンドレットの実行前に確認を求めます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>このパラメーターは廃止され、無視されます。-VcList に渡すオブジェクトに Path プロパティが必要です。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+        <maml:name>ProgressAction</maml:name>
+        <maml:description>
+          <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+        <dev:type>
+          <maml:name>ActionPreference</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Author: Aaron Parker</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+        <dev:code>$VcList = Get-VcList | Save-VcRedist -Path "C:\Temp\VcRedist"
+Import-VcConfigMgrApplication -VcList $VcList -CMPath "\\server\share\VcRedist" -SMSSiteCode LAB</dev:code>
+        <dev:remarks>
+          <maml:para>説明: サポート対象の Visual C++ Redistributable を "C:\Temp\VcRedist" にダウンロードし、"\server\share\VcRedist" にコピーして、ConfigMgr サイト LAB にアプリケーションとしてインポートします。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Redistributable を ConfigMgr にインポートする:</maml:linkText>
+        <maml:uri>https://vcredist.com/import-vcconfigmgrapplication/</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Import-VcIntuneApplication</command:name>
+      <command:verb>Import</command:verb>
+      <command:noun>VcIntuneApplication</command:noun>
+      <maml:description>
+        <maml:para>Microsoft Visual C++ Redistributable インストーラーを intunewin 形式にパッケージ化し、Microsoft Intune テナントにアプリケーションとしてインポートします。</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>各 Visual C++ Redistributable について Microsoft Intune テナントにアプリケーションを作成し、対象のサイレント コマンド、アンインストール コマンド、検出 (レジストリ経由)、要件などのプロパティを設定します。</maml:para>
+      <maml:para>Get-VcList と Save-VcRedist を使用して Redistributable をダウンロードし、Microsoft Intune にインポートする配列を作成します。</maml:para>
+      <maml:para>各 Visual C++ Redistributable のアプリケーション パッケージが作成されます。パッケージには、名前、説明、発行元、アプリのバージョン、情報 URL、プライバシー URL、メモ、ロゴ、インストール コマンド、アンインストール コマンド、インストール動作、オペレーティング システムのアーキテクチャ、最小オペレーティング システム、検出規則などのプロパティが含まれます。</maml:para>
+      <maml:para>この関数には IntuneWin32App PowerShell モジュールが必要で、サポートされるのは Windows PowerShell のみです。 この関数を使用して Redistributable を Intune テナントにインポートする前に、Connect-MSIntuneGraph で認証してください。 アーキテクチャ要件は、各マニフェスト エントリの SupportedArchitecture リストに基づきます。IntuneWin32App 1.5.0 は、バンドルされたマニフェストで使用される ARM64 を含む要件をサポートします。サポートされない組み合わせは拒否されます。更新をインポートしない限り、既存のアプリケーションは変更されません。</maml:para>
+      <maml:para>`-ImportAsUpdate` を使用すると、各パッケージの `DetectionFile` に基づくファイル バージョン要件が追加されます。アーキテクチャ固有のファイルが存在し、パッケージ バージョンより古い場合にのみアプリが適用対象になります。クリーン インストールや、同じバージョンまたは新しいバージョンがあるデバイスには適用されません。既存の Intune アプリや割り当ては変更されません。特にサイド バイ サイド アセンブリを使用する可能性のある古いサポート対象外の Redistributable については、対象デバイス上の検出ファイルとバージョンを確認してください。リモート マニフェストでは、バンドルされたマニフェストとは異なる検出パスが指定される場合があります。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Import-VcIntuneApplication</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
+          <maml:name>VcList</maml:name>
+          <maml:description>
+            <maml:para>Save-VcRedist から取得した Visual C++ Redistributable の詳細を含む配列です。 Save-VcRedist は、Get-VcList からエクスポートされた配列に、インストーラー実行ファイルを指す Path プロパティを追加します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+          <dev:type>
+            <maml:name>PSObject</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>ImportAsUpdate</maml:name>
+          <maml:description>
+            <maml:para>パッケージの `DetectionFile` が存在し、そのファイル バージョンがパッケージ バージョンより低いことを要件として追加します。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>コマンドレットの実行前に確認を求めます。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+          <maml:name>ProgressAction</maml:name>
+          <maml:description>
+            <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+          <dev:type>
+            <maml:name>ActionPreference</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>コマンドレットを実行した場合の動作を表示します。 コマンドレットは実行されません。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>ImportAsUpdate</maml:name>
+        <maml:description>
+          <maml:para>パッケージの `DetectionFile` が存在し、そのファイル バージョンがパッケージ バージョンより低いことを要件として追加します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
+        <maml:name>VcList</maml:name>
+        <maml:description>
+          <maml:para>Save-VcRedist から取得した Visual C++ Redistributable の詳細を含む配列です。 Save-VcRedist は、Get-VcList からエクスポートされた配列に、インストーラー実行ファイルを指す Path プロパティを追加します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        <dev:type>
+          <maml:name>PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>コマンドレットの実行前に確認を求めます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+        <maml:name>ProgressAction</maml:name>
+        <maml:description>
+          <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+        <dev:type>
+          <maml:name>ActionPreference</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>コマンドレットを実行した場合の動作を表示します。 コマンドレットは実行されません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Author: Aaron Parker</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+        <dev:code>Connect-MSIntuneGraph -TenantID contoso.onmicrosoft.com
+$VcList = Get-VcList -Release "2022" | Save-VcRedist -Path "C:\Temp\VcRedist"
+Import-VcIntuneApplication -VcList $VcList</dev:code>
+        <dev:remarks>
+          <maml:para>説明: 指定したテナントで認証し、Visual C++ Redistributable 2022 の一覧を取得して C:\Temp\VcRedist にダウンロードし、各 Redistributable を個別のアプリケーションとして対象の Intune テナントにインポートします。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
+        <dev:code>Connect-MSIntuneGraph -TenantID contoso.onmicrosoft.com -ClientId "f99877d5-f757-438e-b12b-d905b00ea6f3" -ClientSecret &lt;secret&gt;
+Get-VcList | Save-VcRedist -Path "C:\Temp\VcRedist" | Import-VcIntuneApplication</dev:code>
+        <dev:remarks>
+          <maml:para>説明: Azure AD アプリ登録を使用して指定したテナントで非対話型認証を行い、サポート対象の Visual C++ Redistributable 一覧を取得して C:\Temp\VcRedist にダウンロードし、各 Redistributable を個別のアプリケーションとして対象の Intune テナントにインポートします。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 3 --------------------------</maml:title>
+        <dev:code>Get-VcList -Release "14" | Save-VcRedist -Path "C:\Temp\VcRedist" | Import-VcIntuneApplication -ImportAsUpdate</dev:code>
+        <dev:remarks>
+          <maml:para>インストール済みランタイムが古いデバイスにのみ適用される v14 アプリケーションをインポートします。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://vcredist.com/import-vcintuneapplication/</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Redistributable を MDT にインポートする</maml:linkText>
+        <maml:uri>https://vcredist.com/import-vcmdtapplication/</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Import-VcMdtApplication</command:name>
+      <command:verb>Import</command:verb>
+      <command:noun>VcMdtApplication</command:noun>
+      <maml:description>
+        <maml:para>Microsoft Deployment Toolkit 共有に Visual C++ Redistributable アプリケーションを作成します。</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>各 Visual C++ Redistributable について Microsoft Deployment Toolkit 共有にアプリケーションを作成し、対象のサイレント コマンド ライン、プラットフォーム、アンインストール キーなどのプロパティを設定します。 サポートされるプラットフォームはマニフェストから決定されます。MDT は ARM64 の展開をサポートしないため、ARM64 専用パッケージは警告とともにスキップされます。</maml:para>
+      <maml:para>Get-VcList と Save-VcRedist を使用して Redistributable をダウンロードし、MDT にインポートする配列を作成します。</maml:para>
+      <maml:para>アプリケーションは、次のような既定のプロパティで MDT 展開共有にインポートされます。</maml:para>
+      <maml:para>Location: Applications\VcRedists Name: Visual C++ Redistributable 2019 x86 14.28.29913.0 Comments: Generated by Import-VcMdtApplication Short name: Visual C++ Redistributable for Visual Studio 2019 x86 Version: 14.28.29913.0 Publisher: Microsoft Language: en-US Source directory: .\Applications\Microsoft VcRedist\2019\14.28.29913.0\x86 Quiet install command: .\VC_redist.x86.exe /install /quiet /norestart Working directory: .\Applications\Microsoft VcRedist\2019\14.28.29913.0\x86 Uninstall registry key name: {03d1453c-7d5c-479c-afea-8482f406e036} Hide this application in the Deployment Wizard: Yes</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Import-VcMdtApplication</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
+          <maml:name>VcList</maml:name>
+          <maml:description>
+            <maml:para>Save-VcRedist から取得した Visual C++ Redistributable の詳細を含む配列です。 Save-VcRedist は、Get-VcList からエクスポートされた配列に、インストーラー実行ファイルを指す Path プロパティを追加します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+          <dev:type>
+            <maml:name>PSObject</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none">
+          <maml:name>MdtPath</maml:name>
+          <maml:description>
+            <maml:para>MDT 展開共有のローカル パスまたはネットワーク パスです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none">
+          <maml:name>AppFolder</maml:name>
+          <maml:description>
+            <maml:para>VcRedist をインポートする Applications ノード内のフォルダーを指定します。 既定値は 'VcRedists' です。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>VcRedists</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="5" aliases="none">
+          <maml:name>MdtDrive</maml:name>
+          <maml:description>
+            <maml:para>MDT 展開共有への接続時に使用する PSDrive 名を任意で指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>DS001</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="6" aliases="none">
+          <maml:name>Publisher</maml:name>
+          <maml:description>
+            <maml:para>MDT アプリケーションで使用する発行元文字列を任意で指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>Microsoft</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="7" aliases="none">
+          <maml:name>Language</maml:name>
+          <maml:description>
+            <maml:para>MDT アプリケーションに適用する言語プロパティを任意で指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>En-US</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Silent</maml:name>
+          <maml:description>
+            <maml:para>UI を表示しない VcRedist の完全なサイレント インストール用コマンド ラインを追加します。 既定のインストールはパッシブです。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>DontHide</maml:name>
+          <maml:description>
+            <maml:para>'Hide this application in the Deployment Wizard' オプションを選択しないように指定します。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>MDT 展開共有へのインポートを強制し、既存のアプリケーションを上書きします。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>コマンドレットを実行した場合の動作を表示します。 コマンドレットは実行されません。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>コマンドレットの実行前に確認を求めます。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>このパラメーターは廃止され、無視されます。-VcList に渡すオブジェクトに Path プロパティが必要です。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+          <maml:name>ProgressAction</maml:name>
+          <maml:description>
+            <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+          <dev:type>
+            <maml:name>ActionPreference</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
+        <maml:name>VcList</maml:name>
+        <maml:description>
+          <maml:para>Save-VcRedist から取得した Visual C++ Redistributable の詳細を含む配列です。 Save-VcRedist は、Get-VcList からエクスポートされた配列に、インストーラー実行ファイルを指す Path プロパティを追加します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        <dev:type>
+          <maml:name>PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none">
+        <maml:name>MdtPath</maml:name>
+        <maml:description>
+          <maml:para>MDT 展開共有のローカル パスまたはネットワーク パスです。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none">
+        <maml:name>AppFolder</maml:name>
+        <maml:description>
+          <maml:para>VcRedist をインポートする Applications ノード内のフォルダーを指定します。 既定値は 'VcRedists' です。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>VcRedists</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Silent</maml:name>
+        <maml:description>
+          <maml:para>UI を表示しない VcRedist の完全なサイレント インストール用コマンド ラインを追加します。 既定のインストールはパッシブです。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>DontHide</maml:name>
+        <maml:description>
+          <maml:para>'Hide this application in the Deployment Wizard' オプションを選択しないように指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Force</maml:name>
+        <maml:description>
+          <maml:para>MDT 展開共有へのインポートを強制し、既存のアプリケーションを上書きします。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="5" aliases="none">
+        <maml:name>MdtDrive</maml:name>
+        <maml:description>
+          <maml:para>MDT 展開共有への接続時に使用する PSDrive 名を任意で指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>DS001</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="6" aliases="none">
+        <maml:name>Publisher</maml:name>
+        <maml:description>
+          <maml:para>MDT アプリケーションで使用する発行元文字列を任意で指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Microsoft</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="7" aliases="none">
+        <maml:name>Language</maml:name>
+        <maml:description>
+          <maml:para>MDT アプリケーションに適用する言語プロパティを任意で指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>En-US</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>コマンドレットを実行した場合の動作を表示します。 コマンドレットは実行されません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>コマンドレットの実行前に確認を求めます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>このパラメーターは廃止され、無視されます。-VcList に渡すオブジェクトに Path プロパティが必要です。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+        <maml:name>ProgressAction</maml:name>
+        <maml:description>
+          <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+        <dev:type>
+          <maml:name>ActionPreference</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Author: Aaron Parker</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+        <dev:code>Get-VcList | Save-VcRedist -Path C:\Temp\VcRedist | Import-VcMdtApplication -Path C:\Temp\VcRedist -MdtPath \\server\deployment</dev:code>
+        <dev:remarks>
+          <maml:para>説明: Visual C++ Redistributable の一覧を取得し、C:\Temp\VcRedist にダウンロードして、各 Redistributable を \server\deployment の MDT 展開共有にインポートします。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
+        <dev:code>$VcList = Get-VcList -ExportAll | Save-VcRedist -Path C:\Temp\VcRedist
+Import-VcMdtApplication -VcList $VcList -MdtPath \\server\deployment -Bundle</dev:code>
+        <dev:remarks>
+          <maml:para>説明: サポート対象および対象外の Visual C++ Redistributable の一覧を変数 $VcList に取得し、C:\Temp\VcRedist にダウンロードします。各 Redistributable を \server\deployment の MDT 展開共有にインポートし、アプリケーション バンドルを作成します。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Redistributable を MDT にインポートする</maml:linkText>
+        <maml:uri>https://vcredist.com/import-vcmdtapplication/</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Install-VcRedist</command:name>
+      <command:verb>Install</command:verb>
+      <command:noun>VcRedist</command:noun>
+      <maml:description>
+        <maml:para>ローカル システムに Visual C++ Redistributable をインストールします。</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Get-VcList で作成された一覧を基に、Save-VcRedist でローカルのフォルダー構成にダウンロードした Microsoft Visual C++ Redistributable をインストールします。 Redistributable のパッシブ インストールとサイレント インストールの両方をサポートします。 HashiCorp Packer を使用したゴールド イメージの作成など、実行時に Redistributable をダウンロードしてインストールする Windows 展開に便利です。 マニフェストの SupportedArchitecture リストにネイティブ Windows アーキテクチャが含まれないインストーラーは、-Force を指定していても警告とともにスキップされます。 各入力オブジェクトには、空でない SupportedArchitecture リストが必要です。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Install-VcRedist</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
+          <maml:name>VcList</maml:name>
+          <maml:description>
+            <maml:para>Save-VcRedist から取得した Visual C++ Redistributable の詳細を含む配列です。 Save-VcRedist は、Get-VcList からエクスポートされた配列に、インストーラー実行ファイルを指す Path プロパティを追加します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+          <dev:type>
+            <maml:name>PSObject</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Silent</maml:name>
+          <maml:description>
+            <maml:para>UI を表示せずに VcRedist を完全なサイレント インストールで実行します。 既定のインストールはパッシブです。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>Visual C++ Redistributable がローカル システムに既にインストールされている場合でも、インストールを実行します。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>コマンドレットを実行した場合の動作を表示します。 コマンドレットは実行されません。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>コマンドレットの実行前に確認を求めます。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>このパラメーターは廃止され、無視されます。-VcList に渡すオブジェクトに Path プロパティが必要です。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+          <maml:name>ProgressAction</maml:name>
+          <maml:description>
+            <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+          <dev:type>
+            <maml:name>ActionPreference</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
+        <maml:name>VcList</maml:name>
+        <maml:description>
+          <maml:para>Save-VcRedist から取得した Visual C++ Redistributable の詳細を含む配列です。 Save-VcRedist は、Get-VcList からエクスポートされた配列に、インストーラー実行ファイルを指す Path プロパティを追加します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        <dev:type>
+          <maml:name>PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Silent</maml:name>
+        <maml:description>
+          <maml:para>UI を表示せずに VcRedist を完全なサイレント インストールで実行します。 既定のインストールはパッシブです。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Force</maml:name>
+        <maml:description>
+          <maml:para>Visual C++ Redistributable がローカル システムに既にインストールされている場合でも、インストールを実行します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>コマンドレットを実行した場合の動作を表示します。 コマンドレットは実行されません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>コマンドレットの実行前に確認を求めます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>このパラメーターは廃止され、無視されます。-VcList に渡すオブジェクトに Path プロパティが必要です。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+        <maml:name>ProgressAction</maml:name>
+        <maml:description>
+          <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+        <dev:type>
+          <maml:name>ActionPreference</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Author: Aaron Parker</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+        <dev:code>$VcRedists = Get-VcList -Release 2013, 2019 -Architecture x64
+Install-VcRedist -VcList $VcRedists -Path C:\Temp\VcRedists</dev:code>
+        <dev:remarks>
+          <maml:para>説明: $VcRedists に含まれ、C:\Temp\VcRedists にダウンロードされた 2013 および 2019 の 64 ビット Visual C++ Redistributable をインストールします。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
+        <dev:code>$VcRedists = Get-VcList -Release "2012","2013","2017" -Architecture x64
+Install-VcRedist -VcList $VcRedists -Path C:\Temp\VcRedists</dev:code>
+        <dev:remarks>
+          <maml:para>説明: $VcRedists に含まれ、C:\Temp\VcRedists にダウンロードされた 64 ビットの 2012、2013、2017 Visual C++ Redistributable のみをインストールします。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 3 --------------------------</maml:title>
+        <dev:code>$VcRedists = Get-VcList -Release "2012","2013","2017" -Architecture x64 | Save-VcRedist -Path C:\Temp\VcRedists
+Install-VcRedist -VcList $VcRedists -Silent</dev:code>
+        <dev:remarks>
+          <maml:para>説明: サポート対象のすべての Visual C++ Redistributable を完全なサイレント インストールでインストールします。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Redistributable をインストールする:</maml:linkText>
+        <maml:uri>https://vcredist.com/install-vcredist/</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>New-VcMdtBundle</command:name>
+      <command:verb>New</command:verb>
+      <command:noun>VcMdtBundle</command:noun>
+      <maml:description>
+        <maml:para>Microsoft Deployment Toolkit 共有に Visual C++ Redistributable アプリケーションを作成します。</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>各 Visual C++ Redistributable について Microsoft Deployment Toolkit 共有にアプリケーションを作成し、対象のサイレント コマンド ライン、プラットフォーム、アンインストール キーなどのプロパティを設定します。</maml:para>
+      <maml:para>Get-VcList と Save-VcRedist を使用して Redistributable をダウンロードし、MDT にインポートする配列を作成します。</maml:para>
+      <maml:para>バンドルは、次のような既定のプロパティで MDT 展開共有にインポートされます。</maml:para>
+      <maml:para>Location: Applications\VcRedists Name: Microsoft Visual C++ Redistributables Comments: Application bundle for installing Visual C++ Redistributables. Generated by New-VcMdtBundle Short name: Visual C++ Redistributables Version:2021-Mar-18 Publisher: Microsoft Language: en-US Dependencies: (VcRedists in the MDT share)</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>New-VcMdtBundle</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
+          <maml:name>MdtPath</maml:name>
+          <maml:description>
+            <maml:para>MDT 展開共有のローカル パスまたはネットワーク パスです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
+          <maml:name>AppFolder</maml:name>
+          <maml:description>
+            <maml:para>Visual C++ Redistributable をサブフォルダーにインポートします。 既定値は "VcRedists" です。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>VcRedists</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none">
+          <maml:name>MdtDrive</maml:name>
+          <maml:description>
+            <maml:para>MDT 展開共有への接続時に使用する PSDrive 名を任意で指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>DS001</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none">
+          <maml:name>Publisher</maml:name>
+          <maml:description>
+            <maml:para>MDT バンドルで使用する発行元文字列を任意で指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>Microsoft</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="5" aliases="none">
+          <maml:name>BundleName</maml:name>
+          <maml:description>
+            <maml:para>MDT バンドルに使用するカスタム名を任意で指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>Visual C++ Redistributables</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="6" aliases="none">
+          <maml:name>Language</maml:name>
+          <maml:description>
+            <maml:para>MDT アプリケーションに適用する言語プロパティを任意で指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>En-US</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>インポートを強制し、MDT 展開共有にある既存のバンドルを上書きします。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>コマンドレットを実行した場合の動作を表示します。 コマンドレットは実行されません。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>コマンドレットの実行前に確認を求めます。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+          <maml:name>ProgressAction</maml:name>
+          <maml:description>
+            <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+          <dev:type>
+            <maml:name>ActionPreference</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
+        <maml:name>MdtPath</maml:name>
+        <maml:description>
+          <maml:para>MDT 展開共有のローカル パスまたはネットワーク パスです。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
+        <maml:name>AppFolder</maml:name>
+        <maml:description>
+          <maml:para>Visual C++ Redistributable をサブフォルダーにインポートします。 既定値は "VcRedists" です。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>VcRedists</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Force</maml:name>
+        <maml:description>
+          <maml:para>インポートを強制し、MDT 展開共有にある既存のバンドルを上書きします。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none">
+        <maml:name>MdtDrive</maml:name>
+        <maml:description>
+          <maml:para>MDT 展開共有への接続時に使用する PSDrive 名を任意で指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>DS001</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none">
+        <maml:name>Publisher</maml:name>
+        <maml:description>
+          <maml:para>MDT バンドルで使用する発行元文字列を任意で指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Microsoft</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="5" aliases="none">
+        <maml:name>BundleName</maml:name>
+        <maml:description>
+          <maml:para>MDT バンドルに使用するカスタム名を任意で指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Visual C++ Redistributables</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="6" aliases="none">
+        <maml:name>Language</maml:name>
+        <maml:description>
+          <maml:para>MDT アプリケーションに適用する言語プロパティを任意で指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>En-US</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>コマンドレットを実行した場合の動作を表示します。 コマンドレットは実行されません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>コマンドレットの実行前に確認を求めます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+        <maml:name>ProgressAction</maml:name>
+        <maml:description>
+          <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+        <dev:type>
+          <maml:name>ActionPreference</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Author: Aaron Parker</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+        <dev:code>Get-VcList | Save-VcRedist -Path C:\Temp\VcRedist | Import-VcMdtApplication -Path C:\Temp\VcRedist -MdtPath \\server\deployment</dev:code>
+        <dev:remarks>
+          <maml:para>説明: Visual C++ Redistributable の一覧を取得し、C:\Temp\VcRedist にダウンロードして、各 Redistributable を \server\deployment の MDT 展開共有にインポートします。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
+        <dev:code>$VcList = Get-VcList -ExportAll | Save-VcRedist -Path C:\Temp\VcRedist
+Import-VcMdtApplication -VcList $VcList -MdtPath \\server\deployment -Bundle</dev:code>
+        <dev:remarks>
+          <maml:para>説明: サポート対象および対象外の Visual C++ Redistributable の一覧を変数 $VcList に取得し、C:\Temp\VcRedist にダウンロードします。各 Redistributable を \server\deployment の MDT 展開共有にインポートし、アプリケーション バンドルを作成します。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://vcredist.com/import-vcmdtapplication/</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>MDT に Redistributable バンドルを作成する:</maml:linkText>
+        <maml:uri>https://vcredist.com/new-vcmdtbundle/</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Remove-VcIntuneApplication</command:name>
+      <command:verb>Remove</command:verb>
+      <command:noun>VcIntuneApplication</command:noun>
+      <maml:description>
+        <maml:para>Import-VcIntuneApplication を使用して Microsoft Intune にインポートされた Microsoft Visual C++ Redistributable を削除します。 Get-VcList から Visual C++ Redistributable の一覧を受け取り、一致する Visual C++ Redistributable を Intune に照会して削除します。</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Import-VcIntuneApplication を使用して Microsoft Intune にインポートされた Microsoft Visual C++ Redistributable を削除します。 Get-VcList から Visual C++ Redistributable の一覧を受け取り、一致する Visual C++ Redistributable を Intune に照会して削除します。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Remove-VcIntuneApplication</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
+          <maml:name>VcList</maml:name>
+          <maml:description>
+            <maml:para>Get-VcList または Save-VcRedist から取得した Visual C++ Redistributable の詳細を含む配列です。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+          <dev:type>
+            <maml:name>PSObject</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>コマンドレットを実行した場合の動作を表示します。 コマンドレットは実行されません。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>コマンドレットの実行前に確認を求めます。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+          <maml:name>ProgressAction</maml:name>
+          <maml:description>
+            <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+          <dev:type>
+            <maml:name>ActionPreference</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
+        <maml:name>VcList</maml:name>
+        <maml:description>
+          <maml:para>Get-VcList または Save-VcRedist から取得した Visual C++ Redistributable の詳細を含む配列です。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        <dev:type>
+          <maml:name>PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>コマンドレットを実行した場合の動作を表示します。 コマンドレットは実行されません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>コマンドレットの実行前に確認を求めます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+        <maml:name>ProgressAction</maml:name>
+        <maml:description>
+          <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+        <dev:type>
+          <maml:name>ActionPreference</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Author: Aaron Parker</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+        <dev:code>$VcList = Get-VcList -Release "2017"
+Remove-VcIntuneApplication -VcList $VcList -Confirm:$false</dev:code>
+        <dev:remarks>
+          <maml:para>説明: Microsoft Intune に Microsoft Visual C++ Redistributable 2017 パッケージを照会し、削除します。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Redistributable を削除する:</maml:linkText>
+        <maml:uri>https://vcredist.com/remove-vcintuneapplication/</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Save-VcRedist</command:name>
+      <command:verb>Save</command:verb>
+      <command:noun>VcRedist</command:noun>
+      <maml:description>
+        <maml:para>Get-VcList が返すマニフェストから Visual C++ Redistributable をダウンロードします。 Get-VcList の出力に Redistributable インストーラーのパスを Path プロパティとして追加します。 この出力は、ダウンロード済みインストーラーを必要とする他の関数に渡すことができます。</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Get-VcList が返すマニフェストから Visual C++ Redistributable をダウンロードし、リリース、バージョン、プロセッサ アーキテクチャを表すフォルダー構成に保存します。 指定したパスに Redistributable が既に存在する場合、再ダウンロードされません。</maml:para>
+      <maml:para>既定では、ダウンロードまたは再利用するインストーラーに有効な Microsoft Authenticode 署名があるか確認します。 macOS および Linux では、-SkipAuthenticodeValidation を指定すると、この確認を行わずにダウンロードできます。この指定は発行元の検証も省略するため、リスクを許容できる場合にのみ使用してください。HTTPS と許可されたホストの一覧による制限は引き続き適用されます。</maml:para>
+      <maml:para>たとえば、2010、2012、2013、2019 の Redistributable を C:\VcRedist にダウンロードすると、次のフォルダー構成が作成されます。</maml:para>
+      <maml:para>C:\VcRedist\2010\10.0.40219.325\x64 C:\VcRedist\2010\10.0.40219.325\x86 C:\VcRedist\2012\11.0.61030.0\x64 C:\VcRedist\2012\11.0.61030.0\x86 C:\VcRedist\2013\12.0.40664.0\x64 C:\VcRedist\2013\12.0.40664.0\x86 C:\VcRedist\2019\14.28.29913.0\x64 C:\VcRedist\2019\14.28.29913.0\x86</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Save-VcRedist</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
+          <maml:name>VcList</maml:name>
+          <maml:description>
+            <maml:para>ダウンロードする Visual C++ Redistributable の一覧を含む配列を指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+          <dev:type>
+            <maml:name>PSObject</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>Redistributable のダウンロード先フォルダーを指定します。省略した場合は現在のフォルダーを使用します。フォルダーが存在しない場合は作成されます。作成できない場合は、ダウンロードを開始する前にエラーが返されます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>(Resolve-Path -Path $PWD)</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none">
+          <maml:name>Proxy</maml:name>
+          <maml:description>
+            <maml:para>インターネット上のリソースに直接接続する代わりに、要求に使用するプロキシ サーバーを指定します。 ネットワーク プロキシ サーバーの URI を入力します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="5" aliases="none">
+          <maml:name>ProxyCredential</maml:name>
+          <maml:description>
+            <maml:para>Proxy パラメーターで指定したプロキシ サーバーを使用する権限を持つユーザー アカウントを指定します。 既定では現在のユーザーが使用されます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSCredential</command:parameterValue>
+          <dev:type>
+            <maml:name>PSCredential</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>[System.Management.Automation.PSCredential]::Empty</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>ForceWebRequest</maml:name>
+          <maml:description>
+            <maml:para>Start-BitsTransfer の代わりに Invoke-WebRequest を強制的に使用します。 下位互換性のためにのみ含まれています。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Priority</maml:name>
+          <maml:description>
+            <maml:para>Start-BitsTransfer の使用時に優先度を強制します。 下位互換性のためにのみ含まれています。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>Foreground</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>コマンドレットを実行した場合の動作を表示します。 コマンドレットは実行されません。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>コマンドレットの実行前に確認を求めます。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>ShowProgress</maml:name>
+          <maml:description>
+            <maml:para>この関数で使用する Invoke-WebRequest に進行状況を表示するよう指示します。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>SkipAuthenticodeValidation</maml:name>
+          <maml:description>
+            <maml:para>ダウンロード済みおよび既存のインストーラーに対する Authenticode 署名と発行元の検証を省略します。Authenticode 検証を利用できない macOS または Linux で使用します。セキュリティが低下しますが、HTTPS と許可されたホストの確認は引き続き有効です。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>UserAgent</maml:name>
+          <maml:description>
+            <maml:para>Web 要求に使用するユーザー エージェント文字列を指定します。</maml:para>
+            <maml:para>既定のユーザー エージェントはモジュールを識別します。例: VcRedist/5.0.0 (https://github.com/EUCPilots/vcredist; PowerShell 7.5.0; Win32NT 10.0.26100.0)</maml:para>
+            <maml:para>代わりにブラウザーのユーザー エージェント文字列を使用するには、PSUserAgent クラスのプロパティ (Chrome など) を指定します: Save-VcRedist -UserAgent ([Microsoft.PowerShell.Commands.PSUserAgent]::Chrome)</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+          <maml:name>ProgressAction</maml:name>
+          <maml:description>
+            <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+          <dev:type>
+            <maml:name>ActionPreference</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
+        <maml:name>VcList</maml:name>
+        <maml:description>
+          <maml:para>ダウンロードする Visual C++ Redistributable の一覧を含む配列を指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        <dev:type>
+          <maml:name>PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>Redistributable のダウンロード先フォルダーを指定します。省略した場合は現在のフォルダーを使用します。フォルダーが存在しない場合は作成されます。作成できない場合は、ダウンロードを開始する前にエラーが返されます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>(Resolve-Path -Path $PWD)</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>ForceWebRequest</maml:name>
+        <maml:description>
+          <maml:para>Start-BitsTransfer の代わりに Invoke-WebRequest を強制的に使用します。 下位互換性のためにのみ含まれています。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Priority</maml:name>
+        <maml:description>
+          <maml:para>Start-BitsTransfer の使用時に優先度を強制します。 下位互換性のためにのみ含まれています。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Foreground</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none">
+        <maml:name>Proxy</maml:name>
+        <maml:description>
+          <maml:para>インターネット上のリソースに直接接続する代わりに、要求に使用するプロキシ サーバーを指定します。 ネットワーク プロキシ サーバーの URI を入力します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="5" aliases="none">
+        <maml:name>ProxyCredential</maml:name>
+        <maml:description>
+          <maml:para>Proxy パラメーターで指定したプロキシ サーバーを使用する権限を持つユーザー アカウントを指定します。 既定では現在のユーザーが使用されます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">PSCredential</command:parameterValue>
+        <dev:type>
+          <maml:name>PSCredential</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>[System.Management.Automation.PSCredential]::Empty</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>コマンドレットを実行した場合の動作を表示します。 コマンドレットは実行されません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>コマンドレットの実行前に確認を求めます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>ShowProgress</maml:name>
+        <maml:description>
+          <maml:para>この関数で使用する Invoke-WebRequest に進行状況を表示するよう指示します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>SkipAuthenticodeValidation</maml:name>
+        <maml:description>
+          <maml:para>ダウンロード済みおよび既存のインストーラーに対する Authenticode 署名と発行元の検証を省略します。Authenticode 検証を利用できない macOS または Linux で使用します。セキュリティが低下しますが、HTTPS と許可されたホストの確認は引き続き有効です。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>UserAgent</maml:name>
+        <maml:description>
+          <maml:para>Web 要求に使用するユーザー エージェント文字列を指定します。</maml:para>
+          <maml:para>既定のユーザー エージェントはモジュールを識別します。例: VcRedist/5.0.0 (https://github.com/EUCPilots/vcredist; PowerShell 7.5.0; Win32NT 10.0.26100.0)</maml:para>
+          <maml:para>代わりにブラウザーのユーザー エージェント文字列を使用するには、PSUserAgent クラスのプロパティ (Chrome など) を指定します: Save-VcRedist -UserAgent ([Microsoft.PowerShell.Commands.PSUserAgent]::Chrome)</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+        <maml:name>ProgressAction</maml:name>
+        <maml:description>
+          <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+        <dev:type>
+          <maml:name>ActionPreference</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Author: Aaron Parker</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+        <dev:code>Save-VcRedist -VcList (Get-VcList) -Path C:\Redist</dev:code>
+        <dev:remarks>
+          <maml:para>説明: サポート対象の Visual C++ Redistributable を C:\Redist にダウンロードします。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
+        <dev:code>Get-VcList | Save-VcRedist -Path C:\Redist</dev:code>
+        <dev:remarks>
+          <maml:para>説明: サポート対象の Visual C++ Redistributable 一覧を Save-VcRedist に渡し、Redistributable を C:\Redist にダウンロードします。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 3 --------------------------</maml:title>
+        <dev:code>$VcList = Get-VcList -Release 2013, 2019 -Architecture x86
+Save-VcRedist -VcList $VcList -Path C:\Redist</dev:code>
+        <dev:remarks>
+          <maml:para>説明: サポート対象の 2013 および 2019 x86 Visual C++ Redistributable 一覧を Save-VcRedist に渡し、Redistributable を C:\Redist にダウンロードします。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 4 --------------------------</maml:title>
+        <dev:code>Save-VcRedist -VcList (Get-VcList -Release 2010, 2012, 2013, 2019) -Path C:\Redist</dev:code>
+        <dev:remarks>
+          <maml:para>説明: 2010、2012、2013、2019 の Visual C++ Redistributable を C:\Redist にダウンロードします。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 5 --------------------------</maml:title>
+        <dev:code>Save-VcRedist -VcList (Get-VcList -Release 2010, 2012, 2013, 2019) -Path C:\Redist -Proxy proxy.domain.local</dev:code>
+        <dev:remarks>
+          <maml:para>説明: プロキシ サーバー 'proxy.domain.local' を使用して、2010、2012、2013、2019 の Visual C++ Redistributable を C:\Redist にダウンロードします。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 6 --------------------------</maml:title>
+        <dev:code>Get-VcList | Save-VcRedist -Path ./Redist -SkipAuthenticodeValidation</dev:code>
+        <dev:remarks>
+          <maml:para>説明: Authenticode 署名または発行元の検証を行わずに、macOS または Linux で Redistributable をダウンロードします。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Redistributable をダウンロードする:</maml:linkText>
+        <maml:uri>https://vcredist.com/save-vcredist/</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Test-VcRedistUri</command:name>
+      <command:verb>Test</command:verb>
+      <command:noun>VcRedistUri</command:noun>
+      <maml:description>
+        <maml:para>Get-VcList が返すマニフェストに記載された Visual C++ Redistributable のダウンロードが利用可能であること (つまり、 HTTP 200 応答を返すこと) をテストします。</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Get-VcList が返すマニフェストに記載された Visual C++ Redistributable のダウンロードが利用可能であること (つまり、 HTTP 200 応答を返すこと) をテストします。</maml:para>
+      <maml:para>この関数に渡された各 Visual C++ Redistributable について、True または False が返されます。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Test-VcRedistUri</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
+          <maml:name>VcList</maml:name>
+          <maml:description>
+            <maml:para>ダウンロードする Visual C++ Redistributable の一覧を含む配列を指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+          <dev:type>
+            <maml:name>PSObject</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none">
+          <maml:name>Proxy</maml:name>
+          <maml:description>
+            <maml:para>インターネット上のリソースに直接接続する代わりに、要求に使用するプロキシ サーバーを指定します。 ネットワーク プロキシ サーバーの URI を入力します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="5" aliases="none">
+          <maml:name>ProxyCredential</maml:name>
+          <maml:description>
+            <maml:para>Proxy パラメーターで指定したプロキシ サーバーを使用する権限を持つユーザー アカウントを指定します。 既定では現在のユーザーが使用されます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSCredential</command:parameterValue>
+          <dev:type>
+            <maml:name>PSCredential</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>[System.Management.Automation.PSCredential]::Empty</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>ShowProgress</maml:name>
+          <maml:description>
+            <maml:para>この関数で使用する Invoke-WebRequest に進行状況を表示するよう指示します。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+          <maml:name>ProgressAction</maml:name>
+          <maml:description>
+            <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+          <dev:type>
+            <maml:name>ActionPreference</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
+        <maml:name>VcList</maml:name>
+        <maml:description>
+          <maml:para>ダウンロードする Visual C++ Redistributable の一覧を含む配列を指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        <dev:type>
+          <maml:name>PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none">
+        <maml:name>Proxy</maml:name>
+        <maml:description>
+          <maml:para>インターネット上のリソースに直接接続する代わりに、要求に使用するプロキシ サーバーを指定します。 ネットワーク プロキシ サーバーの URI を入力します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="5" aliases="none">
+        <maml:name>ProxyCredential</maml:name>
+        <maml:description>
+          <maml:para>Proxy パラメーターで指定したプロキシ サーバーを使用する権限を持つユーザー アカウントを指定します。 既定では現在のユーザーが使用されます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">PSCredential</command:parameterValue>
+        <dev:type>
+          <maml:name>PSCredential</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>[System.Management.Automation.PSCredential]::Empty</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>ShowProgress</maml:name>
+        <maml:description>
+          <maml:para>この関数で使用する Invoke-WebRequest に進行状況を表示するよう指示します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+        <maml:name>ProgressAction</maml:name>
+        <maml:description>
+          <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+        <dev:type>
+          <maml:name>ActionPreference</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Author: Aaron Parker</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+        <dev:code>Test-VcRedistUri -VcList (Get-VcList)</dev:code>
+        <dev:remarks>
+          <maml:para>説明: Get-VcList から渡された Visual C++ Redistributable をテストします。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
+        <dev:code>Get-VcList | Test-VcRedistUri</dev:code>
+        <dev:remarks>
+          <maml:para>説明: Get-VcList のサポート対象 Visual C++ Redistributable 一覧をパイプライン経由で Test-VcRedistUri に渡します。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 3 --------------------------</maml:title>
+        <dev:code>$VcList = Get-VcList -Release 2013, 2019 -Architecture x86
+Test-VcRedistUri -VcList $VcList</dev:code>
+        <dev:remarks>
+          <maml:para>説明: サポート対象の 2013 および 2019 x86 Visual C++ Redistributable の一覧をテストします。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 4 --------------------------</maml:title>
+        <dev:code>Test-VcRedistUri -VcList (Get-VcList -ExportAll)</dev:code>
+        <dev:remarks>
+          <maml:para>説明: サポート対象および対象外のすべての Visual C++ Redistributable をエクスポートし、ダウンロードが有効かどうかをテストします。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://vcredist.com/test-vcredisturi/</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Redistributable をダウンロードする:</maml:linkText>
+        <maml:uri>https://vcredist.com/save-vcredist/</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Uninstall-VcRedist</command:name>
+      <command:verb>Uninstall</command:verb>
+      <command:noun>VcRedist</command:noun>
+      <maml:description>
+        <maml:para>ローカル システムにインストールされた Visual C++ Redistributable をアンインストールします。</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>ローカル システムにインストールされた Visual C++ Redistributable のうち、指定したリリースおよび/またはアーキテクチャをアンインストールします。 すべての Visual C++ Redistributable、または特定のものをアンインストールできます。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Uninstall-VcRedist</maml:name>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
+          <maml:name>Release</maml:name>
+          <maml:description>
+            <maml:para>アンインストールする Redistributable のリリースを指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+          <dev:type>
+            <maml:name>String[]</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>@("2005", "2008", "2010", "2012", "2013", "2015", "2017", "2019")</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
+          <maml:name>Architecture</maml:name>
+          <maml:description>
+            <maml:para>アンインストールする Redistributable のプロセッサ アーキテクチャを指定します。 x86 または x64 を指定できます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+          <dev:type>
+            <maml:name>String[]</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>@("x86", "x64")</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>コマンドレットを実行した場合の動作を表示します。 コマンドレットは実行されません。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>コマンドレットの実行前に確認を求めます。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+          <maml:name>ProgressAction</maml:name>
+          <maml:description>
+            <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+          <dev:type>
+            <maml:name>ActionPreference</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Uninstall-VcRedist</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
+          <maml:name>VcList</maml:name>
+          <maml:description>
+            <maml:para>ダウンロードする Visual C++ Redistributable の一覧を含む配列を指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+          <dev:type>
+            <maml:name>PSObject</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>コマンドレットを実行した場合の動作を表示します。 コマンドレットは実行されません。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>コマンドレットの実行前に確認を求めます。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+          <maml:name>ProgressAction</maml:name>
+          <maml:description>
+            <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+          <dev:type>
+            <maml:name>ActionPreference</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
+        <maml:name>Release</maml:name>
+        <maml:description>
+          <maml:para>アンインストールする Redistributable のリリースを指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>@("2005", "2008", "2010", "2012", "2013", "2015", "2017", "2019")</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
+        <maml:name>Architecture</maml:name>
+        <maml:description>
+          <maml:para>アンインストールする Redistributable のプロセッサ アーキテクチャを指定します。 x86 または x64 を指定できます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>@("x86", "x64")</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
+        <maml:name>VcList</maml:name>
+        <maml:description>
+          <maml:para>ダウンロードする Visual C++ Redistributable の一覧を含む配列を指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        <dev:type>
+          <maml:name>PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>コマンドレットを実行した場合の動作を表示します。 コマンドレットは実行されません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>コマンドレットの実行前に確認を求めます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+        <maml:name>ProgressAction</maml:name>
+        <maml:description>
+          <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+        <dev:type>
+          <maml:name>ActionPreference</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Author: Aaron Parker</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+        <dev:code>Uninstall-VcRedist -Confirm:$True</dev:code>
+        <dev:remarks>
+          <maml:para>説明: インストール済みの 2005～2019 Visual C++ Redistributable のうち、x64 および x86 をすべてアンインストールします。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
+        <dev:code>Uninstall-VcRedist -Release 2008, 2010 -Confirm:$True</dev:code>
+        <dev:remarks>
+          <maml:para>説明: インストール済みの 2008 および 2010 Visual C++ Redistributable のうち、x64 および x86 をすべてアンインストールします。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 3 --------------------------</maml:title>
+        <dev:code>Uninstall-VcRedist -Release 2008, 2010 -Confirm:$True</dev:code>
+        <dev:remarks>
+          <maml:para>説明: インストール済みの 2008 および 2010 Visual C++ Redistributable のうち、x64 および x86 をすべてアンインストールします。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version:</maml:linkText>
+        <maml:uri>https://vcredist.com/install-vcredist/</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Redistributable をアンインストールする:</maml:linkText>
+        <maml:uri>https://vcredist.com/uninstall-vcredist/</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Update-VcMdtApplication</command:name>
+      <command:verb>Update</command:verb>
+      <command:noun>VcMdtApplication</command:noun>
+      <maml:description>
+        <maml:para>Microsoft Deployment Toolkit 共有に Visual C++ Redistributable アプリケーションを作成します。</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>各 Visual C++ Redistributable について Microsoft Deployment Toolkit 共有にアプリケーションを作成し、対象のサイレント コマンド ライン、プラットフォーム、アンインストール キーなどのプロパティを設定します。</maml:para>
+      <maml:para>Get-VcList と Save-VcRedist を使用して Redistributable をダウンロードし、MDT にインポートする配列を作成します。</maml:para>
+      <maml:para>アプリケーションは、次のような既定のプロパティで MDT 展開共有内で更新されます。</maml:para>
+      <maml:para>Location: Applications\VcRedists Name: Visual C++ Redistributable 2019 x86 14.28.29913.0 Comments: Generated by Import-VcMdtApplication Short name: Visual C++ Redistributable for Visual Studio 2019 x86 Version: 14.28.29913.0 Publisher: Microsoft Language: en-US Source directory: .\Applications\Microsoft VcRedist\2019\14.28.29913.0\x86 Quiet install command: .\VC_redist.x86.exe /install /quiet /norestart Working directory: .\Applications\Microsoft VcRedist\2019\14.28.29913.0\x86 Uninstall registry key name: {03d1453c-7d5c-479c-afea-8482f406e036} Hide this application in the Deployment Wizard: Yes</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Update-VcMdtApplication</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
+          <maml:name>VcList</maml:name>
+          <maml:description>
+            <maml:para>Save-VcRedist から取得した Visual C++ Redistributable の詳細を含む配列です。 Save-VcRedist は、Get-VcList からエクスポートされた配列に、インストーラー実行ファイルを指す Path プロパティを追加します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+          <dev:type>
+            <maml:name>PSObject</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none">
+          <maml:name>MdtDrive</maml:name>
+          <maml:description>
+            <maml:para>MDT 展開共有への接続時に使用する PSDrive 名を任意で指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>DS001</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none">
+          <maml:name>Publisher</maml:name>
+          <maml:description>
+            <maml:para>MDT アプリケーションで使用する発行元文字列を任意で指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>Microsoft</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>MdtPath</maml:name>
+          <maml:description>
+            <maml:para>MDT 展開共有のローカル パスまたはネットワーク パスです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>AppFolder</maml:name>
+          <maml:description>
+            <maml:para>VcRedist をインポートする Applications ノード内のフォルダーを指定します。 既定値は 'VcRedists' です。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>VcRedists</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Silent</maml:name>
+          <maml:description>
+            <maml:para>UI を表示しない VcRedist の完全なサイレント インストール用コマンド ラインを追加します。 既定のインストールはパッシブです。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>コマンドレットを実行した場合の動作を表示します。 コマンドレットは実行されません。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>コマンドレットの実行前に確認を求めます。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>このパラメーターは廃止され、無視されます。-VcList に渡すオブジェクトに Path プロパティが必要です。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+          <maml:name>ProgressAction</maml:name>
+          <maml:description>
+            <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+          <dev:type>
+            <maml:name>ActionPreference</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
+        <maml:name>VcList</maml:name>
+        <maml:description>
+          <maml:para>Save-VcRedist から取得した Visual C++ Redistributable の詳細を含む配列です。 Save-VcRedist は、Get-VcList からエクスポートされた配列に、インストーラー実行ファイルを指す Path プロパティを追加します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        <dev:type>
+          <maml:name>PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>MdtPath</maml:name>
+        <maml:description>
+          <maml:para>MDT 展開共有のローカル パスまたはネットワーク パスです。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>AppFolder</maml:name>
+        <maml:description>
+          <maml:para>VcRedist をインポートする Applications ノード内のフォルダーを指定します。 既定値は 'VcRedists' です。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>VcRedists</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Silent</maml:name>
+        <maml:description>
+          <maml:para>UI を表示しない VcRedist の完全なサイレント インストール用コマンド ラインを追加します。 既定のインストールはパッシブです。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none">
+        <maml:name>MdtDrive</maml:name>
+        <maml:description>
+          <maml:para>MDT 展開共有への接続時に使用する PSDrive 名を任意で指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>DS001</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none">
+        <maml:name>Publisher</maml:name>
+        <maml:description>
+          <maml:para>MDT アプリケーションで使用する発行元文字列を任意で指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Microsoft</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>コマンドレットを実行した場合の動作を表示します。 コマンドレットは実行されません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>コマンドレットの実行前に確認を求めます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>このパラメーターは廃止され、無視されます。-VcList に渡すオブジェクトに Path プロパティが必要です。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+        <maml:name>ProgressAction</maml:name>
+        <maml:description>
+          <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+        <dev:type>
+          <maml:name>ActionPreference</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Author: Aaron Parker</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+        <dev:code>Get-VcList | Save-VcRedist -Path C:\Temp\VcRedist | Import-VcMdtApp -Path C:\Temp\VcRedist -MdtPath \\server\deployment</dev:code>
+        <dev:remarks>
+          <maml:para>説明: サポート対象の Visual C++ Redistributable の既定の一覧を取得し、C:\Temp\VcRedist にダウンロードして、各 Redistributable を \server\deployment の MDT 展開共有にインポートします。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
+        <dev:code>$VcList = Get-VcList -Export All
+Save-VcRedist -VcList $VcList -Path C:\Temp\VcRedist
+Import-VcMdtApp -VcList $VcList -Path C:\Temp\VcRedist -MdtPath \\server\deployment -Bundle</dev:code>
+        <dev:remarks>
+          <maml:para>説明: サポート対象および対象外の Visual C++ Redistributable の一覧を変数 $VcList に取得し、C:\Temp\VcRedist にダウンロードします。各 Redistributable を \server\deployment の MDT 展開共有にインポートし、アプリケーション バンドルを作成します。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>MDT の Redistributable を更新する:</maml:linkText>
+        <maml:uri>https://vcredist.com/update-vcmdtapplication/</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Update-VcMdtBundle</command:name>
+      <command:verb>Update</command:verb>
+      <command:noun>VcMdtBundle</command:noun>
+      <maml:description>
+        <maml:para>Microsoft Deployment Toolkit 共有の Visual C++ Redistributable アプリケーション バンドルを更新します。</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Microsoft Deployment Toolkit 共有に Visual C++ Redistributable アプリケーションをインポートまたは追加した後、既存のアプリケーション バンドルを更新して、新しい Visual C++ Redistributable アプリケーションの GUID を含めることができます。</maml:para>
+      <maml:para>バンドルは、次のような既定のプロパティで MDT 展開共有に更新されます。</maml:para>
+      <maml:para>Location: Applications\VcRedists Name: Microsoft Visual C++ Redistributables Comments: Application bundle for installing Visual C++ Redistributables. Generated by New-VcMdtBundle Short name: Visual C++ Redistributables Version:2021-Mar-18 Publisher: Microsoft Language: en-US Dependencies: (VcRedists in the MDT share)</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Update-VcMdtBundle</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
+          <maml:name>MdtPath</maml:name>
+          <maml:description>
+            <maml:para>MDT 展開共有のローカル パスまたはネットワーク パスです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
+          <maml:name>MdtDrive</maml:name>
+          <maml:description>
+            <maml:para>MDT 展開共有への接続時に使用する PSDrive 名を任意で指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>DS001</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none">
+          <maml:name>Publisher</maml:name>
+          <maml:description>
+            <maml:para>MDT アプリケーションで使用する発行元文字列を任意で指定します。 既定値は "Microsoft" です。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>Microsoft</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none">
+          <maml:name>BundleName</maml:name>
+          <maml:description>
+            <maml:para>MDT バンドルに使用するカスタム名を任意で指定します。 既定値は "Visual C++ Redistributables" です。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>Visual C++ Redistributables</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>AppFolder</maml:name>
+          <maml:description>
+            <maml:para>Visual C++ Redistributable が格納されている Applications のサブフォルダーです。 既定値は "VcRedists" です。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>VcRedists</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>コマンドレットを実行した場合の動作を表示します。 コマンドレットは実行されません。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>コマンドレットの実行前に確認を求めます。</maml:para>
+          </maml:description>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>False</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+          <maml:name>ProgressAction</maml:name>
+          <maml:description>
+            <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+          <dev:type>
+            <maml:name>ActionPreference</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
+        <maml:name>MdtPath</maml:name>
+        <maml:description>
+          <maml:para>MDT 展開共有のローカル パスまたはネットワーク パスです。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>AppFolder</maml:name>
+        <maml:description>
+          <maml:para>Visual C++ Redistributable が格納されている Applications のサブフォルダーです。 既定値は "VcRedists" です。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>VcRedists</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
+        <maml:name>MdtDrive</maml:name>
+        <maml:description>
+          <maml:para>MDT 展開共有への接続時に使用する PSDrive 名を任意で指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>DS001</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none">
+        <maml:name>Publisher</maml:name>
+        <maml:description>
+          <maml:para>MDT アプリケーションで使用する発行元文字列を任意で指定します。 既定値は "Microsoft" です。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Microsoft</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none">
+        <maml:name>BundleName</maml:name>
+        <maml:description>
+          <maml:para>MDT バンドルに使用するカスタム名を任意で指定します。 既定値は "Visual C++ Redistributables" です。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Visual C++ Redistributables</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>コマンドレットを実行した場合の動作を表示します。 コマンドレットは実行されません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="cf">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>コマンドレットの実行前に確認を求めます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
+        <maml:name>ProgressAction</maml:name>
+        <maml:description>
+          <maml:para>進行状況の更新に対する PowerShell の応答方法を指定します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">ActionPreference</command:parameterValue>
+        <dev:type>
+          <maml:name>ActionPreference</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para></maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Author: Aaron Parker</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+        <dev:code>Get-VcList | Save-VcRedist -Path C:\Temp\VcRedist
+Update-VcMdtApplication -VcList (Get-VcList) -Path C:\Temp\VcRedist -MdtPath \\server\deployment
+Update-VcMdtBundle -MdtPath \\server\deployment</dev:code>
+        <dev:remarks>
+          <maml:para>説明: Visual C++ Redistributable の一覧を取得し、C:\Temp\VcRedist にダウンロードして、\server\deployment の MDT 展開共有にある各 Redistributable を更新します。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>MDT の Redistributable バンドルを更新する:</maml:linkText>
+        <maml:uri>https://vcredist.com/update-vcmdtbundle/</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+</helpItems>

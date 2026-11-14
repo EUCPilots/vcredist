@@ -21,6 +21,8 @@ Install-VcRedist [-VcList] <PSObject> [-Path <String>] [-Silent] [-Force] [-Prog
 Installs the Microsoft Visual C++ Redistributables from a list created by Get-VcList and downloaded into a folder structure locally with Save-VcRedist.
 Supports both passive and silent installation of the Redistributables.
 Useful for Windows deployments including creating gold images via HashiCorp Packer where the Redistributables can be downloaded and installed at runtime.
+Installers whose manifest SupportedArchitecture list does not include the native Windows architecture are skipped with a warning, even when using -Force.
+Each input object must include a non-empty SupportedArchitecture list.
 
 ## EXAMPLES
 

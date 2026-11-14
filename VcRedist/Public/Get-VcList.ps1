@@ -8,10 +8,12 @@ function Get-VcList {
     param (
         [Parameter(Mandatory = $false, Position = 0, ParameterSetName = "Manifest")]
         [ValidatePattern("^[0-9]{2,4}$")]
+        [ValidateNotNullOrEmpty()]
         [System.String[]] $Release = @("14"),
 
         [Parameter(Mandatory = $false, Position = 1, ParameterSetName = "Manifest")]
         [ValidateSet("x86", "x64", "arm64")]
+        [ValidateNotNullOrEmpty()]
         [System.String[]] $Architecture = @("x86", "x64", "arm64"),
 
         [Parameter(Mandatory = $false, Position = 0, ParameterSetName = "Export")]
@@ -58,9 +60,17 @@ function Get-VcList {
 
         # Replace the placeholder tokens in the uninstall command
         foreach ($Item in @($Output)) {
-            $Item.SilentUninstall = $Item.SilentUninstall `
-                -replace "#Installer", (Split-Path -Path $Item.URI -Leaf) `
-                -replace "#ProductCode", $Item.ProductCode
+            $ParsedUri = $null
+            if (-not [System.Uri]::TryCreate([System.String]$Item.URI, [System.UriKind]::Absolute, [ref] $ParsedUri)) {
+                throw [System.InvalidOperationException]::New("Manifest entry '$($Item.Name)' has an invalid URI: '$($Item.URI)'.")
+            }
+            $InstallerName = [System.IO.Path]::GetFileName($ParsedUri.LocalPath)
+            if ([System.String]::IsNullOrWhiteSpace($InstallerName)) {
+                throw [System.InvalidOperationException]::New("Manifest entry '$($Item.Name)' URI does not contain an installer filename: '$($Item.URI)'.")
+            }
+            $SilentUninstall = [System.String]$Item.SilentUninstall
+            $SilentUninstall = $SilentUninstall.Replace("#Installer", $InstallerName)
+            $Item.SilentUninstall = $SilentUninstall.Replace("#ProductCode", [System.String]$Item.ProductCode)
             Write-Output -InputObject $Item
         }
     }
