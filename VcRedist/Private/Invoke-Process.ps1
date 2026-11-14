@@ -40,7 +40,6 @@ function Invoke-Process {
 
         [Parameter()]
         [AllowEmptyCollection()]
-        [ValidateScript({ $null -ne $_ })]
         [System.Object[]] $ArgumentList,
 
         # Exit codes treated as success. Some tools (e.g. robocopy) use non-zero codes for success
@@ -110,7 +109,8 @@ function Invoke-Process {
                 PassThru               = $true
                 NoNewWindow            = $true
             }
-            if ($PSBoundParameters.ContainsKey("ArgumentList")) {
+            if ($PSBoundParameters.ContainsKey("ArgumentList") -and
+                ($null -eq $ArgumentList -or $ArgumentList.Count -gt 0)) {
                 $startProcessParams.ArgumentList = $quotedArguments -join " "
             }
             $cmd = Start-Process @startProcessParams
