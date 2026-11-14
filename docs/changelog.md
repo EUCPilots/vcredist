@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.0.2-beta3
+## VERSION
 
 * Separates read-only module validation, release PR preparation, and approved Gallery publishing
 * Tests release artifacts on Windows PowerShell 5.1 and PowerShell 7, on x64 and ARM64
@@ -19,6 +19,13 @@
 
 ### New and improved
 
+* Adds architecture-aware manifest validation and filtering, including native AMD64 and ARM64 handling across deployment integrations
+* Hardens web requests with HTTPS and redirect validation, proxy handling, and improved TLS behavior
+* Improves process execution with argument quoting, timeouts, output limits, and exit-code handling
+* Validates installer paths and improves installed-software discovery and download destination handling
+* Improves Intune, ConfigMgr, and MDT imports with architecture-aware requirements, detection rules, `-WhatIf` support, and error handling
+* Updates CI test selection and manifest-update workflows; removes Codecov configuration
+* Adds translated help documentation and expands test coverage
 * The manifest is read from the repository (`v5` branch during development) and falls back to the bundled manifest on any failure; use `-Source Auto|Remote|Bundled`. The bundled manifest is used if the remote one is older
 * Adds `-Proxy` and `-ProxyCredential` to every function that fetches or downloads content
 * `Install-VcRedist` and `Uninstall-VcRedist` check installer exit codes; `Uninstall-VcRedist` expands environment variables in uninstall commands
