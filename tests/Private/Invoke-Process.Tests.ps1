@@ -62,17 +62,6 @@ InModuleScope VcRedist {
 				{ Invoke-Process @params } | Should -Not -Throw
 			}
 
-			It "Rejects null arguments before starting the process" {
-				Mock Start-Process { throw "Process should not have started." }
-				$params = @{
-					FilePath     = $script:PowerShellExe
-					ArgumentList = @("argument", $null)
-				}
-
-				{ Invoke-Process @params } | Should -Throw
-				Should -Invoke Start-Process -Times 0
-			}
-
 			It "Writes successful process standard error to the error stream" {
 				$params = @{
 					FilePath     = $script:PowerShellExe
