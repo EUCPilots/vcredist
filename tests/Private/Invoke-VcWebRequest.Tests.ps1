@@ -84,6 +84,25 @@ InModuleScope VcRedist {
 			Should -Invoke Invoke-WebRequest -Times 2 -Exactly
 		}
 
+		It "Handles redirects when Windows PowerShell cannot return a zero-redirection response" -Skip:($PSVersionTable.PSEdition -ne "Desktop") {
+			Mock Invoke-WebRequest { throw [System.InvalidOperationException]::New("Operation is not valid due to the current state of the object.") }
+			Mock Invoke-VcWebRequestLegacy {
+				if ($Uri -eq "https://example.com/a") {
+					return [PSCustomObject]@{
+						Response  = [PSCustomObject]@{ StatusCode = 302; Headers = @{ Location = "https://example.com/final" } }
+						Exception = $null
+					}
+				}
+				[PSCustomObject]@{
+					Response  = [PSCustomObject]@{ StatusCode = 200; Headers = @{}; Content = "ok" }
+					Exception = $null
+				}
+			}
+			$Response = Invoke-VcWebRequest -Uri "https://example.com/a"
+			$Response.Content | Should -Be "ok"
+			Should -Invoke Invoke-VcWebRequestLegacy -Times 2 -Exactly
+		}
+
 		It "Rejects redirects to HTTP or unapproved hosts" {
 			Mock Invoke-WebRequest { [PSCustomObject]@{ StatusCode = 302; Headers = @{ Location = "http://example.com/a" } } }
 			{ Invoke-VcWebRequest -Uri "https://example.com/a" } | Should -Throw "*HTTPS*"

@@ -121,6 +121,23 @@ function Invoke-VcWebRequest {
             catch {
                 $RequestException = $_.Exception
                 $Response = $RequestException.Response
+                if ($null -eq $Response -and
+                    $PSVersionTable.PSEdition -eq "Desktop" -and
+                    $RequestException -is [System.InvalidOperationException]) {
+                    $LegacyParams = @{
+                        Uri          = $CurrentUri.AbsoluteUri
+                        Method       = $Method
+                        UserAgent    = $params.UserAgent
+                        TimeoutSec   = $TimeoutSec
+                        ShowProgress = $ShowProgressBar
+                    }
+                    if ($PSBoundParameters.ContainsKey("OutFile")) { $LegacyParams.OutFile = $OutFile }
+                    if ($PSBoundParameters.ContainsKey("Proxy")) { $LegacyParams.Proxy = $Proxy }
+                    if ($PSBoundParameters.ContainsKey("ProxyCredential")) { $LegacyParams.ProxyCredential = $ProxyCredential }
+                    $LegacyResponse = Invoke-VcWebRequestLegacy @LegacyParams
+                    $Response = $LegacyResponse.Response
+                    $RequestException = $LegacyResponse.Exception
+                }
                 if ($null -eq $Response) { throw }
             }
         }
