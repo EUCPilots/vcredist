@@ -25,7 +25,7 @@ Record exact commands and their results, the test environment (OS, architecture,
 | --- | --- | --- |
 | <!-- Exact command or workflow run --> | <!-- Passed, failed, pending, or not run (reason) --> | <!-- Environment or run URL, including tested commit --> |
 
-* Run focused Pester tests for changed behavior; use `./ci/Test-Module.ps1` for full secret-free validation on disposable Windows machines. Integration tests install/uninstall redistributables and MDT.
+* Run focused Pester tests for changed behavior; use `./ci/Test-Module.ps1` for full secret-free validation on disposable Windows machines. Its default run excludes `Intune`, `MDT`, and `ConfigMgr`-tagged tests; redistributable integration tests install/uninstall runtimes.
 * For module changes, run PSScriptAnalyzer with `.rules/PSScriptAnalyzerSettings.psd1`; preserve Windows PowerShell 5.1 and PowerShell 7 compatibility.
 * CI runs automatically only when `VcRedist/**` or `tests/**` changes. For documentation-, CI-script-, or workflow-only PRs, record applicable checks and any manual validation run. Resolve missing required checks before merging; do not assume skipped CI passed.
 * Ordinary PR validation excludes live Intune tests. Publishing runs them separately before environment approval.

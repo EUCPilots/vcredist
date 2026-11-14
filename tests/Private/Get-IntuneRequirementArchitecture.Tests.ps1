@@ -7,7 +7,7 @@
 param ()
 
 InModuleScope VcRedist {
-    Describe -Name "Get-IntuneRequirementArchitecture" {
+    Describe -Name "Get-IntuneRequirementArchitecture" -Tag "Intune" {
         It "Maps <Label> to <Expected>" -ForEach @(
             @{ Label = "x86"; Supported = @("x86"); Expected = "x86" }
             @{ Label = "AMD64"; Supported = @("AMD64"); Expected = "x64" }

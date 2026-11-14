@@ -7,7 +7,7 @@
 param ()
 
 InModuleScope VcRedist {
-    Describe -Name "Import-MdtModule" {
+    Describe -Name "Import-MdtModule" -Tag "MDT" {
         It "Throws when the MDT registry key is missing" {
             Mock Test-Path { $false }
             { Import-MdtModule } | Should -Throw

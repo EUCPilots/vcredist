@@ -6,7 +6,7 @@
 param ()
 
 InModuleScope VcRedist {
-    Describe "Get-VcRedistAppsFromIntune" {
+    Describe "Get-VcRedistAppsFromIntune" -Tag "Intune" {
         BeforeAll {
             function Get-IntuneWin32App { }
             $Redist = Get-VcList -Source "Bundled" -Release "14" -Architecture "x64" -WarningAction "SilentlyContinue" |
@@ -78,7 +78,7 @@ InModuleScope VcRedist {
         }
     }
 
-    Describe "Intune functions with pipeline input" {
+    Describe "Intune functions with pipeline input" -Tag "Intune" {
         BeforeAll {
             function Remove-IntuneWin32App { param ($Id) }
             $Redist = Get-VcList -Source "Bundled" -Release "14" -Architecture "x64" -WarningAction "SilentlyContinue" |

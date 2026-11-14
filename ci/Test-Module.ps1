@@ -2,7 +2,7 @@
     .SYNOPSIS
         Runs module tests with explicit failure and discovery gates.
     .PARAMETER Intune
-        Runs only the live Intune tests and requires tenant credentials.
+        Runs Intune-tagged tests; live integration tests require tenant credentials.
     .PARAMETER ResultName
         Identifies the test result and coverage files.
 #>
@@ -35,7 +35,7 @@ if ($Intune) {
     $Config.Filter.Tag = @("Intune")
 }
 else {
-    $Config.Filter.ExcludeTag = @("Intune")
+    $Config.Filter.ExcludeTag = @("Intune", "MDT", "ConfigMgr")
     $Config.CodeCoverage.Enabled = $true
     $Config.CodeCoverage.Path = Join-Path -Path $Root -ChildPath "VcRedist"
     $Config.CodeCoverage.OutputFormat = "JaCoCo"

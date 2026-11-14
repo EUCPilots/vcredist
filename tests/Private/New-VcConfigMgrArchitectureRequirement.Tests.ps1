@@ -1,5 +1,5 @@
 InModuleScope VcRedist {
-    Describe "New-VcConfigMgrArchitectureRequirement" {
+    Describe "New-VcConfigMgrArchitectureRequirement" -Tag "ConfigMgr" {
         BeforeAll {
             function Get-CMGlobalCondition { param ($Name) }
             function New-CMGlobalConditionScript { param ($Name, $DataType, $ScriptLanguage, $ScriptText, $Use32BitHost) }

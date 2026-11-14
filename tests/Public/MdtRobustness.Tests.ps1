@@ -7,7 +7,7 @@
 param ()
 
 InModuleScope VcRedist {
-    Describe -Name "Update-VcMdtApplication robustness" {
+    Describe -Name "Update-VcMdtApplication robustness" -Tag "MDT" {
         BeforeAll {
             function Restore-MDTPersistentDrive { param ([switch] $Force) }
             $VcRedist = Get-VcList -Release "14" -Architecture "x64" -Source "Bundled" | Select-Object -First 1
@@ -60,7 +60,7 @@ InModuleScope VcRedist {
         }
     }
 
-    Describe -Name "Import-VcMdtApplication force replacement" {
+    Describe -Name "Import-VcMdtApplication force replacement" -Tag "MDT" {
         BeforeAll {
             function Restore-MDTPersistentDrive { param ([switch] $Force) }
             function Import-MDTApplication {
@@ -105,7 +105,7 @@ InModuleScope VcRedist {
         }
     }
 
-    Describe -Name "New-VcMdtBundle robustness" {
+    Describe -Name "New-VcMdtBundle robustness" -Tag "MDT" {
         BeforeAll {
             function Restore-MDTPersistentDrive { param ([switch] $Force) }
             function Import-MDTApplication {

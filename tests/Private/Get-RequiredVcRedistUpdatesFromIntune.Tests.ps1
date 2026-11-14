@@ -6,7 +6,7 @@
 param ()
 
 InModuleScope VcRedist {
-    Describe "Get-RequiredVcRedistUpdatesFromIntune" {
+    Describe "Get-RequiredVcRedistUpdatesFromIntune" -Tag "Intune" {
         Context "Basic Functionality" {
             It "Should not throw when called with no parameters" {
                 { Get-RequiredVcRedistUpdatesFromIntune } | Should -Not -Throw

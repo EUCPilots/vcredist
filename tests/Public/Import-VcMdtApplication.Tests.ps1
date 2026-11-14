@@ -17,7 +17,7 @@ BeforeDiscovery {
 	}
 }
 
-Describe -Name "Import-VcMdtApplication with <Release>" -ForEach $SupportedReleases -Skip:$Skip {
+Describe -Name "Import-VcMdtApplication with <Release>" -ForEach $SupportedReleases -Skip:$Skip -Tag "MDT" {
 	BeforeAll {
 		if ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") {
 			$Skip = $false

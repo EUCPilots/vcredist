@@ -6,7 +6,7 @@
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "", Justification = "This OK for the tests files.")]
 param ()
 
-Describe -Name "MDT functions deprecation" {
+Describe -Name "MDT functions deprecation" -Tag "MDT" {
     It "<Name> warns that it is deprecated" -ForEach @(
         @{ Name = "Import-VcMdtApplication" }
         @{ Name = "New-VcMdtBundle" }

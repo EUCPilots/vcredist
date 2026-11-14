@@ -6,7 +6,7 @@
 param ()
 
 InModuleScope VcRedist {
-    Describe "Import-VcIntuneApplication update requirements" {
+    Describe "Import-VcIntuneApplication update requirements" -Tag "Intune" {
         BeforeAll {
             function New-IntuneWin32AppIcon { param ($FilePath) }
             function New-IntuneWin32AppPackage { param ($SourceFolder, $SetupFile, $OutputFolder) }

@@ -1,5 +1,5 @@
 InModuleScope VcRedist {
-    Describe "Import-VcMdtApplication architecture requirements" {
+    Describe "Import-VcMdtApplication architecture requirements" -Tag "MDT" {
         BeforeAll {
             function Restore-MDTPersistentDrive { param ([switch] $Force) }
             function Import-MDTApplication {

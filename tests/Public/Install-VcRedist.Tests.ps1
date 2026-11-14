@@ -85,7 +85,7 @@ Describe -Name "AMD64 specific tests" -Skip:$SkipAmd {
 			elseif ($env:RUNNER_TEMP) {
 				$Path = Join-Path -Path $env:RUNNER_TEMP -ChildPath "Downloads"
 			}
-			New-Item -Path $Path -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" > $Null
+			New-Item -Path $Path -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" > $null
 		}
 
 		Context "Install <Release> x64 Redistributable" {
@@ -145,7 +145,7 @@ Describe -Name "ARM64 specific tests" -Skip:$SkipArm {
 			elseif ($env:RUNNER_TEMP) {
 				$Path = Join-Path -Path $env:RUNNER_TEMP -ChildPath "Downloads"
 			}
-			New-Item -Path $Path -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" > $Null
+			New-Item -Path $Path -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" > $null
 		}
 
 		Context "Install <Release> arm64 Redistributable" {

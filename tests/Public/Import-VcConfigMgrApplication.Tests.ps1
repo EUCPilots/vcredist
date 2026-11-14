@@ -7,7 +7,7 @@
 param ()
 
 InModuleScope VcRedist {
-    Describe -Name "Import-VcConfigMgrApplication" {
+    Describe -Name "Import-VcConfigMgrApplication" -Tag "ConfigMgr" {
         BeforeAll {
             function New-CMApplication { param ($Name, $Description, $SoftwareVersion, $LinkText, $Publisher, $Keyword, $ReleaseDate, $PrivacyUrl, $UserDocumentation) }
             function Move-CMObject { param ([Parameter(ValueFromPipeline)] $InputObject, $FolderPath) process { $InputObject } }
