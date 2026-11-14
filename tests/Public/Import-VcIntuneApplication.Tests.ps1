@@ -30,7 +30,7 @@ Describe -Name "Import-VcIntuneApplication without IntuneWin32App" -ForEach $Sup
 
 Describe -Name "Import-VcIntuneApplication imports VcRedists" -ForEach $SupportedReleases -Skip:$Skip -Tag "Intune" {
 	BeforeAll {
-		& "$env:GITHUB_WORKSPACE/ci/Install-IntuneTestDependencies.ps1"
+		# & "$env:GITHUB_WORKSPACE/ci/Install-IntuneTestDependencies.ps1"
 	}
 
 	Context "Validate Import-VcIntuneApplication fail scenarios" {

@@ -7,7 +7,7 @@ param ()
 
 Describe "Get-VcIntuneApplication" -Tag "Intune" {
     BeforeAll {
-        & "$env:GITHUB_WORKSPACE/ci/Install-IntuneTestDependencies.ps1"
+        # & "$env:GITHUB_WORKSPACE/ci/Install-IntuneTestDependencies.ps1"
 
         try {
             # Authenticate to the Graph API
