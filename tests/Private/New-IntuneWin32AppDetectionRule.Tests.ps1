@@ -10,6 +10,7 @@ BeforeAll {
     Import-Module $ManifestPath -Force
 }
 
+InModuleScope VcRedist {
 Describe "New-IntuneWin32AppDetectionRule" {
     BeforeAll {
         # Mock the required functions
@@ -42,6 +43,7 @@ Describe "New-IntuneWin32AppDetectionRule" {
                     DetectionMethod = "Existence"
                     KeyPath = "HKLM:\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64\{guid}"
                     ValueName = "Version"
+                    DetectionType = "exists"
                 },
                 @{
                     Type = "File"
@@ -105,6 +107,7 @@ Describe "New-IntuneWin32AppDetectionRule" {
                         DetectionMethod = "Existence"
                         KeyPath = "HKLM:\SOFTWARE\Test\{guid}"
                         ValueName = "Version"
+                        DetectionType = "exists"
                     },
                     @{
                         Type = "Registry"
@@ -186,4 +189,5 @@ Describe "New-IntuneWin32AppDetectionRule" {
             $result.Count | Should -Be 4
         }
     }
+}
 }
