@@ -13,7 +13,7 @@ BeforeDiscovery {
 InModuleScope VcRedist {
     Describe "New-IntuneWin32AppDetectionRule" -Tag "Intune" {
         BeforeAll {
-            #Mock -CommandName New-IntuneWin32AppDetectionRuleMSI -MockWith { return @{ Type = "MSI" } }
+            Mock -CommandName New-IntuneWin32AppDetectionRuleMSI -MockWith { return @{ Type = "MSI" } }
             Mock -CommandName New-IntuneWin32AppDetectionRuleScript -MockWith { return @{ Type = "Script" } }
             Mock -CommandName New-IntuneWin32AppDetectionRuleRegistry -MockWith { return @{ Type = "Registry" } }
             Mock -CommandName New-IntuneWin32AppDetectionRuleFile -MockWith { return @{ Type = "File" } }
