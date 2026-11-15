@@ -1,6 +1,6 @@
 {
   "SchemaVersion": "1.0",
-  "Updated": "2026-11-15T10:12:52Z",
+  "Updated": "2026-11-15T10:36:26Z",
   "Entries": [
     {
       "Name": "Visual C++ v14 Redistributable (x86)",
@@ -162,8 +162,8 @@
     },
     {
       "Name": "Visual C++ Redistributable for Visual Studio 2017",
-      "ProductCode": "{9f38c96f-e8d2-4a17-96c1-c2ce3b79b8a9}",
-      "Version": "14.16.27052.0",
+      "ProductCode": "{f3c64e2f-0e60-4973-bfbb-bde56fc107e1}",
+      "Version": "14.52.37029.0",
       "URL": "https://www.visualstudio.com/downloads/",
       "URI": "https://aka.ms/vs/15/release/vc_redist.arm64.exe",
       "Release": "2017",
