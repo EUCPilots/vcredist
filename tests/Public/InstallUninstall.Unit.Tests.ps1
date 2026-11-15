@@ -55,12 +55,21 @@ InModuleScope VcRedist {
             { $Item | Install-VcRedist | Out-Null } | Should -Throw
         }
 
+        It "Re-installs an already installed VcRedist when Force is specified" {
+            Mock Get-InstalledVcRedist { @($Item) }
+            Mock Start-Process { [PSCustomObject]@{ ExitCode = 0 } }
+
+            $Item | Install-VcRedist -Force | Out-Null
+
+            Should -Invoke Start-Process -Times 1 -Exactly
+        }
+
         It "Uses manifest support for <Package> on <System>" -ForEach @(
             @{ Package = "arm64"; System = "AMD64"; Supported = @("ARM64"); Installs = 0 }
             @{ Package = "x64"; System = "x86"; Supported = @("AMD64"); Installs = 0 }
             @{ Package = "x64"; System = "AMD64"; Supported = @("AMD64"); Installs = 1 }
             @{ Package = "x64"; System = "ARM64"; Supported = @("AMD64", "ARM64"); Installs = 1 }
-            @{ Package = "x64"; System = "ARM64"; Supported = @("AMD64"); Installs = 0 }
+            @{ Package = "x64"; System = "ARM64"; Supported = @("AMD64"); Installs = 1 }
             @{ Package = "x86"; System = "ARM64"; Supported = @("x86", "AMD64", "ARM64"); Installs = 1 }
             @{ Package = "arm64"; System = "ARM64"; Supported = @("ARM64"); Installs = 1 }
             @{ Package = "x86"; System = "x86"; Supported = @("x86", "AMD64", "ARM64"); Installs = 1 }
@@ -75,6 +84,31 @@ InModuleScope VcRedist {
             if ($Installs -eq 0) {
                 ($W -join " ") | Should -Match "Incompatible architecture"
             }
+        }
+
+        It "Does not bypass the architecture check for x64 on ARM64 without Force" {
+            Mock Get-VcOperatingSystemArchitecture { "ARM64" }
+            Mock Start-Process { [PSCustomObject]@{ ExitCode = 0 } }
+            $Candidate = $Item.PSObject.Copy()
+            $Candidate.SupportedArchitecture = @("AMD64")
+
+            $Candidate | Install-VcRedist -WarningVariable "W" -WarningAction "SilentlyContinue"
+
+            Should -Invoke Start-Process -Times 0 -Exactly
+            ($W -join " ") | Should -Match "Incompatible architecture"
+        }
+
+        It "Does not bypass the architecture check for non-x64 on ARM64 with Force" {
+            Mock Get-VcOperatingSystemArchitecture { "ARM64" }
+            Mock Start-Process { [PSCustomObject]@{ ExitCode = 0 } }
+            $Candidate = $Item.PSObject.Copy()
+            $Candidate.Architecture = "x86"
+            $Candidate.SupportedArchitecture = @("AMD64")
+
+            $Candidate | Install-VcRedist -Force -WarningVariable "W" -WarningAction "SilentlyContinue"
+
+            Should -Invoke Start-Process -Times 0 -Exactly
+            ($W -join " ") | Should -Match "Incompatible architecture"
         }
 
         It "Rejects missing or empty supported architecture metadata" -ForEach @(

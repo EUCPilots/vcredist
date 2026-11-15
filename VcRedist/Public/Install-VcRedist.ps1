@@ -24,7 +24,7 @@ function Install-VcRedist {
         # Get script elevation status
         [System.Boolean] $Elevated = Test-Elevated
         if ($Elevated -eq $false) {
-            $Msg = "Installing the Visual C++ Redistributables requires elevation. The current Windows PowerShell session is not running as Administrator. Start Windows PowerShell by using the Run as Administrator option, and then try running the script again"
+            $Msg = "Installing the Visual C++ Redistributables requires elevation. The current PowerShell session is not running as Administrator. Start Windows PowerShell by using the Run as Administrator option, and then try running the script again"
             throw [System.Management.Automation.ScriptRequiresException]::New($Msg)
         }
 
@@ -52,7 +52,8 @@ function Install-VcRedist {
             }
             else {
 
-                if ($SupportedArchitecture -notcontains $OperatingSystemArchitecture) {
+                $ForceArchitecture = $Force -and $OperatingSystemArchitecture -eq "ARM64" -and $VcRedist.Architecture -eq "x64"
+                if ($SupportedArchitecture -notcontains $OperatingSystemArchitecture -and !$ForceArchitecture) {
                     Write-Warning -Message "Incompatible architecture: '$($VcRedist.Name) $($VcRedist.Version) $($VcRedist.Architecture)' is not supported on '$OperatingSystemArchitecture'."
                 }
                 else {
