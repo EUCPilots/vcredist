@@ -1,6 +1,6 @@
 # Included Redistributables
 
-VcRedist `5.0.2-beta4` includes the following Redistributables (supported and unsupported):
+VcRedist `5.0.3-beta4` includes the following Redistributables (supported and unsupported):
 
 | Version | Architecture | Name |
 | --- | --- | --- |
