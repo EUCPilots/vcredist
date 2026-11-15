@@ -52,11 +52,11 @@ process {
             # Filter the VcRedists for the target version and compare against what has been installed
             foreach ($ManifestVcRedist in $CompatibleEntries) {
 
-                if ($Arch -eq "arm64") {
+                if ($Arch -eq "arm64" -and $Rls -eq "14") {
                     $InstalledItem = $InstalledVcRedists | `
                         Sort-Object -Property { [System.Version]$_.Version } -Descending | `
                         Where-Object { $_.Architecture -eq $ManifestVcRedist.Architecture } | `
-                        Where-Object { $_.Release -in @("2017", "2019", "14") } | `
+                        Where-Object { $_.Release -eq "2022" } | `
                         Select-Object -First 1
                 }
                 else {

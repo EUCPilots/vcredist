@@ -28,7 +28,7 @@ Describe "Update-Manifest architecture handling" {
         { & $ScriptPath -Release "14" -Architecture @("x64") -Path $TestDrive -VcManifest $ManifestPath } |
             Should -Throw "*No installed VcRedist found*"
     }
-    It "Skips AMD64-only packages on an ARM64 runner" {
+    It "Matches the unified 2022 redistributable for release 14 on ARM64" {
         Mock Get-VcOperatingSystemArchitecture -ModuleName VcRedist { "ARM64" }
         Mock Get-InstalledVcRedist {
             $Item = ($Entries | Where-Object { $_.Architecture -eq "arm64" }).PSObject.Copy()
