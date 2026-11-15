@@ -54,7 +54,7 @@ function Install-VcRedist {
 
                 $ForceArchitecture = $Force -and $OperatingSystemArchitecture -eq "ARM64" -and $VcRedist.Architecture -eq "x64"
                 if ($SupportedArchitecture -notcontains $OperatingSystemArchitecture -and !$ForceArchitecture) {
-                    Write-Warning -Message "Incompatible architecture: '$($VcRedist.Name) $($VcRedist.Version) $($VcRedist.Architecture)' is not supported on '$OperatingSystemArchitecture'."
+                    Write-Warning -Message "Architecture: '$($VcRedist.Name) $($VcRedist.Version) $($VcRedist.Architecture)' is not recommended on '$OperatingSystemArchitecture'. Use -Force to install."
                 }
                 else {
 
