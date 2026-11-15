@@ -23,6 +23,7 @@ Supports both passive and silent installation of the Redistributables.
 Useful for Windows deployments including creating gold images via HashiCorp Packer where the Redistributables can be downloaded and installed at runtime.
 Installers whose manifest SupportedArchitecture list does not include the native Windows architecture are skipped with a warning. Use -Force to re-install an already installed redistributable or to install an x64 redistributable on an ARM64 operating system despite the manifest architecture check.
 Each input object must include a non-empty SupportedArchitecture list.
+All input is collected before installation and sorted by the release order in the bundled manifest, then by version within each release. Releases missing from that order are rejected.
 
 ## EXAMPLES
 

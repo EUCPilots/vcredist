@@ -55,6 +55,72 @@ InModuleScope VcRedist {
             { $Item | Install-VcRedist | Out-Null } | Should -Throw
         }
 
+        It "Installs releases in manifest order for <InputMode>, then by version" -ForEach @(
+            @{ InputMode = "pipeline" }
+            @{ InputMode = "parameter" }
+        ) {
+            $script:InstallSequence = [System.Collections.Generic.List[System.String]]::new()
+            Mock Start-Process {
+                $script:InstallSequence.Add([System.IO.Path]::GetFileName($FilePath))
+                [PSCustomObject]@{ ExitCode = 0 }
+            }
+            $Candidates = foreach ($Release in @("14", "2019", "2017", "2015", "2013", "2012", "2010", "2008", "2005")) {
+                $Candidate = $Item.PSObject.Copy()
+                $Candidate.Release = $Release
+                $Candidate.Version = "14.0.0.1"
+                $Candidate.Path = Join-Path $TestDrive "$Release.exe"
+                Set-Content -LiteralPath $Candidate.Path -Value "x"
+                $Candidate
+            }
+            $Older = $Candidates[0].PSObject.Copy()
+            $Older.Version = "14.0.0.0"
+            $Older.Path = Join-Path $TestDrive "14-older.exe"
+            Set-Content -LiteralPath $Older.Path -Value "x"
+            $Candidates = @($Candidates) + @($Older)
+
+            if ($InputMode -eq "pipeline") { $Candidates | Install-VcRedist -Silent | Out-Null }
+            else { Install-VcRedist -VcList $Candidates -Silent | Out-Null }
+
+            $script:InstallSequence -join "," | Should -BeExactly "2005.exe,2008.exe,2010.exe,2012.exe,2013.exe,2015.exe,2017.exe,2019.exe,14-older.exe,14.exe"
+        }
+
+        It "Rejects an unknown release before starting any installer" {
+            Mock Start-Process { [PSCustomObject]@{ ExitCode = 0 } }
+            $Unknown = $Item.PSObject.Copy()
+            $Unknown.Release = "2099"
+            { @($Item, $Unknown) | Install-VcRedist } | Should -Throw "*2099*InstallOrder*"
+            Should -Invoke Start-Process -Times 0 -Exactly
+        }
+
+        It "Uses the bundled manifest order rather than a hard-coded order" {
+            Mock Get-VcManifest { [PSCustomObject]@{ InstallOrder = @("14", "2005") } }
+            $script:InstallSequence = [System.Collections.Generic.List[System.String]]::new()
+            Mock Start-Process {
+                $script:InstallSequence.Add([System.IO.Path]::GetFileName($FilePath))
+                [PSCustomObject]@{ ExitCode = 0 }
+            }
+            $First = $Item.PSObject.Copy()
+            $First.Release = "2005"
+            $First.Path = Join-Path $TestDrive "2005.exe"
+            Set-Content -LiteralPath $First.Path -Value "x"
+            @($First, $Item) | Install-VcRedist | Out-Null
+            $script:InstallSequence -join "," | Should -BeExactly "vc_redist.exe,2005.exe"
+            Should -Invoke Get-VcManifest -Times 1 -Exactly -ParameterFilter { $Source -eq "Bundled" }
+        }
+
+        It "Rejects a bundled manifest with no installation order" {
+            Mock Get-VcManifest { [PSCustomObject]@{} }
+            Mock Start-Process { [PSCustomObject]@{ ExitCode = 0 } }
+            { $Item | Install-VcRedist } | Should -Throw "*InstallOrder*"
+            Should -Invoke Start-Process -Times 0 -Exactly
+        }
+
+        It "Does not start installers with WhatIf" {
+            Mock Start-Process { [PSCustomObject]@{ ExitCode = 0 } }
+            $Item | Install-VcRedist -WhatIf | Out-Null
+            Should -Invoke Start-Process -Times 0 -Exactly
+        }
+
         It "Re-installs an already installed VcRedist when Force is specified" {
             Mock Get-InstalledVcRedist { @($Item) }
             Mock Start-Process { [PSCustomObject]@{ ExitCode = 0 } }

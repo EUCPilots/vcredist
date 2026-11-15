@@ -5,7 +5,7 @@ Describe "Update-Manifest architecture handling" {
     }
     BeforeEach {
         $ManifestPath = Join-Path $TestDrive "manifest.json"
-        @{ SchemaVersion = "1.0"; Updated = "2026-01-01T00:00:00Z"; Entries = $Entries } |
+        @{ SchemaVersion = "1.0"; Updated = "2026-01-01T00:00:00Z"; InstallOrder = @("2017", "2019", "14"); Entries = $Entries } |
             ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $ManifestPath
         Mock Get-VcOperatingSystemArchitecture -ModuleName VcRedist { "AMD64" }
         Mock Get-VcList {
@@ -45,5 +45,15 @@ Describe "Update-Manifest architecture handling" {
         { & $ScriptPath -Release "14" -Architecture @("x64") -Path $TestDrive -VcManifest $ManifestPath } |
             Should -Throw "*SupportedArchitecture*"
         Should -Invoke Get-VcList -Times 0
+    }
+    It "Preserves installation order when updating the manifest" {
+        Mock Get-InstalledVcRedist {
+            $Item = ($Entries | Where-Object { $_.Architecture -eq "x64" -and $_.Release -eq "14" } | Select-Object -First 1).PSObject.Copy()
+            $Item.Version = "99.0.0.0"
+            $Item
+        }
+        & $ScriptPath -Release "14" -Architecture "x64" -Path $TestDrive -VcManifest $ManifestPath
+        $UpdatedManifest = Get-Content -LiteralPath $ManifestPath -Raw | ConvertFrom-Json
+        $UpdatedManifest.InstallOrder -join "," | Should -BeExactly "2017,2019,14"
     }
 }

@@ -35,6 +35,19 @@ function Test-VcManifest {
     }
     if (@($Manifest.Entries).Count -eq 0) { throw "Manifest contains no entries." }
 
+    if ($null -ne $Manifest.PSObject.Properties["InstallOrder"]) {
+        if ($Manifest.InstallOrder -isnot [System.Array] -or $Manifest.InstallOrder.Count -eq 0) {
+            throw "Manifest 'InstallOrder' must be a non-empty array of unique release strings."
+        }
+        $SeenReleases = @{}
+        foreach ($Release in $Manifest.InstallOrder) {
+            if ($Release -isnot [System.String] -or $Release -notmatch "^[0-9]{2,4}$" -or $SeenReleases.ContainsKey($Release)) {
+                throw "Manifest 'InstallOrder' must be a non-empty array of unique release strings."
+            }
+            $SeenReleases[$Release] = $true
+        }
+    }
+
     foreach ($Entry in @($Manifest.Entries)) {
         foreach ($Property in $Required) {
             if ($null -eq $Entry.PSObject.Properties[$Property] -or $null -eq $Entry.$Property -or ($Entry.$Property -is [System.String] -and [System.String]::IsNullOrWhiteSpace($Entry.$Property))) {
@@ -43,6 +56,9 @@ function Test-VcManifest {
         }
         if ($Entry.Release -isnot [System.String] -or $Entry.Release -notmatch "^[0-9]{2,4}$") {
             throw "Manifest entry '$($Entry.Name)' has an invalid Release '$($Entry.Release)'."
+        }
+        if ($null -ne $Manifest.PSObject.Properties["InstallOrder"] -and -not $SeenReleases.ContainsKey($Entry.Release)) {
+            throw "Manifest entry '$($Entry.Name)' release '$($Entry.Release)' is missing from InstallOrder."
         }
         if ($Entry.Architecture -isnot [System.String] -or @("x86", "x64", "arm64") -notcontains $Entry.Architecture) {
             throw "Manifest entry '$($Entry.Name)' has an invalid Architecture '$($Entry.Architecture)'."

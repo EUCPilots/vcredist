@@ -12,6 +12,7 @@ InModuleScope VcRedist {
 			[PSCustomObject]@{
 				SchemaVersion = "1.0"
 				Updated       = "2026-01-01T00:00:00Z"
+				InstallOrder  = @("14")
 				Entries       = @([PSCustomObject]@{
 						Name            = "Test"
 						ProductCode     = "{d992c12e-cab2-426f-bde3-fb8c53950b0d}"
@@ -46,6 +47,20 @@ InModuleScope VcRedist {
 		It "Throws for a missing top-level property" {
 			$M = New-TestManifest; $M.PSObject.Properties.Remove("Entries")
 			{ Test-VcManifest -Manifest $M } | Should -Throw "*Entries*"
+		}
+		It "Rejects an invalid installation order" -ForEach @(
+			@{ Order = @() }
+			@{ Order = @("14", "14") }
+			@{ Order = @("invalid") }
+			@{ Order = @("2019") }
+			@{ Order = "14" }
+		) {
+			$M = New-TestManifest; $M.InstallOrder = $Order
+			{ Test-VcManifest -Manifest $M } | Should -Throw "*InstallOrder*"
+		}
+		It "Accepts a legacy manifest without installation order" {
+			$M = New-TestManifest; $M.PSObject.Properties.Remove("InstallOrder")
+			Test-VcManifest -Manifest $M | Should -BeTrue
 		}
 		It "Throws for an unsupported schema major version" {
 			$M = New-TestManifest; $M.SchemaVersion = "2.0"

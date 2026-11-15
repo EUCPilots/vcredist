@@ -103,8 +103,9 @@ process {
             $Updated = [ordered]@{
                 SchemaVersion = $CurrentManifest.SchemaVersion
                 Updated       = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
-                Entries       = @($CurrentManifest.Entries)
             }
+            if ($null -ne $CurrentManifest.PSObject.Properties["InstallOrder"]) { $Updated.InstallOrder = @($CurrentManifest.InstallOrder) }
+            $Updated.Entries = @($CurrentManifest.Entries)
             $Updated | ConvertTo-Json -Depth 5 | Set-Content -Path $VcManifest -Force
         }
         catch {

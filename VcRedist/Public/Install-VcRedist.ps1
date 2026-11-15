@@ -31,6 +31,11 @@ function Install-VcRedist {
         # Get currently installed VcRedist versions
         $currentInstalled = Get-InstalledVcRedist
         $OperatingSystemArchitecture = Get-VcOperatingSystemArchitecture
+        $InstallOrder = (Get-VcManifest -Source "Bundled").InstallOrder
+        if ($null -eq $InstallOrder -or @($InstallOrder).Count -eq 0) {
+            throw "The bundled manifest is missing InstallOrder."
+        }
+        $Items = [System.Collections.Generic.List[System.Object]]::new()
     }
 
     process {
@@ -41,8 +46,17 @@ function Install-VcRedist {
             throw [System.Management.Automation.PropertyNotFoundException]::New($Msg)
         }
 
-        # Sort $VcList by version number from oldest to newest
-        foreach ($VcRedist in ($VcList | Sort-Object -Property @{ Expression = { [System.Version]$_.Version }; Descending = $false })) {
+        foreach ($Item in $VcList) {
+            if ($InstallOrder -notcontains $Item.Release) {
+                throw "Release '$($Item.Release)' is missing from the bundled manifest InstallOrder."
+            }
+            $Items.Add($Item)
+        }
+    }
+
+    end {
+        # Install releases in manifest order, then versions from oldest to newest.
+        foreach ($VcRedist in ($Items | Sort-Object -Property @{ Expression = { [System.Array]::IndexOf($InstallOrder, $_.Release) } }, @{ Expression = { [System.Version]$_.Version } })) {
 
             $SupportedArchitecture = @(Get-VcSupportedArchitecture -SupportedArchitecture $VcRedist.SupportedArchitecture)
 
@@ -94,9 +108,6 @@ function Install-VcRedist {
                 }
             }
         }
-    }
-
-    end {
         # Get the installed Visual C++ Redistributables applications to return on the pipeline
         Write-Output -InputObject (Get-InstalledVcRedist)
     }

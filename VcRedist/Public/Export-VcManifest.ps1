@@ -33,8 +33,9 @@ function Export-VcManifest {
         $Output = [ordered]@{
             SchemaVersion = $Manifest.SchemaVersion
             Updated       = ([System.DateTime]$Manifest.Updated).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
-            Entries       = @($Manifest.Entries)
         }
+        if ($null -ne $Manifest.PSObject.Properties["InstallOrder"]) { $Output.InstallOrder = @($Manifest.InstallOrder) }
+        $Output.Entries = @($Manifest.Entries)
         $Target = Join-Path -Path (Resolve-Path -LiteralPath $Path).Path -ChildPath "VisualCRedistributables.json"
         if ($PSCmdlet.ShouldProcess($Target, "Export $($Manifest.Source) manifest")) {
             Write-Verbose -Message "Writing $($Manifest.Source) manifest to: '$Target'."
