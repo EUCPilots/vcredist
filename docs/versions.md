@@ -1,14 +1,14 @@
 # Included Redistributables
 
-VcRedist `5.0.3-beta4` includes the following Redistributables (supported and unsupported):
+VcRedist `5.0.4-beta5` includes the following Redistributables (supported and unsupported):
 
 | Version | Architecture | Name |
 | --- | --- | --- |
 | 14.52.37029.0 | arm64 | Visual C++ v14 Redistributable (Arm64) |
 | 14.52.37029.0 | x64 | Visual C++ v14 Redistributable (x64) |
 | 14.52.37029.0 | x86 | Visual C++ v14 Redistributable (x86) |
-| 14.29.30156.0 | x64 | Visual C++ Redistributable for Visual Studio 2019 |
-| 14.29.30156.0 | x86 | Visual C++ Redistributable for Visual Studio 2019 |
+| 14.29.30157.0 | x64 | Visual C++ Redistributable for Visual Studio 2019 |
+| 14.29.30157.0 | x86 | Visual C++ Redistributable for Visual Studio 2019 |
 | 14.16.27052.0 | x64 | Visual C++ Redistributable for Visual Studio 2017 |
 | 14.16.27052.0 | x86 | Visual C++ Redistributable for Visual Studio 2017 |
 | 14.0.24215.1 | x64 | Visual C++ 2015 Redistributable Update 3 |
