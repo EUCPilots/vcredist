@@ -7,7 +7,7 @@
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUserDeclaredVarsMoreThanAssignments", "")]
 [CmdletBinding()]
 param (
-    [System.String[]] $Release,
+    [System.String[]] $Release = @("2017", "2019", "14"),
     [System.String[]] $Architecture = @("x64", "x86", "arm64"),
     [System.String] $Path,
     [System.String] $VcManifest
@@ -52,11 +52,11 @@ process {
             # Filter the VcRedists for the target version and compare against what has been installed
             foreach ($ManifestVcRedist in $CompatibleEntries) {
 
-                if ($Arch -eq "arm64" -and $Rls -eq "14") {
+                if ($Arch -eq "arm64") {
                     $InstalledItem = $InstalledVcRedists | `
                         Sort-Object -Property { [System.Version]$_.Version } -Descending | `
                         Where-Object { $_.Architecture -eq $ManifestVcRedist.Architecture } | `
-                        Where-Object { $_.Release -eq 2022 } | `
+                        Where-Object { $_.Release -eq "2022" } | `
                         Select-Object -First 1
                 }
                 else {
@@ -103,8 +103,9 @@ process {
             $Updated = [ordered]@{
                 SchemaVersion = $CurrentManifest.SchemaVersion
                 Updated       = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
-                Entries       = @($CurrentManifest.Entries)
             }
+            if ($null -ne $CurrentManifest.PSObject.Properties["InstallOrder"]) { $Updated.InstallOrder = @($CurrentManifest.InstallOrder) }
+            $Updated.Entries = @($CurrentManifest.Entries)
             $Updated | ConvertTo-Json -Depth 5 | Set-Content -Path $VcManifest -Force
         }
         catch {

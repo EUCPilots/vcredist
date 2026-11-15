@@ -8,7 +8,7 @@
 param ()
 
 BeforeDiscovery {
-	$SupportedReleasesAmd64 = @("2015", "2017", "2019", "14")
+	$SupportedReleasesAmd64 = @("2017", "2019", "14")
 	$SupportedReleasesArm64 = @("14")
 	$UnsupportedReleases = @("2008", "2010", "2012", "2013")
 	# $UnsupportedReleases = Get-VcList -Export "Unsupported"

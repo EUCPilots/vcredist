@@ -38,6 +38,9 @@ InModuleScope VcRedist {
 		$MissingArchitecture = $Newer | ConvertFrom-Json
 		$MissingArchitecture.Entries[0].PSObject.Properties.Remove("SupportedArchitecture")
 		$MissingArchitecture = $MissingArchitecture | ConvertTo-Json -Depth 5
+		$BadOrder = $Newer | ConvertFrom-Json
+		$BadOrder | Add-Member -NotePropertyName "InstallOrder" -NotePropertyValue @("2019")
+		$BadOrder = $BadOrder | ConvertTo-Json -Depth 5
 	}
 
 	Describe -Name "Get-VcManifest" {
@@ -98,6 +101,11 @@ InModuleScope VcRedist {
 				Mock Invoke-VcWebRequest { [PSCustomObject]@{ Content = $MissingArchitecture } }
 				(Get-VcManifest -WarningAction SilentlyContinue).Source | Should -BeExactly "Bundled"
 				{ Get-VcManifest -Source "Remote" } | Should -Throw "*SupportedArchitecture*"
+			}
+			It "Falls back when a remote installation order does not cover its entries" {
+				Mock Invoke-VcWebRequest { [PSCustomObject]@{ Content = $BadOrder } }
+				(Get-VcManifest -WarningAction SilentlyContinue).Source | Should -BeExactly "Bundled"
+				{ Get-VcManifest -Source "Remote" } | Should -Throw "*InstallOrder*"
 			}
 
 			It "Throws instead of falling back when -Source Remote is used" {

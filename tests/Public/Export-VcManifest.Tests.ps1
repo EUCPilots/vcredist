@@ -19,6 +19,7 @@ Describe -Name "Export-VcManifest" {
         $File | Should -Not -BeNullOrEmpty
         $Json = Get-Content -LiteralPath $File.FullName -Raw | ConvertFrom-Json
         $Json.SchemaVersion | Should -Not -BeNullOrEmpty
+        $Json.InstallOrder -join "," | Should -BeExactly "2005,2008,2010,2012,2013,2015,2017,2019,14"
         $Json.Entries.Count | Should -BeGreaterThan 0
     }
 

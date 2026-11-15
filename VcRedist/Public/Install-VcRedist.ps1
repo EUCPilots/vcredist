@@ -24,13 +24,18 @@ function Install-VcRedist {
         # Get script elevation status
         [System.Boolean] $Elevated = Test-Elevated
         if ($Elevated -eq $false) {
-            $Msg = "Installing the Visual C++ Redistributables requires elevation. The current Windows PowerShell session is not running as Administrator. Start Windows PowerShell by using the Run as Administrator option, and then try running the script again"
+            $Msg = "Installing the Visual C++ Redistributables requires elevation. The current PowerShell session is not running as Administrator. Start Windows PowerShell by using the Run as Administrator option, and then try running the script again"
             throw [System.Management.Automation.ScriptRequiresException]::New($Msg)
         }
 
         # Get currently installed VcRedist versions
         $currentInstalled = Get-InstalledVcRedist
         $OperatingSystemArchitecture = Get-VcOperatingSystemArchitecture
+        $InstallOrder = (Get-VcManifest -Source "Bundled").InstallOrder
+        if ($null -eq $InstallOrder -or @($InstallOrder).Count -eq 0) {
+            throw "The bundled manifest is missing InstallOrder."
+        }
+        $Items = [System.Collections.Generic.List[System.Object]]::new()
     }
 
     process {
@@ -41,8 +46,17 @@ function Install-VcRedist {
             throw [System.Management.Automation.PropertyNotFoundException]::New($Msg)
         }
 
-        # Sort $VcList by version number from oldest to newest
-        foreach ($VcRedist in ($VcList | Sort-Object -Property @{ Expression = { [System.Version]$_.Version }; Descending = $false })) {
+        foreach ($Item in $VcList) {
+            if ($InstallOrder -notcontains $Item.Release) {
+                throw "Release '$($Item.Release)' is missing from the bundled manifest InstallOrder."
+            }
+            $Items.Add($Item)
+        }
+    }
+
+    end {
+        # Install releases in manifest order, then versions from oldest to newest.
+        foreach ($VcRedist in ($Items | Sort-Object -Property @{ Expression = { [System.Array]::IndexOf($InstallOrder, $_.Release) } }, @{ Expression = { [System.Version]$_.Version } })) {
 
             $SupportedArchitecture = @(Get-VcSupportedArchitecture -SupportedArchitecture $VcRedist.SupportedArchitecture)
 
@@ -52,8 +66,9 @@ function Install-VcRedist {
             }
             else {
 
-                if ($SupportedArchitecture -notcontains $OperatingSystemArchitecture) {
-                    Write-Warning -Message "Incompatible architecture: '$($VcRedist.Name) $($VcRedist.Version) $($VcRedist.Architecture)' is not supported on '$OperatingSystemArchitecture'."
+                $ForceArchitecture = $Force -and $OperatingSystemArchitecture -eq "ARM64" -and $VcRedist.Architecture -eq "x64"
+                if ($SupportedArchitecture -notcontains $OperatingSystemArchitecture -and !$ForceArchitecture) {
+                    Write-Warning -Message "Architecture: '$($VcRedist.Name) $($VcRedist.Version) $($VcRedist.Architecture)' is not recommended on '$OperatingSystemArchitecture'. Use -Force to install."
                 }
                 else {
 
@@ -93,9 +108,6 @@ function Install-VcRedist {
                 }
             }
         }
-    }
-
-    end {
         # Get the installed Visual C++ Redistributables applications to return on the pipeline
         Write-Output -InputObject (Get-InstalledVcRedist)
     }

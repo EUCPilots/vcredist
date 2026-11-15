@@ -1,7 +1,10 @@
 # Changelog
 
-## 5.0.3-beta4
+## VERSION
 
+* Adds manifest-defined install ordering, validates manifest release coverage, and preserves install order when exporting
+* Installs redistributables in the declared order, validates releases before starting installers, and supports forcing x64 installation on ARM64
+* Updates manifest maintenance for ARM64 and adds a manual clean uninstall/download update workflow
 * Separates read-only module validation, release PR preparation, and approved Gallery publishing
 * Tests release artifacts on Windows PowerShell 5.1 and PowerShell 7, on x64 and ARM64
 * Validates release versions, tags, documentation and Gallery package contents; supports safe publication retries
