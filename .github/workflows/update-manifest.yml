@@ -19,7 +19,7 @@ permissions:
 jobs:
   update-manifest-amd64:
     runs-on: windows-2025
-    name: 'Update AMD64 manifest entries'
+    name: 'Update AMD64, x86 manifest'
     outputs:
       changes_detected: ${{ steps.commit.outputs.changes_detected }}
     steps:
@@ -80,7 +80,7 @@ jobs:
   update-manifest:
     needs: update-manifest-amd64
     runs-on: windows-11-arm
-    name: 'Update manifest'
+    name: 'Update ARM64 manifest'
     outputs:
       changes_detected: ${{ steps.commit.outputs.changes_detected }}
 
