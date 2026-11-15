@@ -70,7 +70,8 @@
       "Release": "2019",
       "Architecture": "x64",
       "SupportedArchitecture": [
-        "AMD64"
+        "AMD64",
+        "ARM64"
       ],
       "Install": "/install /passive /norestart",
       "SilentInstall": "/install /quiet /norestart",
@@ -102,25 +103,6 @@
       "Supported": true
     },
     {
-      "Name": "Visual C++ Redistributable for Visual Studio 2019",
-      "ProductCode": "{f3c64e2f-0e60-4973-bfbb-bde56fc107e1}",
-      "Version": "14.52.37029.0",
-      "URL": "https://www.visualstudio.com/downloads/",
-      "URI": "https://aka.ms/vs/16/release/VC_redist.arm64.exe",
-      "Release": "2019",
-      "Architecture": "arm64",
-      "SupportedArchitecture": [
-        "ARM64"
-      ],
-      "Install": "/install /passive /norestart",
-      "SilentInstall": "/install /quiet /norestart",
-      "SilentUninstall": "\"%ProgramData%\\Package Cache\\#ProductCode\\#Installer\" /uninstall /quiet /norestart",
-      "UninstallKey": "32",
-      "PackageId": "4fc0bad2-2443-4a5f-8fd4-11cfb79784d5",
-      "DetectionFile": "%SystemRoot%\\System32\\vcruntime140.dll",
-      "Supported": true
-    },
-    {
       "Name": "Visual C++ Redistributable for Visual Studio 2017",
       "ProductCode": "{9f38c96f-e8d2-4a17-96c1-c2ce3b79b8a9}",
       "Version": "14.16.27052.0",
@@ -129,7 +111,8 @@
       "Release": "2017",
       "Architecture": "x64",
       "SupportedArchitecture": [
-        "AMD64"
+        "AMD64",
+        "ARM64"
       ],
       "Install": "/install /passive /norestart",
       "SilentInstall": "/install /quiet /norestart",
@@ -161,25 +144,6 @@
       "Supported": true
     },
     {
-      "Name": "Visual C++ Redistributable for Visual Studio 2017",
-      "ProductCode": "{f3c64e2f-0e60-4973-bfbb-bde56fc107e1}",
-      "Version": "14.52.37029.0",
-      "URL": "https://www.visualstudio.com/downloads/",
-      "URI": "https://aka.ms/vs/15/release/vc_redist.arm64.exe",
-      "Release": "2017",
-      "Architecture": "arm64",
-      "SupportedArchitecture": [
-        "ARM64"
-      ],
-      "Install": "/install /passive /norestart",
-      "SilentInstall": "/install /quiet /norestart",
-      "SilentUninstall": "\"%ProgramData%\\Package Cache\\#ProductCode\\#Installer\" /uninstall /quiet /norestart",
-      "UninstallKey": "32",
-      "PackageId": "a778b656-6a28-4d10-8b17-0a14fbe7b2b0",
-      "DetectionFile": "%SystemRoot%\\System32\\vcruntime140.dll",
-      "Supported": true
-    },
-    {
       "Name": "Visual C++ 2015 Redistributable Update 3",
       "ProductCode": "{d992c12e-cab2-426f-bde3-fb8c53950b0d}",
       "Version": "14.0.24215.1",
@@ -188,7 +152,8 @@
       "Release": "2015",
       "Architecture": "x64",
       "SupportedArchitecture": [
-        "AMD64"
+        "AMD64",
+        "ARM64"
       ],
       "Install": "/install /passive /norestart",
       "SilentInstall": "/install /quiet /norestart",
@@ -249,7 +214,8 @@
       "Release": "2013",
       "Architecture": "x64",
       "SupportedArchitecture": [
-        "AMD64"
+        "AMD64",
+        "ARM64"
       ],
       "Install": "/install /passive /norestart",
       "SilentInstall": "/install /quiet /norestart",
@@ -268,7 +234,8 @@
       "Release": "2013",
       "Architecture": "x64",
       "SupportedArchitecture": [
-        "AMD64"
+        "AMD64",
+        "ARM64"
       ],
       "Install": "/install /passive /norestart",
       "SilentInstall": "/install /quiet /norestart",
@@ -329,7 +296,8 @@
       "Release": "2012",
       "Architecture": "x64",
       "SupportedArchitecture": [
-        "AMD64"
+        "AMD64",
+        "ARM64"
       ],
       "Install": "/install /passive /norestart",
       "SilentInstall": "/quiet /norestart",
@@ -348,7 +316,8 @@
       "Release": "2010",
       "Architecture": "x64",
       "SupportedArchitecture": [
-        "AMD64"
+        "AMD64",
+        "ARM64"
       ],
       "Install": "/passive /norestart",
       "SilentInstall": "/quiet /norestart",
@@ -409,7 +378,8 @@
       "Release": "2008",
       "Architecture": "x64",
       "SupportedArchitecture": [
-        "AMD64"
+        "AMD64",
+        "ARM64"
       ],
       "Install": "/Q",
       "SilentInstall": "/Q",
@@ -470,7 +440,8 @@
       "Release": "2008",
       "Architecture": "x64",
       "SupportedArchitecture": [
-        "AMD64"
+        "AMD64",
+        "ARM64"
       ],
       "Install": "/Q",
       "SilentInstall": "/Q",
@@ -489,7 +460,8 @@
       "Release": "2008",
       "Architecture": "x64",
       "SupportedArchitecture": [
-        "AMD64"
+        "AMD64",
+        "ARM64"
       ],
       "Install": "/Q",
       "SilentInstall": "/Q",
@@ -529,7 +501,8 @@
       "Release": "2005",
       "Architecture": "x64",
       "SupportedArchitecture": [
-        "AMD64"
+        "AMD64",
+        "ARM64"
       ],
       "Install": "/Q",
       "SilentInstall": "/Q",
@@ -548,7 +521,8 @@
       "Release": "2005",
       "Architecture": "x64",
       "SupportedArchitecture": [
-        "AMD64"
+        "AMD64",
+        "ARM64"
       ],
       "Install": "/Q",
       "SilentInstall": "/Q",
