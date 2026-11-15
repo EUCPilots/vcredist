@@ -62,7 +62,7 @@ jobs:
           Get-InstalledVcRedist | Uninstall-VcRedist -Confirm:$false -Verbose
           New-Item -Path "$env:RUNNER_TEMP\VcRedist" -ItemType "Directory" -Force | Out-Null
           $params = @{
-              Release      = @("14", "2019", "2017")
+              Release      = @("2017", "2019", "14")
               Architecture = @("x86", "x64")
               Path         = "$env:RUNNER_TEMP\VcRedist"
               VcManifest   = "${{ env.MANIFEST_FILE }}"
