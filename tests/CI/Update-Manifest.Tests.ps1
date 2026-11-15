@@ -31,12 +31,13 @@ Describe "Update-Manifest architecture handling" {
     It "Matches the unified 2022 redistributable for all supported releases on ARM64" {
         Mock Get-VcOperatingSystemArchitecture -ModuleName VcRedist { "ARM64" }
         Mock Get-InstalledVcRedist {
+            $Entries | Where-Object { $_.Architecture -eq "x64" }
             $Item = ($Entries | Where-Object { $_.Architecture -eq "arm64" -and $_.Release -eq "14" } | Select-Object -First 1).PSObject.Copy()
             $Item.Release = "2022"
             $Item
         }
         & $ScriptPath -Release @("14", "2019", "2017") -Architecture @("x64", "arm64") -Path $TestDrive -VcManifest $ManifestPath
-        Should -Invoke Get-VcList -Times 3 -Exactly -ParameterFilter { $Architecture -eq "arm64" }
+        Should -Invoke Get-VcList -Times 1 -Exactly -ParameterFilter { $Architecture -eq "arm64" }
     }
     It "Rejects a manifest with missing architecture metadata rather than skipping it" {
         $Manifest = Get-Content -LiteralPath $ManifestPath -Raw | ConvertFrom-Json

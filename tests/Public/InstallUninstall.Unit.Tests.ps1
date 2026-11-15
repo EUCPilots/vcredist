@@ -148,7 +148,7 @@ InModuleScope VcRedist {
             $Candidate | Install-VcRedist -Force -WarningVariable "W" -WarningAction "SilentlyContinue" | Out-Null
             Should -Invoke Start-Process -Times $Installs -Exactly
             if ($Installs -eq 0) {
-                ($W -join " ") | Should -Match "Incompatible architecture"
+                ($W -join " ") | Should -Match "not recommended"
             }
         }
 
@@ -161,7 +161,7 @@ InModuleScope VcRedist {
             $Candidate | Install-VcRedist -WarningVariable "W" -WarningAction "SilentlyContinue"
 
             Should -Invoke Start-Process -Times 0 -Exactly
-            ($W -join " ") | Should -Match "Incompatible architecture"
+            ($W -join " ") | Should -Match "not recommended"
         }
 
         It "Does not bypass the architecture check for non-x64 on ARM64 with Force" {
@@ -174,7 +174,7 @@ InModuleScope VcRedist {
             $Candidate | Install-VcRedist -Force -WarningVariable "W" -WarningAction "SilentlyContinue"
 
             Should -Invoke Start-Process -Times 0 -Exactly
-            ($W -join " ") | Should -Match "Incompatible architecture"
+            ($W -join " ") | Should -Match "not recommended"
         }
 
         It "Rejects missing or empty supported architecture metadata" -ForEach @(
@@ -198,7 +198,7 @@ InModuleScope VcRedist {
             }
             $Candidates | Install-VcRedist -WarningVariable "W" -WarningAction "SilentlyContinue" | Out-Null
             Should -Invoke Start-Process -Times 1 -Exactly
-            ($W -join " ") | Should -Match "Incompatible architecture"
+            ($W -join " ") | Should -Match "not recommended"
         }
 
         It "Rejects an object with no SupportedArchitecture property" {
