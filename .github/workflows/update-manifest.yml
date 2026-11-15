@@ -55,14 +55,14 @@ jobs:
           git_committer_name: ${{ secrets.COMMIT_NAME }}
           git_committer_email: ${{ secrets.COMMIT_EMAIL }}
 
-      - name: Validate VcRedist 14 x86 and x64
+      - name: Validate VcRedist 14, 2019, and 2017 x86 and x64
         shell: pwsh
         run: |
           Import-Module "${{ github.workspace }}\VcRedist" -Force
           Get-InstalledVcRedist | Uninstall-VcRedist -Confirm:$false -Verbose
           New-Item -Path "$env:RUNNER_TEMP\VcRedist" -ItemType "Directory" -Force | Out-Null
           $params = @{
-              Release      = "14"
+              Release      = @("14", "2019", "2017")
               Architecture = @("x86", "x64")
               Path         = "$env:RUNNER_TEMP\VcRedist"
               VcManifest   = "${{ env.MANIFEST_FILE }}"
@@ -134,11 +134,11 @@ jobs:
           Import-Module ${{ github.workspace }}\VcRedist -Force
           Get-InstalledVcRedist | Uninstall-VcRedist -Confirm:$False -Verbose
 
-      # Validate VcRedist 14 and update the manifest
-      - name: Validate VcRedist 14 arm64
+      # Validate VcRedist 14, 2019, and 2017 and update the manifest
+      - name: Validate VcRedist 14, 2019, and 2017 arm64
         shell: pwsh
         run: |
-          $Release = "14"
+          $Release = @("14", "2019", "2017")
           $Architecture = "arm64"
           Import-Module "${{ github.workspace }}\VcRedist" -Force
           New-Item -Path "$env:RUNNER_TEMP\VcRedist" -ItemType "Directory" -ErrorAction "SilentlyContinue" | Out-Null
