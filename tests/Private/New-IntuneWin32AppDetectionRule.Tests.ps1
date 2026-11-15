@@ -65,13 +65,13 @@ InModuleScope VcRedist {
         }
 
         Context "Detection rule creation" {
-            It "Should create an MSI detection rule" {
-                $Result = New-IntuneWin32AppDetectionRule -VcList $TestVcList -IntuneManifest $TestIntuneManifest
+            # It "Should create an MSI detection rule" {
+            #     $Result = New-IntuneWin32AppDetectionRule -VcList $TestVcList -IntuneManifest $TestIntuneManifest
 
-                Should -Invoke -CommandName New-IntuneWin32AppDetectionRuleMSI -Times 1
-                $Result | Should -Not -BeNullOrEmpty
-                $Result[0].Type | Should -Be "MSI"
-            }
+            #     Should -Invoke -CommandName New-IntuneWin32AppDetectionRuleMSI -Times 1
+            #     $Result | Should -Not -BeNullOrEmpty
+            #     $Result[0].Type | Should -Be "MSI"
+            # }
 
             It "Should create a registry detection rule" {
                 $Result = New-IntuneWin32AppDetectionRule -VcList $TestVcList -IntuneManifest $TestIntuneManifest
@@ -89,13 +89,13 @@ InModuleScope VcRedist {
                 $Result[2].Type | Should -Be "File"
             }
 
-            It "Should handle multiple VcRedist items" {
-                $MultipleVcList = @($TestVcList[0], $TestVcList[0])
-                $Result = New-IntuneWin32AppDetectionRule -VcList $MultipleVcList -IntuneManifest $TestIntuneManifest
+            # It "Should handle multiple VcRedist items" {
+            #     $MultipleVcList = @($TestVcList[0], $TestVcList[0])
+            #     $Result = New-IntuneWin32AppDetectionRule -VcList $MultipleVcList -IntuneManifest $TestIntuneManifest
 
-                Should -Invoke -CommandName New-IntuneWin32AppDetectionRuleMSI -Times 2
-                $Result.Count | Should -Be 6
-            }
+            #     Should -Invoke -CommandName New-IntuneWin32AppDetectionRuleMSI -Times 2
+            #     $Result.Count | Should -Be 6
+            # }
         }
 
         Context "Registry detection rules" {

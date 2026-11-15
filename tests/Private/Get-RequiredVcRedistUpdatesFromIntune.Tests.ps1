@@ -9,10 +9,10 @@ InModuleScope VcRedist {
     Describe "Get-RequiredVcRedistUpdatesFromIntune" -Tag "Intune" {
         Context "Basic Functionality" {
             It "Should not throw when called with no parameters" {
-                { Get-RequiredVcRedistUpdatesFromIntune } | Should -Not -Throw
+                { Get-RequiredVcRedistUpdatesFromIntune -VcList (Get-VcList) } | Should -Not -Throw
             }
             It "Should return an array or $null" {
-                $result = Get-RequiredVcRedistUpdatesFromIntune
+                $result = Get-RequiredVcRedistUpdatesFromIntune -VcList (Get-VcList)
                 ($result -is [System.Array] -or $null -eq $result) | Should -BeTrue
             }
         }

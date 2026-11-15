@@ -29,6 +29,8 @@ $Config.TestResult.OutputFormat = "NUnitXml"
 $Config.TestResult.OutputPath = Join-Path -Path $Root -ChildPath "TestResults-$ResultName.xml"
 $Config.Output.Verbosity = "Detailed"
 if ($Intune) {
+    & "$env:GITHUB_WORKSPACE/ci/Install-IntuneTestDependencies.ps1"
+    
     foreach ($Name in @("TENANT_ID", "CLIENT_ID", "CLIENT_SECRET")) {
         if (-not [System.Environment]::GetEnvironmentVariable($Name)) { throw "Missing required credential: $Name." }
     }
