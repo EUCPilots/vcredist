@@ -127,6 +127,7 @@ InModuleScope VcRedist {
             $Entries.Count | Should -BeGreaterThan 0
             foreach ($Redist in $Entries) {
                 $Redist | Add-Member -MemberType "NoteProperty" -Name "Path" -Value $Item.Path -Force
+                $Redist.SupportedArchitecture = @("AMD64")
                 Import-VcIntuneApplication -VcList $Redist -ImportAsUpdate | Out-Null
                 $Rule = $script:ImportedArguments.AdditionalRequirementRule[0]
                 ($Rule.path -replace "/", "\") | Should -Be ((Split-Path -Path $Redist.DetectionFile -Parent) -replace "/", "\")

@@ -89,6 +89,7 @@ jobs:
         if: always() && matrix.os == 'windows-2025' && matrix.shell == 'powershell' && github.event_name != 'pull_request'
         with:
           files: TestResults-${{ matrix.os }}-${{ matrix.shell }}.xml
+          comment_mode: off
 
   analyzer:
     needs: stage-module
