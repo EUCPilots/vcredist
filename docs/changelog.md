@@ -29,7 +29,8 @@
 * Improves Intune, ConfigMgr, and MDT imports with architecture-aware requirements, detection rules, `-WhatIf` support, and error handling
 * Updates CI test selection and manifest-update workflows; removes Codecov configuration
 * Adds translated help documentation and expands test coverage
-* The manifest is read from the repository (`v5` branch during development) and falls back to the bundled manifest on any failure; use `-Source Auto|Remote|Bundled`. The bundled manifest is used if the remote one is older
+* The manifest is read from the repository and falls back to the bundled manifest on any failure; use `-Source Auto|Remote|Bundled`. The bundled manifest is used if the remote one is older
+* `VcRedist.psm1` now verifies that the `Public` and `Private` function directories exist before loading, throws an error if duplicate function file names are found, and sorts function files for consistent loading. Only explicitly declared functions and selected aliases are exported.
 * Adds `-Proxy` and `-ProxyCredential` to every function that fetches or downloads content
 * `Install-VcRedist` and `Uninstall-VcRedist` check installer exit codes; `Uninstall-VcRedist` expands environment variables in uninstall commands
 * `Invoke-Process` fails on unexpected exit codes
