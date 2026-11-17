@@ -122,7 +122,7 @@ function Import-VcIntuneApplication {
                     $Win32AppArgs = @{
                         "FilePath"                 = $Package.Path
                         "DisplayName"              = $DisplayName
-                        "Description"              = "$($IntuneManifest.Information.Description). $DisplayName"
+                        "Description"              = "$($IntuneManifest.Information.Description) $DisplayName"
                         "AppVersion"               = $VcRedist.Version
                         "Notes"                    = $Notes
                         "Publisher"                = $IntuneManifest.Information.Publisher
