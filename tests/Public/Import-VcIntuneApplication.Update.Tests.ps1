@@ -53,6 +53,7 @@ InModuleScope VcRedist {
                 $script:ImportedArguments = @{
                     AdditionalRequirementRule = $AdditionalRequirementRule
                     DetectionRule = $DetectionRule
+                    DisplayName = $DisplayName
                     RequirementRule = $RequirementRule
                     InstallCommandLine = $InstallCommandLine
                 }
@@ -74,6 +75,16 @@ InModuleScope VcRedist {
             Import-VcIntuneApplication -VcList $Item | Out-Null
             Should -Invoke New-IntuneWin32AppRequirementRuleFile -Times 0
             $script:ImportedArguments.AdditionalRequirementRule | Should -BeNullOrEmpty
+        }
+
+        It "Does not prefix the display name by default" {
+            Import-VcIntuneApplication -VcList $Item | Out-Null
+            $script:ImportedArguments.DisplayName | Should -Not -BeLike "Update for *"
+        }
+
+        It "Prefixes the display name when importing as an update" {
+            Import-VcIntuneApplication -VcList $Item -ImportAsUpdate | Out-Null
+            $script:ImportedArguments.DisplayName | Should -BeLike "Update for *"
         }
 
         It "Does not add a requirement when the switch is explicitly false" {
