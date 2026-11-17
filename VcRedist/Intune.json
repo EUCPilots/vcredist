@@ -9,7 +9,7 @@
     },
     "Information": {
         "DisplayName": "Microsoft Visual C++ Redistributable",
-        "Description": "Visual C++ Redistributable Packages install runtime components of Visual C++ Libraries.",
+        "Description": "Visual C++ Redistributable Packages install runtime components of the Microsoft Visual C++ Libraries.",
         "Publisher": "Microsoft",
         "InformationURL": "https://visualstudio.microsoft.com/vs/support/",
         "PrivacyURL": "https://go.microsoft.com/fwlink/?LinkId=521839",

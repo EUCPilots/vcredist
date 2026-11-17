@@ -108,6 +108,9 @@ function Import-VcIntuneApplication {
                     $DetectionRules = New-IntuneWin32AppDetectionRule -VcList $VcRedist -IntuneManifest $IntuneManifest -ErrorAction "Stop"
 
                     $DisplayName = "$($IntuneManifest.Information.Publisher) $($VcRedist.Name) $($VcRedist.Version) $($VcRedist.Architecture)"
+                    if ($ImportAsUpdate) {
+                        $DisplayName = "Update for $DisplayName"
+                    }
                     Write-Verbose -Message "Creating Win32 app for $DisplayName."
 
                     $Notes = [PSCustomObject] @{
@@ -119,7 +122,7 @@ function Import-VcIntuneApplication {
                     $Win32AppArgs = @{
                         "FilePath"                 = $Package.Path
                         "DisplayName"              = $DisplayName
-                        "Description"              = "$($IntuneManifest.Information.Description). $DisplayName"
+                        "Description"              = "$($IntuneManifest.Information.Description) $DisplayName"
                         "AppVersion"               = $VcRedist.Version
                         "Notes"                    = $Notes
                         "Publisher"                = $IntuneManifest.Information.Publisher

@@ -49,6 +49,14 @@ Describe -Name "function validation" {
             $test = @($describes.EndBlock.Statements | Where-Object { $_ -is [System.Management.Automation.Language.FunctionDefinitionAst] })
             $test[0].name | Should -BeExactly $file.BaseName
         }
+
+        It "<file> should not run statements while importing" -TestCases $FunctionCases {
+            param($file)
+            $contents = Get-Content -Path $file.FullName -Raw -ErrorAction "Stop"
+            $describes = [Management.Automation.Language.Parser]::ParseInput($contents, [ref]$null, [ref]$null)
+            $statements = @($describes.EndBlock.Statements | Where-Object { $_ -isnot [System.Management.Automation.Language.FunctionDefinitionAst] })
+            $statements | Should -BeNullOrEmpty
+        }
     }
 }
 
@@ -56,14 +64,40 @@ Describe -Name "function validation" {
 Describe -Name "Module Metadata validation" {
     Context "File info" {
         BeforeAll {
+            $ModulePath = Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath "VcRedist"
         }
 
         It "Script fileinfo should be OK" {
-            { Test-ModuleManifest -Path "$env:GITHUB_WORKSPACE\VcRedist\VcRedist.psd1" -ErrorAction "Stop" } | Should -Not -Throw
+            { Test-ModuleManifest -Path (Join-Path $ModulePath "VcRedist.psd1") -ErrorAction "Stop" } | Should -Not -Throw
         }
 
         It "Import module should be OK" {
-            { Import-Module "$env:GITHUB_WORKSPACE\VcRedist" -Force -ErrorAction "Stop" } | Should -Not -Throw
+            { Import-Module $ModulePath -Force -ErrorAction "Stop" } | Should -Not -Throw
+        }
+
+        It "Should have unique function file names across public and private directories" {
+            $FunctionFiles = @(
+                foreach ($Directory in @("Public", "Private")) {
+                    Get-ChildItem -LiteralPath (Join-Path $ModulePath $Directory) -Filter "*.ps1" -File
+                }
+            )
+            $Duplicates = @($FunctionFiles | Group-Object -Property "BaseName" | Where-Object { $_.Count -gt 1 })
+            $Duplicates | Should -BeNullOrEmpty
+        }
+
+        It "Should export only functions and aliases declared in the manifest" {
+            $Manifest = Test-ModuleManifest -Path (Join-Path $ModulePath "VcRedist.psd1") -ErrorAction "Stop"
+            $ImportedModule = Import-Module -Name (Join-Path $ModulePath "VcRedist.psm1") -Force -PassThru -ErrorAction "Stop"
+
+            $FunctionDifferences = Compare-Object `
+                -ReferenceObject @($Manifest.ExportedFunctions.Keys | Sort-Object) `
+                -DifferenceObject @($ImportedModule.ExportedFunctions.Keys | Sort-Object)
+            $AliasDifferences = Compare-Object `
+                -ReferenceObject @($Manifest.ExportedAliases.Keys | Sort-Object) `
+                -DifferenceObject @($ImportedModule.ExportedAliases.Keys | Sort-Object)
+
+            $FunctionDifferences | Should -BeNullOrEmpty
+            $AliasDifferences | Should -BeNullOrEmpty
         }
     }
 }

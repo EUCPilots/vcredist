@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.0.4-beta5
+## VERSION
 
 * Adds manifest-defined install ordering, validates manifest release coverage, and preserves install order when exporting
 * Installs redistributables in the declared order, validates releases before starting installers, and supports forcing x64 installation on ARM64
@@ -34,7 +34,7 @@
 * `Install-VcRedist` and `Uninstall-VcRedist` check installer exit codes; `Uninstall-VcRedist` expands environment variables in uninstall commands
 * `Invoke-Process` fails on unexpected exit codes
 * `Import-VcIntuneApplication` and `Export-VcManifest` support `-WhatIf`
-* `Import-VcIntuneApplication -ImportAsUpdate` adds an older-runtime file-version requirement based on each package's detection file (#204)
+* `Import-VcIntuneApplication -ImportAsUpdate` imports a dedicated update package for each VcRedist with an "Update for" prefix in the display name and adds an older-runtime file-version requirement based on each package's detection file (#204)
 * Corrects the bundled detection file names for the 2012 and 2013 redistributables
 * `Save-VcRedist` creates the `-Path` folder if it does not exist and fails before downloading if it cannot (#219)
 * Web requests use a `VcRedist/<version> (...)` user agent instead of the Chrome browser user agent
