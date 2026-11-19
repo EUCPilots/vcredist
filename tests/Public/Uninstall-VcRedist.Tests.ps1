@@ -47,11 +47,25 @@ Describe -Name "AMD64 specific tests" -Skip:$SkipAmd {
 
         Context "Uninstall VcRedist <Release>" {
             It "Uninstalls the VcRedist <Release> x64" {
-                { Uninstall-VcRedist -Release $Release -Architecture "x64" -Confirm:$false } | Should -Not -Throw
+                $Results = @(Uninstall-VcRedist -Release $Release -Architecture "x64" -Confirm:$false)
+
+                $Results | Should -Not -BeNullOrEmpty
+                $Results | ForEach-Object {
+                    $_.Release | Should -Be $Release
+                    $_.Architecture | Should -Be "x64"
+                    $_.State | Should -Be "Uninstalled"
+                }
             }
 
             It "Uninstalls the VcRedist <Release> x86" {
-                { Uninstall-VcRedist -Release $Release -Architecture "x86" -Confirm:$false } | Should -Not -Throw
+                $Results = @(Uninstall-VcRedist -Release $Release -Architecture "x86" -Confirm:$false)
+
+                $Results | Should -Not -BeNullOrEmpty
+                $Results | ForEach-Object {
+                    $_.Release | Should -Be $Release
+                    $_.Architecture | Should -Be "x86"
+                    $_.State | Should -Be "Uninstalled"
+                }
             }
         }
     }
@@ -80,11 +94,25 @@ Describe -Name "ARM64 specific tests" -Skip:$SkipArm {
 
         Context "Uninstall VcRedist <Release>" {
             It "Uninstalls the VcRedist <Release> x86" {
-                { Uninstall-VcRedist -Release $Release -Architecture "x86" -Confirm:$false } | Should -Not -Throw
+                $Results = @(Uninstall-VcRedist -Release $Release -Architecture "x86" -Confirm:$false)
+
+                $Results | Should -Not -BeNullOrEmpty
+                $Results | ForEach-Object {
+                    $_.Release | Should -Be $Release
+                    $_.Architecture | Should -Be "x86"
+                    $_.State | Should -Be "Uninstalled"
+                }
             }
 
             It "Uninstalls the VcRedist <Release> arm64" {
-                { Uninstall-VcRedist -Release $Release -Architecture "arm64" -Confirm:$false } | Should -Not -Throw
+                $Results = @(Uninstall-VcRedist -Release $Release -Architecture "arm64" -Confirm:$false)
+
+                $Results | Should -Not -BeNullOrEmpty
+                $Results | ForEach-Object {
+                    $_.Release | Should -Be $Release
+                    $_.Architecture | Should -Be "arm64"
+                    $_.State | Should -Be "Uninstalled"
+                }
             }
         }
     }
@@ -93,7 +121,10 @@ Describe -Name "ARM64 specific tests" -Skip:$SkipArm {
 Describe -Name "Uninstall VcRedist via the pipeline" {
     Context "Test uninstall via the pipeline" {
         It "Uninstalls the 14 Redistributables via the pipeline" {
-            { Get-VcList -Release "14" | Uninstall-VcRedist -Confirm:$false } | Should -Not -Throw
+            $Results = @(Get-VcList -Release "14" | Uninstall-VcRedist -Confirm:$false)
+
+            $Results | Should -Not -BeNullOrEmpty
+            $Results | ForEach-Object { $_.State | Should -Be "Uninstalled" }
         }
     }
 }

@@ -9,32 +9,42 @@ param ()
 Describe -Name "Get-VcList" {
     Context "Bundled manifest" {
         It "Returns supported entries by default" {
-            $List = Get-VcList -Source "Bundled"
+            $List = @(Get-VcList -Source "Bundled")
             $List | Should -Not -BeNullOrEmpty
             $List.Count | Should -BeGreaterThan 0
+            $List | ForEach-Object { $_.Supported | Should -BeTrue }
         }
 
         It "Returns more entries for All than for Supported or Unsupported" {
-            $All = @(Get-VcList -Export "All" -Source "Bundled")
+            $All = @(Get-VcList -Export "All" -Source "Bundled" -WarningAction "SilentlyContinue")
             $Supported = @(Get-VcList -Export "Supported" -Source "Bundled")
-            $Unsupported = @(Get-VcList -Export "Unsupported" -Source "Bundled")
+            $Unsupported = @(Get-VcList -Export "Unsupported" -Source "Bundled" -WarningAction "SilentlyContinue")
             $All.Count | Should -Be ($Supported.Count + $Unsupported.Count)
+            $Supported | ForEach-Object { $_.Supported | Should -BeTrue }
+            $Unsupported | ForEach-Object { $_.Supported | Should -BeFalse }
         }
 
         It "Filters by release and architecture" {
-            $List = @(Get-VcList -Release "2022" -Architecture "x64" -Source "Bundled")
-            $List | ForEach-Object { $_.Architecture | Should -Be "x64" }
+            $List = @(Get-VcList -Release "2019" -Architecture "x64" -Source "Bundled")
+            $List | Should -Not -BeNullOrEmpty
+            $List | ForEach-Object {
+                $_.Release | Should -Be "2019"
+                $_.Architecture | Should -Be "x64"
+                $_.Supported | Should -BeTrue
+            }
         }
 
         It "Returns objects with the required properties" {
-            $Item = Get-VcList -Export "All" -Source "Bundled" | Select-Object -First 1
-            foreach ($Property in "Name", "Version", "URI", "Release", "Architecture", "SilentInstall") {
+            $Item = Get-VcList -Export "All" -Source "Bundled" -WarningAction "SilentlyContinue" | Select-Object -First 1
+            foreach ($Property in "Name", "ProductCode", "Version", "URI", "Release", "Architecture",
+                "Install", "SilentInstall", "SilentUninstall", "SupportedArchitecture", "UninstallKey",
+                "PackageId", "DetectionFile", "Supported") {
                 $Item.PSObject.Properties.Name | Should -Contain $Property
             }
         }
 
         It "Replaces the placeholder tokens" {
-            Get-VcList -Export "All" -Source "Bundled" | ForEach-Object {
+            Get-VcList -Export "All" -Source "Bundled" -WarningAction "SilentlyContinue" | ForEach-Object {
                 $_.SilentUninstall | Should -Not -Match "#ProductCode|#Installer"
             }
         }
@@ -69,6 +79,72 @@ Describe -Name "Get-VcList" {
         It "Rejects empty release and architecture filters" {
             { Get-VcList -Release @() -Source "Bundled" } | Should -Throw
             { Get-VcList -Architecture @() -Source "Bundled" } | Should -Throw
+        }
+
+        It "Rejects an invalid architecture" {
+            { Get-VcList -Architecture "invalid" -Source "Bundled" } | Should -Throw
+        }
+    }
+
+    Context "Remote manifest" {
+        It "Returns entries from the selected remote manifest" {
+            InModuleScope VcRedist {
+                Mock Invoke-VcWebRequest {
+                    $Content = [ordered]@{
+                        SchemaVersion = "1.0"
+                        Updated       = "2099-01-01T00:00:00Z"
+                        Entries       = @(
+                            [ordered]@{
+                                Name                  = "Remote test"
+                                ProductCode           = "{00000000-0000-0000-0000-000000000001}"
+                                Version               = "14.0.1.0"
+                                URI                   = "https://download.microsoft.com/vc_redist.x64.exe"
+                                Release               = "2022"
+                                Architecture          = "x64"
+                                Install               = "/install"
+                                SilentInstall         = "/install /quiet"
+                                SilentUninstall       = "uninstall"
+                                SupportedArchitecture = @("AMD64")
+                                UninstallKey          = "64"
+                                PackageId             = "remote-test"
+                                DetectionFile         = "vc_redist.x64.exe"
+                                Supported             = $true
+                            }
+                        )
+                    } | ConvertTo-Json -Depth 5
+                    [PSCustomObject]@{ Content = $Content }
+                }
+
+                $List = @(Get-VcList -Release "2022" -Architecture "x64" -Source "Remote")
+                $List.Count | Should -Be 1
+                $List[0].Name | Should -Be "Remote test"
+                Should -Invoke Invoke-VcWebRequest -Times 1 -Exactly
+            }
+        }
+
+        It "Falls back to the bundled manifest when Auto cannot retrieve the remote manifest" {
+            InModuleScope VcRedist {
+                Mock Invoke-VcWebRequest { throw "network down" }
+
+                $Expected = @(Get-VcList -Source "Bundled")
+                $Actual = @(Get-VcList -WarningAction "SilentlyContinue")
+
+                $Actual.Count | Should -Be $Expected.Count
+                (Compare-Object -ReferenceObject $Expected.Name -DifferenceObject $Actual.Name) |
+                    Should -BeNullOrEmpty
+                Should -Invoke Invoke-VcWebRequest -Times 1 -Exactly
+            }
+        }
+
+        It "Throws when the explicitly selected remote manifest is invalid" {
+            InModuleScope VcRedist {
+                Mock Invoke-VcWebRequest {
+                    [PSCustomObject]@{ Content = "not json" }
+                }
+
+                { Get-VcList -Source "Remote" } | Should -Throw
+                Should -Invoke Invoke-VcWebRequest -Times 1 -Exactly
+            }
         }
     }
 }

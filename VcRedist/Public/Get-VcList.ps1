@@ -40,14 +40,15 @@ function Get-VcList {
         $Entries = @($Manifest.Entries)
 
         if ($PSCmdlet.ParameterSetName -eq "Export") {
+            $WarningMessage = "This list includes unsupported Visual C++ Redistributables."
             switch ($Export) {
                 "All" {
-                    Write-Warning -Message "This list includes unsupported Visual C++ Redistributables."
+                    Write-Warning -Message $WarningMessage
                     $Output = $Entries
                 }
                 "Supported" { $Output = $Entries | Where-Object { $_.Supported -eq $true } }
                 "Unsupported" {
-                    Write-Warning -Message "This list includes unsupported Visual C++ Redistributables."
+                    Write-Warning -Message $WarningMessage
                     $Output = $Entries | Where-Object { $_.Supported -eq $false }
                 }
             }
