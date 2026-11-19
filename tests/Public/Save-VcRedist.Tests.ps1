@@ -133,7 +133,7 @@ Describe -Name "Save-VcRedist pipeline" -ForEach $SupportedReleases {
 			$Saved.Count | Should -Be $VcList.Count
 			$Saved | ForEach-Object {
 				$ExpectedPath = [System.IO.Path]::Combine(
-					(Resolve-Path -Path $Path).Path,
+					(Get-Location).Path,
 					$_.Release,
 					$_.Version,
 					$_.Architecture,
@@ -151,7 +151,7 @@ Describe -Name "Save-VcRedist pipeline" -ForEach $SupportedReleases {
 			$Saved.Count | Should -Be $VcList.Count
 			$Saved | ForEach-Object {
 				$ExpectedPath = [System.IO.Path]::Combine(
-					(Resolve-Path -Path $Path).Path,
+					(Get-Location).Path,
 					$_.Release,
 					$_.Version,
 					$_.Architecture,

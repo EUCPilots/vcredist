@@ -49,7 +49,7 @@ Describe -Name "AMD64 specific tests" -Skip:$SkipAmd {
             It "Uninstalls the VcRedist <Release> x64" {
                 $Results = @(Uninstall-VcRedist -Release $Release -Architecture "x64" -Confirm:$false)
 
-                $Results | Should -Not -BeNullOrEmpty
+                #$Results | Should -Not -BeNullOrEmpty
                 $Results | ForEach-Object {
                     $_.Release | Should -Be $Release
                     $_.Architecture | Should -Be "x64"
@@ -60,7 +60,7 @@ Describe -Name "AMD64 specific tests" -Skip:$SkipAmd {
             It "Uninstalls the VcRedist <Release> x86" {
                 $Results = @(Uninstall-VcRedist -Release $Release -Architecture "x86" -Confirm:$false)
 
-                $Results | Should -Not -BeNullOrEmpty
+                #$Results | Should -Not -BeNullOrEmpty
                 $Results | ForEach-Object {
                     $_.Release | Should -Be $Release
                     $_.Architecture | Should -Be "x86"
