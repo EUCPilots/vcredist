@@ -74,18 +74,18 @@ Describe -Name "AMD64 specific tests" -Skip:$SkipAmd {
 			}
 		}
 
-		# Context "Install <Release> x86 Redistributable" {
-		# 	BeforeAll {
-		# 		$VcRedist = Get-VcList -Export Unsupported -Source "Bundled" -WarningAction "SilentlyContinue" | `
-		# 			Where-Object { $_.Release -eq $Release -and $_.Architecture -eq "x86" } | `
-		# 			Save-VcRedist -Path $Path
-		# 	}
+		Context "Install <Release> x86 Redistributable" {
+			BeforeAll {
+				$VcRedist = Get-VcList -Export Unsupported -Source "Bundled" -WarningAction "SilentlyContinue" | `
+					Where-Object { $_.Release -eq $Release -and $_.Architecture -eq "x86" } | `
+					Save-VcRedist -Path $Path
+			}
 
-		# 	It "Installs OK via parameters" {
-		# 		$Installed = @(Install-VcRedist -VcList $VcRedist -Silent -Force -ErrorAction "Stop")
-		# 		$Installed | Where-Object { $_.ProductCode -eq $VcRedist.ProductCode } | Should -Not -BeNullOrEmpty
-		# 	}
-		# }
+			It "Installs OK via parameters" {
+				$Installed = @(Install-VcRedist -VcList $VcRedist -Silent -Force -ErrorAction "Stop")
+				$Installed | Where-Object { $_.ProductCode -eq $VcRedist.ProductCode } | Should -Not -BeNullOrEmpty
+			}
+		}
 	}
 
 	Describe -Name "Install-VcRedist with supported Redistributables" -ForEach $SupportedReleasesAmd64 {
@@ -114,17 +114,17 @@ Describe -Name "AMD64 specific tests" -Skip:$SkipAmd {
 				{ Install-VcRedist -VcList $VcRedist -Silent -Force -ErrorAction "Stop" | Out-Null } | Should -Not -Throw
 			}
 
-			# It "Returns the list of installed VcRedists after install" {
-			# 	$Installed = @(Install-VcRedist -VcList $VcRedist -Silent -ErrorAction "Stop")
-			# 	$Installed | Where-Object { $_.ProductCode -eq $VcRedist.ProductCode } | Should -Not -BeNullOrEmpty
-			# }
+			It "Returns the list of installed VcRedists after install" {
+				$Installed = @(Install-VcRedist -VcList $VcRedist -Silent -ErrorAction "Stop")
+				$Installed | Where-Object { $_.ProductCode -eq $VcRedist.ProductCode } | Should -Not -BeNullOrEmpty
+			}
 
-			# It "Installs the VcRedist: <VcRedist.Name> <VcRedist.Architecture> via the pipeline" {
-			# 	$Installed = @(Get-VcList -Release $Release -Architecture "x64" -Source "Bundled" | `
-			# 			Save-VcRedist -Path $Path | `
-			# 			Install-VcRedist -Silent -ErrorAction "Stop")
-			# 	$Installed | Where-Object { $_.ProductCode -eq $VcRedist.ProductCode } | Should -Not -BeNullOrEmpty
-			# }
+			It "Installs the VcRedist: <VcRedist.Name> <VcRedist.Architecture> via the pipeline" {
+				$Installed = @(Get-VcList -Release $Release -Architecture "x64" -Source "Bundled" | `
+						Save-VcRedist -Path $Path | `
+						Install-VcRedist -Silent -ErrorAction "Stop")
+				$Installed | Where-Object { $_.ProductCode -eq $VcRedist.ProductCode } | Should -Not -BeNullOrEmpty
+			}
 		}
 
 		Context "Install <Release> x86 Redistributable" {
@@ -136,17 +136,17 @@ Describe -Name "AMD64 specific tests" -Skip:$SkipAmd {
 				{ Install-VcRedist -VcList $VcRedist -Silent -Force -ErrorAction "Stop" | Out-Null } | Should -Not -Throw
 			}
 
-			# It "Returns the list of installed VcRedists after install" {
-			# 	$Installed = @(Install-VcRedist -VcList $VcRedist -Silent -ErrorAction "Stop")
-			# 	$Installed | Where-Object { $_.ProductCode -eq $VcRedist.ProductCode } | Should -Not -BeNullOrEmpty
-			# }
+			It "Returns the list of installed VcRedists after install" {
+				$Installed = @(Install-VcRedist -VcList $VcRedist -Silent -ErrorAction "Stop")
+				$Installed | Where-Object { $_.ProductCode -eq $VcRedist.ProductCode } | Should -Not -BeNullOrEmpty
+			}
 
-			# It "Installs the VcRedist: <VcRedist.Name> <VcRedist.Architecture> via the pipeline" {
-			# 	$Installed = @(Get-VcList -Release $Release -Architecture "x86" -Source "Bundled" | `
-			# 			Save-VcRedist -Path $Path | `
-			# 			Install-VcRedist -Silent -ErrorAction "Stop")
-			# 	$Installed | Where-Object { $_.ProductCode -eq $VcRedist.ProductCode } | Should -Not -BeNullOrEmpty
-			# }
+			It "Installs the VcRedist: <VcRedist.Name> <VcRedist.Architecture> via the pipeline" {
+				$Installed = @(Get-VcList -Release $Release -Architecture "x86" -Source "Bundled" | `
+						Save-VcRedist -Path $Path | `
+						Install-VcRedist -Silent -ErrorAction "Stop")
+				$Installed | Where-Object { $_.ProductCode -eq $VcRedist.ProductCode } | Should -Not -BeNullOrEmpty
+			}
 		}
 	}
 }
