@@ -6,8 +6,8 @@ function Uninstall-VcRedist {
     [OutputType([System.Management.Automation.PSObject])]
     param (
         [Parameter(Mandatory = $false, Position = 0, ParameterSetName = "Manual")]
-        [ValidateSet("2005", "2008", "2010", "2012", "2013", "2015", "2017", "2019", "14")]
-        [System.String[]] $Release = @("2005", "2008", "2010", "2012", "2013", "2015", "2017", "2019", "14"),
+        [ValidateSet("2005", "2008", "2010", "2012", "2013", "2015", "2017", "2019", "2022", "14")]
+        [System.String[]] $Release = @("2005", "2008", "2010", "2012", "2013", "2015", "2017", "2019", "2022", "14"),
 
         [Parameter(Mandatory = $false, Position = 1, ParameterSetName = "Manual")]
         [ValidateSet("x86", "x64", "ARM64")]

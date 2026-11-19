@@ -1136,7 +1136,6 @@ Import-VcConfigMgrApplication -VcList $VcList -CMPath "\\server\share\VcRedist" 
       </command:syntaxItem>
     </command:syntax>
     <command:parameters>
-      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
       <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
         <maml:name>VcList</maml:name>
         <maml:description>
@@ -2839,8 +2838,10 @@ Test-VcRedistUri -VcList $VcList</dev:code>
       </maml:description>
     </command:details>
     <maml:description>
-      <maml:para>Uninstall the specified Release and/or Architecture of the installed Visual C++ Redistributables on the local system. All or specific Visual C++ Redistributables can be uninstalled.</maml:para>
-      <maml:para>When both Release and Architecture are specified, each selected combination that is not installed returns a result with State Not installed and empty Name, Version, and ExitCode fields. For a pipeline entry with a missing uninstaller, the same state is returned if its product code is not installed; a missing uninstaller for an installed product is reported as Failed. MSI exit code 1605 is also reported as Not installed.</maml:para>
+      <maml:para>Uninstall the specified Release and/or Architecture of the installed Visual C++ Redistributables on the local system. The command requires an elevated PowerShell session. Without parameters, it selects the default releases for x86 and x64. Use Release and Architecture to filter installed entries, or pass objects from Get-InstalledVcRedist or Get-VcList through the pipeline.</maml:para>
+      <maml:para>When both Release and Architecture are explicitly specified, each selected combination with no installed match returns a result with State Not installed and null Name, Version, and ExitCode properties. If either parameter is omitted, no such results are generated for missing combinations.</maml:para>
+      <maml:para>For pipeline input with a missing executable uninstaller, the command checks the product code against installed entries. An absent product is reported as Not installed; a missing uninstaller for an installed product, or an input without a product code, is reported as Failed with a warning. Exit code 1605 is also reported as Not installed.</maml:para>
+      <maml:para>The command supports WhatIf and Confirm. Checks performed before an uninstall is attempted can still produce Not installed or Failed results with WhatIf.</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
@@ -2848,19 +2849,19 @@ Test-VcRedistUri -VcList $VcList</dev:code>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
           <maml:name>Release</maml:name>
           <maml:description>
-            <maml:para>Specifies the release of the redistributables to uninstall.</maml:para>
+            <maml:para>Specifies the releases of the Redistributables to uninstall. Accepted values are 2005, 2008, 2010, 2012, 2013, 2015, 2017, 2019, 2022, and 14. Release 14 identifies the unified 2015-2022+ runtime.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
           <dev:type>
             <maml:name>String[]</maml:name>
             <maml:uri />
           </dev:type>
-          <dev:defaultValue>@("2005", "2008", "2010", "2012", "2013", "2015", "2017", "2019")</dev:defaultValue>
+          <dev:defaultValue>@("2005", "2008", "2010", "2012", "2013", "2015", "2017", "2019", "2022", "14")</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
           <maml:name>Architecture</maml:name>
           <maml:description>
-            <maml:para>Specifies the processor architecture to of the redistributables to uninstall. Can be x86 or x64.</maml:para>
+            <maml:para>Specifies the processor architectures of the Redistributables to uninstall: x86, x64, or ARM64. ARM64 must be specified explicitly.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
           <dev:type>
@@ -2909,7 +2910,7 @@ Test-VcRedistUri -VcList $VcList</dev:code>
         <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
           <maml:name>VcList</maml:name>
           <maml:description>
-            <maml:para>Specifies the array that lists the Visual C++ Redistributables to download.</maml:para>
+            <maml:para>Specifies Redistributable objects from Get-InstalledVcRedist or Get-VcList to uninstall. Accepts objects through the pipeline.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
           <dev:type>
@@ -2958,19 +2959,19 @@ Test-VcRedistUri -VcList $VcList</dev:code>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
         <maml:name>Release</maml:name>
         <maml:description>
-          <maml:para>Specifies the release of the redistributables to uninstall.</maml:para>
+          <maml:para>Specifies the releases of the Redistributables to uninstall. Accepted values are 2005, 2008, 2010, 2012, 2013, 2015, 2017, 2019, 2022, and 14. Release 14 identifies the unified 2015-2022+ runtime.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
           <maml:name>String[]</maml:name>
           <maml:uri />
         </dev:type>
-        <dev:defaultValue>@("2005", "2008", "2010", "2012", "2013", "2015", "2017", "2019")</dev:defaultValue>
+        <dev:defaultValue>@("2005", "2008", "2010", "2012", "2013", "2015", "2017", "2019", "2022", "14")</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
         <maml:name>Architecture</maml:name>
         <maml:description>
-          <maml:para>Specifies the processor architecture to of the redistributables to uninstall. Can be x86 or x64.</maml:para>
+          <maml:para>Specifies the processor architectures of the Redistributables to uninstall: x86, x64, or ARM64. ARM64 must be specified explicitly.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
@@ -2982,7 +2983,7 @@ Test-VcRedistUri -VcList $VcList</dev:code>
       <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
         <maml:name>VcList</maml:name>
         <maml:description>
-          <maml:para>Specifies the array that lists the Visual C++ Redistributables to download.</maml:para>
+          <maml:para>Specifies Redistributable objects from Get-InstalledVcRedist or Get-VcList to uninstall. Accepts objects through the pipeline.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
         <dev:type>
@@ -3035,7 +3036,7 @@ Test-VcRedistUri -VcList $VcList</dev:code>
           <maml:name>System.Management.Automation.PSObject</maml:name>
         </dev:type>
         <maml:description>
-          <maml:para></maml:para>
+          <maml:para>Results contain Name, Version, Release, Architecture, State, and ExitCode properties. State is Uninstalled for exit codes 0, 1641, or 3010; Not installed for exit code 1605 or the missing selections described above; and Failed for a missing uninstaller or an unsuccessful process. ExitCode is null when no process was run. Exit code 1641 indicates a restart was initiated, and 3010 indicates a restart is required.</maml:para>
         </maml:description>
       </command:returnValue>
     </command:returnValues>
@@ -3049,28 +3050,35 @@ Test-VcRedistUri -VcList $VcList</dev:code>
         <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
         <dev:code>Uninstall-VcRedist -Confirm:$True</dev:code>
         <dev:remarks>
-          <maml:para>Description: Uninstalls all installed x64, x86 2005-2019 Visual C++ Redistributables.</maml:para>
+          <maml:para>Description: Prompts before uninstalling installed x86 and x64 Redistributables matching the default releases.</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
         <dev:code>Uninstall-VcRedist -Release 2008, 2010 -Confirm:$True</dev:code>
         <dev:remarks>
-          <maml:para>Description: Uninstalls all installed x64, x86 2008 and 2010 Visual C++ Redistributables.</maml:para>
+          <maml:para>Description: Uninstalls all installed x64 and x86 2008 and 2010 Visual C++ Redistributables.</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 3 --------------------------</maml:title>
-        <dev:code>Uninstall-VcRedist -Release 2008, 2010 -Confirm:$True</dev:code>
+        <dev:code>Uninstall-VcRedist -Release 14 -Architecture x64 -Confirm:$false</dev:code>
         <dev:remarks>
-          <maml:para>Description: Uninstalls all installed x64, x86 2008 and 2010 Visual C++ Redistributables.</maml:para>
+          <maml:para>Description: Uninstalls installed release 14 x64 Redistributables without prompting, or returns Not installed if none match.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 4 --------------------------</maml:title>
+        <dev:code>Get-InstalledVcRedist | Uninstall-VcRedist -WhatIf</dev:code>
+        <dev:remarks>
+          <maml:para>Description: Previews uninstalling Redistributables returned by Get-InstalledVcRedist.</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version:</maml:linkText>
-        <maml:uri>https://vcredist.com/install-vcredist/</maml:uri>
+        <maml:uri>https://vcredist.com/uninstall-vcredist/</maml:uri>
       </maml:navigationLink>
       <maml:navigationLink>
         <maml:linkText>Uninstall the Redistributables:</maml:linkText>
