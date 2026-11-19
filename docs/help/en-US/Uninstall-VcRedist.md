@@ -28,6 +28,10 @@ Uninstall-VcRedist [-VcList] <PSObject> [-ProgressAction <ActionPreference>] [-W
 Uninstall the specified Release and/or Architecture of the installed Visual C++ Redistributables on the local system.
 All or specific Visual C++ Redistributables can be uninstalled.
 
+When both Release and Architecture are specified, each selected combination that is not installed returns a result with State `Not installed` and empty Name, Version, and ExitCode fields.
+For a pipeline entry with a missing uninstaller, the same state is returned if its product code is not installed; a missing uninstaller for an installed product is reported as `Failed`.
+MSI exit code 1605 is also reported as `Not installed`.
+
 ## EXAMPLES
 
 ### EXAMPLE 1
