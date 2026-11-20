@@ -117,7 +117,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: Auto
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -144,7 +144,7 @@ Accept wildcard characters: False
 
 ## OUTPUTS
 
-### System.String
+### System.IO.FileSystemInfo
 ## NOTES
 Author: Aaron Parker
 

@@ -13,7 +13,7 @@ Instala los Redistribuibles de Visual C++ en el sistema local.
 ## SYNTAX
 
 ```
-Install-VcRedist [-VcList] <PSObject> [-Path <String>] [-Silent] [-Force] [-ProgressAction <ActionPreference>]
+Install-VcRedist [-VcList] <PSObject> [-Silent] [-Force] [-ProgressAction <ActionPreference>]
  [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
@@ -21,31 +21,35 @@ Install-VcRedist [-VcList] <PSObject> [-Path <String>] [-Silent] [-Force] [-Prog
 Instala los Redistribuibles de Microsoft Visual C++ de una lista creada por Get-VcList y descargada localmente en una estructura de carpetas con Save-VcRedist.
 Admite la instalación pasiva y silenciosa de los redistribuibles.
 Resulta útil para implementaciones de Windows, incluida la creación de imágenes maestras con HashiCorp Packer, en las que los redistribuibles se pueden descargar e instalar en tiempo de ejecución.
-Los instaladores cuya lista SupportedArchitecture del manifiesto no incluya la arquitectura nativa de Windows se omiten con una advertencia, incluso al usar -Force.
+Los instaladores cuya lista SupportedArchitecture no incluya la arquitectura nativa de Windows se omiten con una advertencia. En Windows ARM64, -Force también permite instalar paquetes x64.
 Cada objeto de entrada debe incluir una lista SupportedArchitecture no vacía.
+La instalación requiere una sesión de PowerShell con privilegios elevados.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 ```
-$VcRedists = Get-VcList -Release 2013, 2019 -Architecture x64
-Install-VcRedist -VcList $VcRedists -Path C:\Temp\VcRedists
+Get-VcList -Release 2013, 2019 -Architecture x64 |
+    Save-VcRedist -Path C:\Temp\VcRedists |
+    Install-VcRedist
 ```
 
 Descripción: Instala los Redistribuibles de Visual C++ de 64 bits de 2013 y 2019 indicados en $VcRedists y descargados en C:\Temp\VcRedists.
 
 ### EXAMPLE 2
 ```
-$VcRedists = Get-VcList -Release "2012","2013","2017" -Architecture x64
-Install-VcRedist -VcList $VcRedists -Path C:\Temp\VcRedists
+Get-VcList -Release "2012","2013","2017" -Architecture x64 |
+    Save-VcRedist -Path C:\Temp\VcRedists |
+    Install-VcRedist
 ```
 
 Descripción: Instala únicamente los Redistribuibles de Visual C++ de 64 bits de 2012, 2013 y 2017 indicados en $VcRedists y descargados en C:\Temp\VcRedists.
 
 ### EXAMPLE 3
 ```
-$VcRedists = Get-VcList -Release "2012","2013","2017" -Architecture x64 | Save-VcRedist -Path C:\Temp\VcRedists
-Install-VcRedist -VcList $VcRedists -Silent
+Get-VcList -Release "2012","2013","2017" -Architecture x64 |
+    Save-VcRedist -Path C:\Temp\VcRedists |
+    Install-VcRedist -Silent
 ```
 
 Descripción: Instala todos los Redistribuibles de Visual C++ compatibles de forma completamente silenciosa.
@@ -126,21 +130,6 @@ Aliases: cf
 Required: False
 Position: Named
 Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Path
-Este parámetro está obsoleto y se ignora. El objeto pasado a -VcList debe tener la propiedad Path.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

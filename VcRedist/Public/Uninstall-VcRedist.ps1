@@ -4,11 +4,10 @@ function Uninstall-VcRedist {
     #>
     [CmdletBinding(DefaultParameterSetName = "Manual", SupportsShouldProcess = $true, ConfirmImpact = "High", HelpURI = "https://vcredist.com/uninstall-vcredist/")]
     [OutputType([System.Management.Automation.PSObject])]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "")]
     param (
         [Parameter(Mandatory = $false, Position = 0, ParameterSetName = "Manual")]
-        [ValidateSet("2005", "2008", "2010", "2012", "2013", "2015", "2017", "2019", "14")]
-        [System.String[]] $Release = @("2005", "2008", "2010", "2012", "2013", "2015", "2017", "2019", "14"),
+        [ValidateSet("2005", "2008", "2010", "2012", "2013", "2015", "2017", "2019", "2022", "14")]
+        [System.String[]] $Release = @("2005", "2008", "2010", "2012", "2013", "2015", "2017", "2019", "2022", "14"),
 
         [Parameter(Mandatory = $false, Position = 1, ParameterSetName = "Manual")]
         [ValidateSet("x86", "x64", "ARM64")]
@@ -19,7 +18,7 @@ function Uninstall-VcRedist {
             Position = 0,
             ValueFromPipeline,
             ParameterSetName = "Pipeline",
-            HelpMessage = "Pass a VcList object from Get-VcList.")]
+            HelpMessage = "Pass a VcList object from Get-VcList or Get-InstalledVcRedist.")]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSObject] $VcList
     )
@@ -38,7 +37,23 @@ function Uninstall-VcRedist {
             "Manual" {
                 # Get the installed VcRedists and filter
                 Write-Verbose -Message "Getting locally installed Visual C++ Redistributables"
-                $VcRedistsToRemove = Get-InstalledVcRedist | Where-Object { $Release -contains $_.Release } | Where-Object { $Architecture -contains $_.Architecture }
+                $VcRedistsToRemove = @(Get-InstalledVcRedist -ErrorAction "Stop" | Where-Object { $Release -contains $_.Release } | Where-Object { $Architecture -contains $_.Architecture })
+                if ($PSBoundParameters.ContainsKey("Release") -and $PSBoundParameters.ContainsKey("Architecture")) {
+                    foreach ($SelectedRelease in ($Release | Select-Object -Unique)) {
+                        foreach ($SelectedArchitecture in ($Architecture | Select-Object -Unique)) {
+                            if (-not ($VcRedistsToRemove | Where-Object { $_.Release -eq $SelectedRelease -and $_.Architecture -eq $SelectedArchitecture })) {
+                                [PSCustomObject] @{
+                                    Name         = $null
+                                    Version      = $null
+                                    Release      = $SelectedRelease
+                                    Architecture = $SelectedArchitecture
+                                    State        = "Not installed"
+                                    ExitCode     = $null
+                                }
+                            }
+                        }
+                    }
+                }
             }
             "Pipeline" {
                 Write-Verbose -Message "Removing installed Visual C++ Redistributables passed via the pipeline"
@@ -86,8 +101,17 @@ function Uninstall-VcRedist {
                 $FilePath = [System.Environment]::ExpandEnvironmentVariables([System.String]$FilePath)
 
                 if (-not (Test-Path -LiteralPath $FilePath -PathType "Leaf")) {
-                    Write-Warning -Message "Cannot find uninstaller '$FilePath' for $($VcRedist.Name) $($VcRedist.Version) $($VcRedist.Architecture)."
-                    $State = "Failed"
+                    $Installed = $true
+                    if ($PSCmdlet.ParameterSetName -eq "Pipeline" -and -not [System.String]::IsNullOrWhiteSpace($VcRedist.ProductCode)) {
+                        $Installed = @(Get-InstalledVcRedist -ErrorAction "Stop" | Where-Object { $_.ProductCode -eq $VcRedist.ProductCode }).Count -gt 0
+                    }
+                    if ($Installed) {
+                        Write-Warning -Message "Cannot find uninstaller '$FilePath' for $($VcRedist.Name) $($VcRedist.Version) $($VcRedist.Architecture)."
+                        $State = "Failed"
+                    }
+                    else {
+                        $State = "Not installed"
+                    }
                 }
                 else {
                     Write-Verbose -Message "VcRedist uninstall uses '$FilePath'."
@@ -107,7 +131,10 @@ function Uninstall-VcRedist {
                     $Result = Start-Process @params
 
                     # 3010: reboot required; 1641: reboot initiated; 1605: product not installed
-                    if (@(0, 1605, 1641, 3010) -contains $Result.ExitCode) {
+                    if ($Result.ExitCode -eq 1605) {
+                        $State = "Not installed"
+                    }
+                    elseif (@(0, 1641, 3010) -contains $Result.ExitCode) {
                         $State = "Uninstalled"
                     }
                     else {

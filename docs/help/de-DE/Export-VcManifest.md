@@ -117,7 +117,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: Auto
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -144,7 +144,7 @@ Dieses Cmdlet unterstützt die allgemeinen Parameter -Debug, -ErrorAction, -Erro
 
 ## OUTPUTS
 
-### System.String
+### System.IO.FileSystemInfo
 ## NOTES
 Autor: Aaron Parker
 

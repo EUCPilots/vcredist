@@ -1,15 +1,14 @@
 ---
 external help file: VcRedist-help.xml
 Module Name: VcRedist
-online version: https://vcredist.com/test-vcredisturi/
+online version: https://stealthpuppy.com/vcredist/test/
 schema: 2.0.0
 ---
 
 # Test-VcRedistUri
 
 ## SYNOPSIS
-Prüft, ob die im von Get-VcList zurückgegebenen Manifest aufgeführten Downloads der Visual C++ Redistributables verfügbar sind (d. h.
-eine HTTP-200-Antwort zurückgeben).
+Prüft, ob die Download-URI für jedes Visual C++ Redistributable erreichbar ist.
 
 ## SYNTAX
 
@@ -19,10 +18,9 @@ Test-VcRedistUri [-VcList] <PSObject> [[-Proxy] <String>] [[-ProxyCredential] <P
 ```
 
 ## DESCRIPTION
-Prüft, ob die im von Get-VcList zurückgegebenen Manifest aufgeführten Downloads der Visual C++ Redistributables verfügbar sind (d. h.
-eine HTTP-200-Antwort zurückgeben).
+Validiert für jeden Eintrag HTTPS und den zulässigen Host und sendet anschließend eine HEAD-Anfrage mit einem Timeout von 30 Sekunden.
 
-Für jedes an die Funktion übergebene Visual C++ Redistributable wird ein Wahrheitswert zurückgegeben.
+Für jeden Eingabeeintrag wird ein Ergebnisobjekt mit den Eigenschaften Result, Release, Architecture, Version und URI zurückgegeben. Result ist true, wenn die HTTPS-HEAD-Anfrage erfolgreich ist, andernfalls false.
 
 ## EXAMPLES
 
@@ -50,7 +48,7 @@ Description: Prüft die Liste der unterstützten Visual C++ Redistributables fü
 
 ### EXAMPLE 4
 ```
-Test-VcRedistUri -VcList (Get-VcList -ExportAll)
+Test-VcRedistUri -VcList (Get-VcList -Export All)
 ```
 
 Description: Exportiert alle unterstützten und nicht unterstützten Visual C++ Redistributables und prüft die Downloads auf ihre Gültigkeit.
@@ -82,7 +80,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 4
+Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -90,7 +88,7 @@ Accept wildcard characters: False
 
 ### -ProxyCredential
 Gibt ein Benutzerkonto an, das zur Verwendung des mit dem Parameter Proxy angegebenen Proxyservers berechtigt ist.
-Standardmäßig wird der aktuelle Benutzer verwendet.
+Standardmäßig werden keine Proxyanmeldeinformationen übergeben.
 
 ```yaml
 Type: PSCredential
@@ -98,7 +96,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 5
+Position: 3
 Default value: [System.Management.Automation.PSCredential]::Empty
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -147,5 +145,5 @@ Autor: Aaron Parker
 
 ## RELATED LINKS
 
-[Redistributables herunterladen:](https://vcredist.com/save-vcredist/)
+[Redistributable-Downloads testen:](https://stealthpuppy.com/vcredist/test/)
 

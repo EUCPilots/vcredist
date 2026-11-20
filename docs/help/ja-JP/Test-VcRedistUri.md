@@ -1,15 +1,14 @@
 ---
 external help file: VcRedist-help.xml
 Module Name: VcRedist
-online version: https://vcredist.com/test-vcredisturi/
+online version: https://stealthpuppy.com/vcredist/test/
 schema: 2.0.0
 ---
 
 # Test-VcRedistUri
 
 ## SYNOPSIS
-Get-VcList が返すマニフェストに記載された Visual C++ Redistributable のダウンロードが利用可能であること (つまり、
-HTTP 200 応答を返すこと) をテストします。
+各 Visual C++ Redistributable のダウンロード URI にアクセスできるかをテストします。
 
 ## SYNTAX
 
@@ -19,10 +18,9 @@ Test-VcRedistUri [-VcList] <PSObject> [[-Proxy] <String>] [[-ProxyCredential] <P
 ```
 
 ## DESCRIPTION
-Get-VcList が返すマニフェストに記載された Visual C++ Redistributable のダウンロードが利用可能であること (つまり、
-HTTP 200 応答を返すこと) をテストします。
+各エントリについて、HTTPS と許可されたホストを検証し、タイムアウト 30 秒で HEAD 要求を送信します。
 
-この関数に渡された各 Visual C++ Redistributable について、True または False が返されます。
+各入力エントリについて、Result、Release、Architecture、Version、URI プロパティを含む結果オブジェクトを返します。HTTPS HEAD 要求が成功すると Result は true になり、URI が許可されていない場合や要求に失敗した場合は false になります。
 
 ## EXAMPLES
 
@@ -50,7 +48,7 @@ Test-VcRedistUri -VcList $VcList
 
 ### EXAMPLE 4
 ```
-Test-VcRedistUri -VcList (Get-VcList -ExportAll)
+Test-VcRedistUri -VcList (Get-VcList -Export All)
 ```
 
 説明: サポート対象および対象外のすべての Visual C++ Redistributable をエクスポートし、ダウンロードが有効かどうかをテストします。
@@ -82,7 +80,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 4
+Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -90,7 +88,7 @@ Accept wildcard characters: False
 
 ### -ProxyCredential
 Proxy パラメーターで指定したプロキシ サーバーを使用する権限を持つユーザー アカウントを指定します。
-既定では現在のユーザーが使用されます。
+既定では、プロキシ資格情報は指定されません。
 
 ```yaml
 Type: PSCredential
@@ -98,7 +96,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 5
+Position: 3
 Default value: [System.Management.Automation.PSCredential]::Empty
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -147,5 +145,5 @@ Author: Aaron Parker
 
 ## RELATED LINKS
 
-[Redistributable をダウンロードする:](https://vcredist.com/save-vcredist/)
+[Redistributable ダウンロードをテストする:](https://stealthpuppy.com/vcredist/test/)
 

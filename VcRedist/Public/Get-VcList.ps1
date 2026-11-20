@@ -33,6 +33,9 @@ function Get-VcList {
     )
 
     process {
+        # Messages
+        $WarningMessage = "This list includes unsupported Visual C++ Redistributables."
+
         $params = @{ Source = $Source }
         if ($PSBoundParameters.ContainsKey("Proxy")) { $params.Proxy = $Proxy }
         if ($PSBoundParameters.ContainsKey("ProxyCredential")) { $params.ProxyCredential = $ProxyCredential }
@@ -40,26 +43,34 @@ function Get-VcList {
         $Entries = @($Manifest.Entries)
 
         if ($PSCmdlet.ParameterSetName -eq "Export") {
+            Write-Verbose -Message "Selecting Visual C++ Redistributables with export mode '$Export'."
             switch ($Export) {
                 "All" {
-                    Write-Warning -Message "This list includes unsupported Visual C++ Redistributables."
+                    Write-Warning -Message $WarningMessage
                     $Output = $Entries
                 }
                 "Supported" { $Output = $Entries | Where-Object { $_.Supported -eq $true } }
                 "Unsupported" {
-                    Write-Warning -Message "This list includes unsupported Visual C++ Redistributables."
+                    Write-Warning -Message $WarningMessage
                     $Output = $Entries | Where-Object { $_.Supported -eq $false }
                 }
             }
         }
         else {
-            $Output = $Entries | Where-Object { $_.Supported -eq $true } | `
+            Write-Verbose -Message "Filtering Visual C++ Redistributables by release '$($Release -join ", ")' and architecture '$($Architecture -join ", ")'."
+            $Output = $Entries | `
                 Where-Object { $Release -contains $_.Release } | `
                 Where-Object { $Architecture -contains $_.Architecture }
+            if ($Output | Where-Object { $_.Supported -eq $false }) {
+                Write-Warning -Message $WarningMessage
+            }
         }
+
+        Write-Verbose -Message "Selected $(@($Output).Count) Visual C++ Redistributables."
 
         # Replace the placeholder tokens in the uninstall command
         foreach ($Item in @($Output)) {
+            Write-Verbose -Message "Preparing: '$($Item.Name) $($Item.Version) $($Item.Architecture)' (release $($Item.Release))."
             $ParsedUri = $null
             if (-not [System.Uri]::TryCreate([System.String]$Item.URI, [System.UriKind]::Absolute, [ref] $ParsedUri)) {
                 throw [System.InvalidOperationException]::New("Manifest entry '$($Item.Name)' has an invalid URI: '$($Item.URI)'.")

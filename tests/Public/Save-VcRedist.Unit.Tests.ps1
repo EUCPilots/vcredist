@@ -63,6 +63,43 @@ Describe -Name "Save-VcRedist unit tests" {
         }
     }
 
+    It "Reuses an existing installer when its version is newer" {
+        InModuleScope VcRedist -Parameters @{ Item = $Item; Dir = (Join-Path -Path $TestDrive -ChildPath "existing-newer") } {
+            $TargetDir = Join-Path -Path $Dir -ChildPath "2022/14.0.0.1/x64"
+            New-Item -Path $TargetDir -ItemType "Directory" -Force | Out-Null
+            $Target = Join-Path -Path $TargetDir -ChildPath "vc_redist.x64.exe"
+            Set-Content -LiteralPath $Target -Value "x"
+            Mock Get-Item { [PSCustomObject]@{ VersionInfo = [PSCustomObject]@{ ProductVersion = "14.0.0.2" } } } -ParameterFilter { $LiteralPath -eq $Target }
+            Mock Invoke-VcWebRequest { throw "Download should not run" }
+            Mock Assert-VcSignature { $true }
+
+            $Result = $Item | Save-VcRedist -Path $Dir
+
+            $Result.Path | Should -Be $Target
+            Should -Invoke Invoke-VcWebRequest -Times 0 -Exactly
+            Should -Invoke Assert-VcSignature -Times 1 -Exactly -ParameterFilter { $Path -eq $Target }
+        }
+    }
+
+    It "Redownloads an existing installer when its version is older" {
+        InModuleScope VcRedist -Parameters @{ Item = $Item; Dir = (Join-Path -Path $TestDrive -ChildPath "existing-older") } {
+            $TargetDir = Join-Path -Path $Dir -ChildPath "2022/14.0.0.1/x64"
+            New-Item -Path $TargetDir -ItemType "Directory" -Force | Out-Null
+            $Target = Join-Path -Path $TargetDir -ChildPath "vc_redist.x64.exe"
+            Set-Content -LiteralPath $Target -Value "old"
+            Mock Get-Item { [PSCustomObject]@{ VersionInfo = [PSCustomObject]@{ ProductVersion = "14.0.0.0" } } } -ParameterFilter { $LiteralPath -eq $Target }
+            Mock Invoke-VcWebRequest { Set-Content -LiteralPath $OutFile -Value "new" }
+            Mock Assert-VcSignature { $true }
+
+            $Result = $Item | Save-VcRedist -Path $Dir
+
+            $Result.Path | Should -Be $Target
+            Get-Content -LiteralPath $Target | Should -Be "new"
+            Should -Invoke Invoke-VcWebRequest -Times 1 -Exactly
+            Should -Invoke Assert-VcSignature -Times 1 -Exactly
+        }
+    }
+
     It "Reuses an existing installer without signature validation when explicitly requested" {
         InModuleScope VcRedist -Parameters @{ Item = $Item; Dir = (Join-Path -Path $TestDrive -ChildPath "existing-skip") } {
             $TargetDir = Join-Path -Path $Dir -ChildPath "2022/14.0.0.1/x64"
@@ -88,6 +125,25 @@ Describe -Name "Save-VcRedist unit tests" {
         }
     }
 
+    It "Passes proxy credentials and a custom user agent to the download" {
+        $Credential = [System.Management.Automation.PSCredential]::New(
+            "proxy-user",
+            (ConvertTo-SecureString "secret" -AsPlainText -Force)
+        )
+        InModuleScope VcRedist -Parameters @{ Item = $Item; Dir = (New-Item -Path "$TestDrive/credentials" -ItemType "Directory").FullName; Credential = $Credential } {
+            Mock Invoke-VcWebRequest { Set-Content -LiteralPath $OutFile -Value "x" }
+            Mock Assert-VcSignature { $true }
+
+            $Item | Save-VcRedist -Path $Dir -Proxy "http://proxy:8080" -ProxyCredential $Credential -UserAgent "VcRedist.Tests/1.0" | Out-Null
+
+            Should -Invoke Invoke-VcWebRequest -Times 1 -Exactly -ParameterFilter {
+                $Proxy -eq "http://proxy:8080" -and
+                $ProxyCredential.UserName -eq "proxy-user" -and
+                $UserAgent -eq "VcRedist.Tests/1.0"
+            }
+        }
+    }
+
     It "Removes the temporary file and leaves no installer when the signature is invalid" {
         InModuleScope VcRedist -Parameters @{ Item = $Item; Dir = (New-Item -Path "$TestDrive/s" -ItemType "Directory").FullName } {
             Mock Invoke-VcWebRequest { Set-Content -LiteralPath $OutFile -Value "x" }
@@ -97,12 +153,52 @@ Describe -Name "Save-VcRedist unit tests" {
         }
     }
 
+    It "Removes a partial temporary file when the download fails" {
+        InModuleScope VcRedist -Parameters @{ Item = $Item; Dir = (New-Item -Path "$TestDrive/download-failure" -ItemType "Directory").FullName } {
+            Mock Invoke-VcWebRequest {
+                Set-Content -LiteralPath $OutFile -Value "partial"
+                throw "Download failed"
+            }
+            Mock Assert-VcSignature { throw "Signature validation should not run" }
+
+            { $Item | Save-VcRedist -Path $Dir } | Should -Throw "*Download failed*"
+
+            Get-ChildItem -Path $Dir -Recurse -File | Should -BeNullOrEmpty
+            Should -Invoke Assert-VcSignature -Times 0 -Exactly
+        }
+    }
+
+    It "Removes the temporary file when moving the verified installer fails" {
+        InModuleScope VcRedist -Parameters @{ Item = $Item; Dir = (New-Item -Path "$TestDrive/move-failure" -ItemType "Directory").FullName } {
+            Mock Invoke-VcWebRequest { Set-Content -LiteralPath $OutFile -Value "x" }
+            Mock Assert-VcSignature { $true }
+            Mock Move-Item { throw "Move failed" }
+
+            { $Item | Save-VcRedist -Path $Dir } | Should -Throw "*Move failed*"
+
+            Get-ChildItem -Path $Dir -Recurse -File | Should -BeNullOrEmpty
+            Should -Invoke Assert-VcSignature -Times 1 -Exactly
+        }
+    }
+
     It "Creates a missing target path before downloading" {
         InModuleScope VcRedist -Parameters @{ Item = $Item; Dir = (Join-Path -Path $TestDrive -ChildPath "new/nested") } {
             Mock Invoke-VcWebRequest { Set-Content -LiteralPath $OutFile -Value "x" }
             Mock Assert-VcSignature { $true }
             $Dir | Should -Not -Exist
             ($Item | Save-VcRedist -Path $Dir).Path | Should -Exist
+        }
+    }
+
+    It "Does not create paths or download when WhatIf is used" {
+        InModuleScope VcRedist -Parameters @{ Item = $Item; Dir = (Join-Path -Path $TestDrive -ChildPath "what-if") } {
+            Mock Invoke-VcWebRequest { throw "Download should not run" }
+
+            $Result = @($Item | Save-VcRedist -Path $Dir -WhatIf)
+
+            $Dir | Should -Not -Exist
+            $Result | Should -BeNullOrEmpty
+            Should -Invoke Invoke-VcWebRequest -Times 0 -Exactly
         }
     }
 
@@ -154,6 +250,50 @@ Describe -Name "Save-VcRedist unit tests" {
             }
 
             { $Invalid | Save-VcRedist -Path $Dir } | Should -Throw "*Release '../outside' is invalid.*"
+        }
+    }
+
+    It "Rejects an invalid version and architecture before downloading" {
+        InModuleScope VcRedist -Parameters @{ Item = $Item; Dir = $TestDrive } {
+            Mock Invoke-VcWebRequest { throw "Download should not run" }
+            $InvalidVersion = $Item | Select-Object *
+            $InvalidVersion.Version = "not-a-version"
+            $InvalidArchitecture = $Item | Select-Object *
+            $InvalidArchitecture.Architecture = "mips"
+
+            { $InvalidVersion | Save-VcRedist -Path $Dir } | Should -Throw "*Version 'not-a-version' is invalid.*"
+            { $InvalidArchitecture | Save-VcRedist -Path $Dir } | Should -Throw "*Architecture 'mips' is invalid.*"
+            Should -Invoke Invoke-VcWebRequest -Times 0 -Exactly
+        }
+    }
+
+    It "Rejects an allowed-host URI without an installer filename" {
+        InModuleScope VcRedist -Parameters @{ Item = $Item; Dir = (New-Item -Path "$TestDrive/no-filename" -ItemType "Directory").FullName } {
+            Mock Invoke-VcWebRequest { throw "Download should not run" }
+            $Invalid = $Item | Select-Object *
+            $Invalid.URI = "https://download.microsoft.com/"
+
+            { $Invalid | Save-VcRedist -Path $Dir } | Should -Throw "*does not contain an installer filename*"
+            Should -Invoke Invoke-VcWebRequest -Times 0 -Exactly
+        }
+    }
+
+    It "Processes multiple pipeline items and assigns each its own path" {
+        InModuleScope VcRedist -Parameters @{ Item = $Item; Dir = (New-Item -Path "$TestDrive/multiple" -ItemType "Directory").FullName } {
+            $Second = $Item | Select-Object *
+            $Second.Version = "14.0.0.2"
+            $Second.Architecture = "arm64"
+            $Second.URI = "https://download.microsoft.com/download/test/vc_redist.arm64.exe"
+            Mock Invoke-VcWebRequest { Set-Content -LiteralPath $OutFile -Value "x" }
+            Mock Assert-VcSignature { $true }
+
+            $Results = @( @($Item, $Second) | Save-VcRedist -Path $Dir )
+
+            $Results.Count | Should -Be 2
+            $Results.Path | Should -Contain (Join-Path -Path $Dir -ChildPath "2022/14.0.0.1/x64/vc_redist.x64.exe")
+            $Results.Path | Should -Contain (Join-Path -Path $Dir -ChildPath "2022/14.0.0.2/arm64/vc_redist.arm64.exe")
+            $Results | ForEach-Object { $_.Path | Should -Exist }
+            Should -Invoke Invoke-VcWebRequest -Times 2 -Exactly
         }
     }
 

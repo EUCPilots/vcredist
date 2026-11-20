@@ -19,22 +19,25 @@ Update-VcMdtBundle [-MdtPath] <String> [-AppFolder <String>] [[-MdtDrive] <Strin
 
 ## DESCRIPTION
 Après avoir importé ou ajouté des applications de redistribuables Visual C++ dans un partage Microsoft Deployment Toolkit, vous pouvez mettre à jour un lot existant avec les GUID des nouvelles applications de redistribuables Visual C++.
+Cette fonction met à jour les dépendances et la version du lot, mais n’importe pas d’applications. Elle nécessite Windows PowerShell 5.1 et le module Microsoft Deployment Toolkit.
+
+Cette fonction est déconseillée, car Microsoft ne prend plus en charge MDT. Elle affiche un avertissement et peut être supprimée dans une prochaine version de VcRedist.
 
 Le lot sera mis à jour dans le partage de déploiement MDT avec des propriétés par défaut similaires aux suivantes :
 
 Location: Applications\VcRedists Name: Microsoft Visual C++ Redistributables Comments: Lot d’applications destiné à installer les redistribuables Visual C++.
-Généré par New-VcMdtBundle Short name: Visual C++ Redistributables Version:2021-Mar-18 Publisher: Microsoft Language: en-US Dependencies: (VcRedists in the MDT share)
+Généré par New-VcMdtBundle Short name: Visual C++ Redistributables Version: (current culture's short date format) Publisher: Microsoft Language: en-US Dependencies: imported Visual C++ Redistributable applications
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 ```
-Get-VcList | Save-VcRedist -Path C:\Temp\VcRedist
-Update-VcMdtApplication -VcList (Get-VcList) -Path C:\Temp\VcRedist -MdtPath \\server\deployment
+Get-VcList | Save-VcRedist -Path C:\Temp\VcRedist |
+    Import-VcMdtApplication -MdtPath \\server\deployment
 Update-VcMdtBundle -MdtPath \\server\deployment
 ```
 
-Description : Récupère la liste des redistribuables Visual C++, les télécharge dans C:\Temp\VcRedist et met à jour chaque redistribuable dans le partage de déploiement MDT situé à \server\deployment.
+Description : Importe les redistribuables pris en charge par défaut et met à jour les dépendances du lot existant avec les applications importées.
 
 ## PARAMETERS
 
@@ -79,7 +82,7 @@ Aliases:
 
 Required: False
 Position: 2
-Default value: DS001
+Default value: DS099
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

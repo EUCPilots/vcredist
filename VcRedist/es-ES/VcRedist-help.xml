@@ -84,7 +84,7 @@
             <maml:name>String</maml:name>
             <maml:uri />
           </dev:type>
-          <dev:defaultValue>None</dev:defaultValue>
+          <dev:defaultValue>Auto</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
           <maml:name>WhatIf</maml:name>
@@ -170,7 +170,7 @@
           <maml:name>String</maml:name>
           <maml:uri />
         </dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>Auto</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
         <maml:name>WhatIf</maml:name>
@@ -189,7 +189,7 @@
     <command:returnValues>
       <command:returnValue>
         <dev:type>
-          <maml:name>System.String</maml:name>
+          <maml:name>System.IO.FileSystemInfo</maml:name>
         </dev:type>
         <maml:description>
           <maml:para></maml:para>
@@ -412,9 +412,9 @@
       </maml:description>
     </command:details>
     <maml:description>
-      <maml:para>Esta función lee los Redistribuibles de Visual C++ incluidos en un manifiesto interno y los convierte en un objeto que se puede pasar a otras funciones de VcRedist.</maml:para>
-      <maml:para>El manifiesto se lee del repositorio de VcRedist, por lo que sus actualizaciones no requieren actualizar el módulo. Si el manifiesto remoto no está disponible, no es válido o es más antiguo que el manifiesto incluido, se usa el manifiesto del módulo.</maml:para>
-      <maml:para>El módulo incluye una lista completa de los redistribuibles compatibles y de todos los que se conocen. De forma predeterminada, Get-VcList solo devuelve una lista de los Redistribuibles de Visual C++ compatibles. Para devolver redistribuibles no compatibles, se requiere el parámetro -Export y filtrar la salida con Where-Object.</maml:para>
+      <maml:para>Esta función lee los Redistribuibles de Visual C++ incluidos en un manifiesto interno y los convierte en un objeto que se puede pasar a otras funciones de VcRedist. No comprueba qué Redistribuibles están instalados; use Get-InstalledVcRedist para ello.</maml:para>
+      <maml:para>Con Auto se lee primero el manifiesto incluido y después se comprueba el remoto. Si el remoto no está disponible, no es válido o es más antiguo, se usa el incluido. Si el manifiesto incluido no se puede leer o no es válido, se produce un error.</maml:para>
+      <maml:para>Release y Architecture seleccionan las entradas coincidentes, sean compatibles o no. Si alguna entrada seleccionada no es compatible, se emite una advertencia. Sin estos parámetros, se selecciona la versión 14 para x86, x64 y arm64. Use -Export Supported, Unsupported o All para seleccionar entradas de todas las versiones por compatibilidad o devolver todas las entradas. Export no se puede combinar con Release ni Architecture. All y Unsupported siempre emiten una advertencia, incluso si no hay entradas no compatibles. En SilentUninstall, #Installer y #ProductCode se sustituyen por el nombre del instalador de URI y el código de producto de la entrada.</maml:para>
       <maml:para>El manifiesto interno se puede exportar con Export-VcManifest.</maml:para>
     </maml:description>
     <command:syntax>
@@ -423,26 +423,26 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
           <maml:name>Release</maml:name>
           <maml:description>
-            <maml:para>Especifica la versión de los redistribuibles que se devolverán.</maml:para>
+            <maml:para>Especifica la versión de los redistribuibles que se devolverán. Cada valor debe contener de dos a cuatro dígitos; no se aceptan números de versión completos.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
           <dev:type>
             <maml:name>String[]</maml:name>
             <maml:uri />
           </dev:type>
-          <dev:defaultValue>@("2012", "2013", "2022")</dev:defaultValue>
+          <dev:defaultValue>@("14")</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
           <maml:name>Architecture</maml:name>
           <maml:description>
-            <maml:para>Especifica la arquitectura del procesador de los redistribuibles que se devolverán. Puede ser x86 o x64.</maml:para>
+            <maml:para>Especifica la arquitectura del procesador de los redistribuibles que se devolverán. Puede ser x86, x64 o arm64.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
           <dev:type>
             <maml:name>String[]</maml:name>
             <maml:uri />
           </dev:type>
-          <dev:defaultValue>@("x86", "x64")</dev:defaultValue>
+          <dev:defaultValue>@("x86", "x64", "arm64")</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
           <maml:name>ProgressAction</maml:name>
@@ -459,7 +459,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>Proxy</maml:name>
           <maml:description>
-            <maml:para>Especifica un servidor proxy para obtener el manifiesto o descargar contenido.</maml:para>
+            <maml:para>Especifica un URI de proxy HTTP o HTTPS absoluto, sin credenciales integradas, para obtener el manifiesto remoto. Si se omite ProxyCredential, se usan las credenciales de proxy predeterminadas.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -471,7 +471,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>ProxyCredential</maml:name>
           <maml:description>
-            <maml:para>Especifica una cuenta de usuario con permiso para usar el servidor proxy indicado por -Proxy. Si no se especifica, se usan las credenciales de proxy predeterminadas.</maml:para>
+            <maml:para>Especifica las credenciales del servidor proxy indicado por -Proxy. Las credenciales no vacías requieren -Proxy.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">PSCredential</command:parameterValue>
           <dev:type>
@@ -483,14 +483,14 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>Source</maml:name>
           <maml:description>
-            <maml:para>Selecciona el origen del manifiesto. `Auto` (predeterminado) usa el manifiesto remoto alojado en el repositorio de VcRedist y recurre al manifiesto incluido si se produce un error o si el remoto es más antiguo. `Remote` produce un error si el manifiesto remoto no está disponible. `Bundled` usa únicamente el manifiesto incluido en el módulo.</maml:para>
+            <maml:para>Selecciona el origen del manifiesto. `Auto` (predeterminado) lee el manifiesto incluido y usa el remoto si es válido y al menos igual de reciente. `Remote` usa solo el manifiesto remoto. `Bundled` usa solo el manifiesto incluido.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
           </dev:type>
-          <dev:defaultValue>None</dev:defaultValue>
+          <dev:defaultValue>Auto</dev:defaultValue>
         </command:parameter>
       </command:syntaxItem>
       <command:syntaxItem>
@@ -498,7 +498,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
           <maml:name>Export</maml:name>
           <maml:description>
-            <maml:para>Define la lista de Redistribuibles de Visual C++ que se exportará: todos, los compatibles o los no compatibles. De forma predeterminada, se exportan los redistribuibles compatibles.</maml:para>
+            <maml:para>Define la lista de Redistribuibles de Visual C++ que se exportará: todos, los compatibles o los no compatibles. Export no se puede combinar con Release ni Architecture. All y Unsupported emiten una advertencia.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -522,7 +522,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>Proxy</maml:name>
           <maml:description>
-            <maml:para>Especifica un servidor proxy para obtener el manifiesto o descargar contenido.</maml:para>
+            <maml:para>Especifica un URI de proxy HTTP o HTTPS absoluto, sin credenciales integradas, para obtener el manifiesto remoto. Si se omite ProxyCredential, se usan las credenciales de proxy predeterminadas.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -534,7 +534,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>ProxyCredential</maml:name>
           <maml:description>
-            <maml:para>Especifica una cuenta de usuario con permiso para usar el servidor proxy indicado por -Proxy. Si no se especifica, se usan las credenciales de proxy predeterminadas.</maml:para>
+            <maml:para>Especifica las credenciales del servidor proxy indicado por -Proxy. Las credenciales no vacías requieren -Proxy.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">PSCredential</command:parameterValue>
           <dev:type>
@@ -546,14 +546,14 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>Source</maml:name>
           <maml:description>
-            <maml:para>Selecciona el origen del manifiesto. `Auto` (predeterminado) usa el manifiesto remoto alojado en el repositorio de VcRedist y recurre al manifiesto incluido si se produce un error o si el remoto es más antiguo. `Remote` produce un error si el manifiesto remoto no está disponible. `Bundled` usa únicamente el manifiesto incluido en el módulo.</maml:para>
+            <maml:para>Selecciona el origen del manifiesto. `Auto` (predeterminado) lee el manifiesto incluido y usa el remoto si es válido y al menos igual de reciente. `Remote` usa solo el manifiesto remoto. `Bundled` usa solo el manifiesto incluido.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
           </dev:type>
-          <dev:defaultValue>None</dev:defaultValue>
+          <dev:defaultValue>Auto</dev:defaultValue>
         </command:parameter>
       </command:syntaxItem>
     </command:syntax>
@@ -561,31 +561,31 @@
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
         <maml:name>Release</maml:name>
         <maml:description>
-          <maml:para>Especifica la versión de los redistribuibles que se devolverán.</maml:para>
+          <maml:para>Especifica la versión de los redistribuibles que se devolverán. Cada valor debe contener de dos a cuatro dígitos; no se aceptan números de versión completos.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
           <maml:name>String[]</maml:name>
           <maml:uri />
         </dev:type>
-        <dev:defaultValue>@("2012", "2013", "2022")</dev:defaultValue>
+        <dev:defaultValue>@("14")</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
         <maml:name>Architecture</maml:name>
         <maml:description>
-          <maml:para>Especifica la arquitectura del procesador de los redistribuibles que se devolverán. Puede ser x86 o x64.</maml:para>
+          <maml:para>Especifica la arquitectura del procesador de los redistribuibles que se devolverán. Puede ser x86, x64 o arm64.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
           <maml:name>String[]</maml:name>
           <maml:uri />
         </dev:type>
-        <dev:defaultValue>@("x86", "x64")</dev:defaultValue>
+        <dev:defaultValue>@("x86", "x64", "arm64")</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
         <maml:name>Export</maml:name>
         <maml:description>
-          <maml:para>Define la lista de Redistribuibles de Visual C++ que se exportará: todos, los compatibles o los no compatibles. De forma predeterminada, se exportan los redistribuibles compatibles.</maml:para>
+          <maml:para>Define la lista de Redistribuibles de Visual C++ que se exportará: todos, los compatibles o los no compatibles. Export no se puede combinar con Release ni Architecture. All y Unsupported emiten una advertencia.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -609,7 +609,7 @@
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
         <maml:name>Proxy</maml:name>
         <maml:description>
-          <maml:para>Especifica un servidor proxy para obtener el manifiesto o descargar contenido.</maml:para>
+          <maml:para>Especifica un URI de proxy HTTP o HTTPS absoluto, sin credenciales integradas, para obtener el manifiesto remoto. Si se omite ProxyCredential, se usan las credenciales de proxy predeterminadas.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -621,7 +621,7 @@
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
         <maml:name>ProxyCredential</maml:name>
         <maml:description>
-          <maml:para>Especifica una cuenta de usuario con permiso para usar el servidor proxy indicado por -Proxy. Si no se especifica, se usan las credenciales de proxy predeterminadas.</maml:para>
+          <maml:para>Especifica las credenciales del servidor proxy indicado por -Proxy. Las credenciales no vacías requieren -Proxy.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">PSCredential</command:parameterValue>
         <dev:type>
@@ -633,14 +633,14 @@
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
         <maml:name>Source</maml:name>
         <maml:description>
-          <maml:para>Selecciona el origen del manifiesto. `Auto` (predeterminado) usa el manifiesto remoto alojado en el repositorio de VcRedist y recurre al manifiesto incluido si se produce un error o si el remoto es más antiguo. `Remote` produce un error si el manifiesto remoto no está disponible. `Bundled` usa únicamente el manifiesto incluido en el módulo.</maml:para>
+          <maml:para>Selecciona el origen del manifiesto. `Auto` (predeterminado) lee el manifiesto incluido y usa el remoto si es válido y al menos igual de reciente. `Remote` usa solo el manifiesto remoto. `Bundled` usa solo el manifiesto incluido.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
           <maml:uri />
         </dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>Auto</dev:defaultValue>
       </command:parameter>
     </command:parameters>
     <command:inputTypes />
@@ -664,49 +664,49 @@
         <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
         <dev:code>Get-VcList</dev:code>
         <dev:remarks>
-          <maml:para>Descripción: Devuelve un objeto con los Redistribuibles de Visual C++ compatibles del manifiesto incluido.</maml:para>
+          <maml:para>Descripción: Devuelve los Redistribuibles de la versión 14 para x86, x64 y arm64 del manifiesto seleccionado.</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
-        <dev:code>Get-VcList</dev:code>
+        <dev:code>Get-VcList -Release 2015 -Architecture x86</dev:code>
         <dev:remarks>
-          <maml:para>Descripción: Devuelve las versiones x86 y x64 de 2012, 2013 y 2022 de los Redistribuibles de Visual C++ compatibles del manifiesto incluido.</maml:para>
+          <maml:para>Descripción: Devuelve los Redistribuibles x86 de 2015 y advierte si las entradas seleccionadas no son compatibles.</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 3 --------------------------</maml:title>
         <dev:code>Get-VcList -Export All</dev:code>
         <dev:remarks>
-          <maml:para>Descripción: Devuelve una lista de todos los Redistribuibles de Visual C++ del manifiesto incluido, incluidas las versiones no compatibles.</maml:para>
+          <maml:para>Descripción: Devuelve todos los Redistribuibles de Visual C++ del manifiesto seleccionado y emite una advertencia.</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 4 --------------------------</maml:title>
         <dev:code>Get-VcList -Export Supported</dev:code>
         <dev:remarks>
-          <maml:para>Descripción: Devuelve la lista completa de los Redistribuibles de Visual C++ compatibles del manifiesto incluido. Es lo mismo que ejecutar Get-VcList sin parámetros.</maml:para>
+          <maml:para>Descripción: Devuelve los Redistribuibles compatibles de todas las versiones del manifiesto seleccionado.</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 5 --------------------------</maml:title>
         <dev:code>Get-VcList -Export Unsupported | Where-Object { $_.Release -eq "2008" }</dev:code>
         <dev:remarks>
-          <maml:para>Descripción: Devuelve la lista completa de los Redistribuibles de Visual C++ no compatibles del manifiesto incluido y filtra las versiones de 2008.</maml:para>
+          <maml:para>Descripción: Devuelve los Redistribuibles no compatibles del manifiesto seleccionado y filtra las versiones de 2008.</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 6 --------------------------</maml:title>
         <dev:code>Get-VcList -Release 2013, 2019 -Architecture x86</dev:code>
         <dev:remarks>
-          <maml:para>Descripción: Devuelve los Redistribuibles de Visual C++ x86 de 2013 y 2019 de la lista de redistribuibles compatibles del manifiesto incluido.</maml:para>
+          <maml:para>Descripción: Devuelve los Redistribuibles de Visual C++ x86 de 2013 y 2019 del manifiesto seleccionado.</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 7 --------------------------</maml:title>
         <dev:code>Get-VcList -Source Bundled</dev:code>
         <dev:remarks>
-          <maml:para>Descripción: Devuelve los Redistribuibles de Visual C++ compatibles usando únicamente el manifiesto incluido en el módulo, sin contactar con el manifiesto remoto.</maml:para>
+          <maml:para>Descripción: Devuelve los Redistribuibles de la versión 14 usando únicamente el manifiesto incluido en el módulo.</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>
@@ -852,18 +852,6 @@
           </dev:type>
           <dev:defaultValue>False</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
-          <maml:name>Path</maml:name>
-          <maml:description>
-            <maml:para>Este parámetro está obsoleto y se ignora. El objeto pasado a -VcList debe tener la propiedad Path.</maml:para>
-          </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
-          <dev:type>
-            <maml:name>String</maml:name>
-            <maml:uri />
-          </dev:type>
-          <dev:defaultValue>None</dev:defaultValue>
-        </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
           <maml:name>ProgressAction</maml:name>
           <maml:description>
@@ -998,18 +986,6 @@
           <maml:uri />
         </dev:type>
         <dev:defaultValue>False</dev:defaultValue>
-      </command:parameter>
-      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
-        <maml:name>Path</maml:name>
-        <maml:description>
-          <maml:para>Este parámetro está obsoleto y se ignora. El objeto pasado a -VcList debe tener la propiedad Path.</maml:para>
-        </maml:description>
-        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
-        <dev:type>
-          <maml:name>String</maml:name>
-          <maml:uri />
-        </dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
         <maml:name>ProgressAction</maml:name>
@@ -1261,7 +1237,8 @@ Get-VcList | Save-VcRedist -Path "C:\Temp\VcRedist" | Import-VcIntuneApplication
     </command:details>
     <maml:description>
       <maml:para>Crea una aplicación en un recurso compartido de Microsoft Deployment Toolkit para cada Redistribuible de Visual C++ e incluye propiedades como la línea de comandos silenciosa de destino, la plataforma y la clave de desinstalación. Las plataformas compatibles se obtienen del manifiesto. Los paquetes exclusivos para ARM64 se omiten con una advertencia porque MDT no admite implementaciones ARM64.</maml:para>
-      <maml:para>Usa Get-VcList y Save-VcRedist para descargar los redistribuibles y crear la matriz que se importará en MDT.</maml:para>
+      <maml:para>Usa Get-VcList y Save-VcRedist para descargar los redistribuibles y pasar los objetos resultantes a esta función.</maml:para>
+      <maml:para>Esta función está obsoleta porque Microsoft ya no admite MDT. Emite una advertencia y puede quitarse en una versión futura de VcRedist. Requiere Windows PowerShell 5.1 y el módulo Microsoft Deployment Toolkit.</maml:para>
       <maml:para>Las aplicaciones se importarán en el recurso compartido de implementación de MDT con propiedades predeterminadas similares a las siguientes:</maml:para>
       <maml:para>Location: Applications\VcRedists Name: Visual C++ Redistributable 2019 x86 14.28.29913.0 Comments: Generated by Import-VcMdtApplication Short name: Visual C++ Redistributable for Visual Studio 2019 x86 Version: 14.28.29913.0 Publisher: Microsoft Language: en-US Source directory: .\Applications\Microsoft VcRedist\2019\14.28.29913.0\x86 Quiet install command: .\VC_redist.x86.exe /install /quiet /norestart Working directory: .\Applications\Microsoft VcRedist\2019\14.28.29913.0\x86 Uninstall registry key name: {03d1453c-7d5c-479c-afea-8482f406e036} Hide this application in the Deployment Wizard: Yes</maml:para>
     </maml:description>
@@ -1314,7 +1291,7 @@ Get-VcList | Save-VcRedist -Path "C:\Temp\VcRedist" | Import-VcIntuneApplication
             <maml:name>String</maml:name>
             <maml:uri />
           </dev:type>
-          <dev:defaultValue>DS001</dev:defaultValue>
+          <dev:defaultValue>DS099</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="6" aliases="none">
           <maml:name>Publisher</maml:name>
@@ -1338,7 +1315,7 @@ Get-VcList | Save-VcRedist -Path "C:\Temp\VcRedist" | Import-VcIntuneApplication
             <maml:name>String</maml:name>
             <maml:uri />
           </dev:type>
-          <dev:defaultValue>En-US</dev:defaultValue>
+          <dev:defaultValue>en-US</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>Silent</maml:name>
@@ -1394,18 +1371,6 @@ Get-VcList | Save-VcRedist -Path "C:\Temp\VcRedist" | Import-VcIntuneApplication
             <maml:uri />
           </dev:type>
           <dev:defaultValue>False</dev:defaultValue>
-        </command:parameter>
-        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
-          <maml:name>Path</maml:name>
-          <maml:description>
-            <maml:para>Este parámetro está obsoleto y se ignora. El objeto pasado a -VcList debe tener la propiedad Path.</maml:para>
-          </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
-          <dev:type>
-            <maml:name>String</maml:name>
-            <maml:uri />
-          </dev:type>
-          <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
           <maml:name>ProgressAction</maml:name>
@@ -1504,7 +1469,7 @@ Get-VcList | Save-VcRedist -Path "C:\Temp\VcRedist" | Import-VcIntuneApplication
           <maml:name>String</maml:name>
           <maml:uri />
         </dev:type>
-        <dev:defaultValue>DS001</dev:defaultValue>
+        <dev:defaultValue>DS099</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="6" aliases="none">
         <maml:name>Publisher</maml:name>
@@ -1528,7 +1493,7 @@ Get-VcList | Save-VcRedist -Path "C:\Temp\VcRedist" | Import-VcIntuneApplication
           <maml:name>String</maml:name>
           <maml:uri />
         </dev:type>
-        <dev:defaultValue>En-US</dev:defaultValue>
+        <dev:defaultValue>en-US</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
         <maml:name>WhatIf</maml:name>
@@ -1553,18 +1518,6 @@ Get-VcList | Save-VcRedist -Path "C:\Temp\VcRedist" | Import-VcIntuneApplication
           <maml:uri />
         </dev:type>
         <dev:defaultValue>False</dev:defaultValue>
-      </command:parameter>
-      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
-        <maml:name>Path</maml:name>
-        <maml:description>
-          <maml:para>Este parámetro está obsoleto y se ignora. El objeto pasado a -VcList debe tener la propiedad Path.</maml:para>
-        </maml:description>
-        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
-        <dev:type>
-          <maml:name>String</maml:name>
-          <maml:uri />
-        </dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
         <maml:name>ProgressAction</maml:name>
@@ -1598,17 +1551,17 @@ Get-VcList | Save-VcRedist -Path "C:\Temp\VcRedist" | Import-VcIntuneApplication
     <command:examples>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
-        <dev:code>Get-VcList | Save-VcRedist -Path C:\Temp\VcRedist | Import-VcMdtApplication -Path C:\Temp\VcRedist -MdtPath \\server\deployment</dev:code>
+        <dev:code>Get-VcList | Save-VcRedist -Path C:\Temp\VcRedist | Import-VcMdtApplication -MdtPath \\server\deployment</dev:code>
         <dev:remarks>
-          <maml:para>Descripción: Obtiene la lista de Redistribuibles de Visual C++, los descarga en C:\Temp\VcRedist e importa cada redistribuible en el recurso compartido de implementación de MDT ubicado en \server\deployment.</maml:para>
+          <maml:para>Descripción: Obtiene la lista predeterminada de Redistribuibles de Visual C++ compatibles, los descarga en C:\Temp\VcRedist y los importa en el recurso compartido de implementación de MDT.</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
-        <dev:code>$VcList = Get-VcList -ExportAll | Save-VcRedist -Path C:\Temp\VcRedist
-Import-VcMdtApplication -VcList $VcList -MdtPath \\server\deployment -Bundle</dev:code>
+        <dev:code>$VcList = Get-VcList -Export All | Save-VcRedist -Path C:\Temp\VcRedist
+Import-VcMdtApplication -VcList $VcList -MdtPath \\server\deployment -Force</dev:code>
         <dev:remarks>
-          <maml:para>Descripción: Obtiene la lista de Redistribuibles de Visual C++ compatibles y no compatibles en la variable $VcList, los descarga en C:\Temp\VcRedist, importa cada redistribuible en el recurso compartido de implementación de MDT ubicado en \server\deployment y crea un conjunto de aplicaciones.</maml:para>
+          <maml:para>Descripción: Obtiene los redistribuibles compatibles y no compatibles, los descarga y los importa en el recurso compartido de implementación de MDT. Usa New-VcMdtBundle por separado para crear un conjunto de aplicaciones.</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>
@@ -1629,7 +1582,7 @@ Import-VcMdtApplication -VcList $VcList -MdtPath \\server\deployment -Bundle</de
       </maml:description>
     </command:details>
     <maml:description>
-      <maml:para>Instala los Redistribuibles de Microsoft Visual C++ de una lista creada por Get-VcList y descargada localmente en una estructura de carpetas con Save-VcRedist. Admite la instalación pasiva y silenciosa de los redistribuibles. Resulta útil para implementaciones de Windows, incluida la creación de imágenes maestras con HashiCorp Packer, en las que los redistribuibles se pueden descargar e instalar en tiempo de ejecución. Los instaladores cuya lista SupportedArchitecture del manifiesto no incluya la arquitectura nativa de Windows se omiten con una advertencia, incluso al usar -Force. Cada objeto de entrada debe incluir una lista SupportedArchitecture no vacía.</maml:para>
+      <maml:para>Instala los Redistribuibles de Microsoft Visual C++ de una lista creada por Get-VcList y descargada localmente en una estructura de carpetas con Save-VcRedist. Admite la instalación pasiva y silenciosa de los redistribuibles. Resulta útil para implementaciones de Windows, incluida la creación de imágenes maestras con HashiCorp Packer, en las que los redistribuibles se pueden descargar e instalar en tiempo de ejecución. Los instaladores cuya lista SupportedArchitecture no incluya la arquitectura nativa de Windows se omiten con una advertencia. En Windows ARM64, -Force también permite instalar paquetes x64. Cada objeto de entrada debe incluir una lista SupportedArchitecture no vacía. La instalación requiere una sesión de PowerShell con privilegios elevados.</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
@@ -1689,18 +1642,6 @@ Import-VcMdtApplication -VcList $VcList -MdtPath \\server\deployment -Bundle</de
             <maml:uri />
           </dev:type>
           <dev:defaultValue>False</dev:defaultValue>
-        </command:parameter>
-        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
-          <maml:name>Path</maml:name>
-          <maml:description>
-            <maml:para>Este parámetro está obsoleto y se ignora. El objeto pasado a -VcList debe tener la propiedad Path.</maml:para>
-          </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
-          <dev:type>
-            <maml:name>String</maml:name>
-            <maml:uri />
-          </dev:type>
-          <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
           <maml:name>ProgressAction</maml:name>
@@ -1777,18 +1718,6 @@ Import-VcMdtApplication -VcList $VcList -MdtPath \\server\deployment -Bundle</de
         </dev:type>
         <dev:defaultValue>False</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
-        <maml:name>Path</maml:name>
-        <maml:description>
-          <maml:para>Este parámetro está obsoleto y se ignora. El objeto pasado a -VcList debe tener la propiedad Path.</maml:para>
-        </maml:description>
-        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
-        <dev:type>
-          <maml:name>String</maml:name>
-          <maml:uri />
-        </dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
-      </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
         <maml:name>ProgressAction</maml:name>
         <maml:description>
@@ -1821,24 +1750,27 @@ Import-VcMdtApplication -VcList $VcList -MdtPath \\server\deployment -Bundle</de
     <command:examples>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
-        <dev:code>$VcRedists = Get-VcList -Release 2013, 2019 -Architecture x64
-Install-VcRedist -VcList $VcRedists -Path C:\Temp\VcRedists</dev:code>
+        <dev:code>Get-VcList -Release 2013, 2019 -Architecture x64 |
+    Save-VcRedist -Path C:\Temp\VcRedists |
+    Install-VcRedist</dev:code>
         <dev:remarks>
           <maml:para>Descripción: Instala los Redistribuibles de Visual C++ de 64 bits de 2013 y 2019 indicados en $VcRedists y descargados en C:\Temp\VcRedists.</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
-        <dev:code>$VcRedists = Get-VcList -Release "2012","2013","2017" -Architecture x64
-Install-VcRedist -VcList $VcRedists -Path C:\Temp\VcRedists</dev:code>
+        <dev:code>Get-VcList -Release "2012","2013","2017" -Architecture x64 |
+    Save-VcRedist -Path C:\Temp\VcRedists |
+    Install-VcRedist</dev:code>
         <dev:remarks>
           <maml:para>Descripción: Instala únicamente los Redistribuibles de Visual C++ de 64 bits de 2012, 2013 y 2017 indicados en $VcRedists y descargados en C:\Temp\VcRedists.</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 3 --------------------------</maml:title>
-        <dev:code>$VcRedists = Get-VcList -Release "2012","2013","2017" -Architecture x64 | Save-VcRedist -Path C:\Temp\VcRedists
-Install-VcRedist -VcList $VcRedists -Silent</dev:code>
+        <dev:code>Get-VcList -Release "2012","2013","2017" -Architecture x64 |
+    Save-VcRedist -Path C:\Temp\VcRedists |
+    Install-VcRedist -Silent</dev:code>
         <dev:remarks>
           <maml:para>Descripción: Instala todos los Redistribuibles de Visual C++ compatibles de forma completamente silenciosa.</maml:para>
         </dev:remarks>
@@ -1857,14 +1789,15 @@ Install-VcRedist -VcList $VcRedists -Silent</dev:code>
       <command:verb>New</command:verb>
       <command:noun>VcMdtBundle</command:noun>
       <maml:description>
-        <maml:para>Crea aplicaciones de Redistribuibles de Visual C++ en un recurso compartido de Microsoft Deployment Toolkit.</maml:para>
+        <maml:para>Crea o reemplaza un conjunto de aplicaciones de MDT para los Redistribuibles de Visual C++ importados.</maml:para>
       </maml:description>
     </command:details>
     <maml:description>
-      <maml:para>Crea una aplicación en un recurso compartido de Microsoft Deployment Toolkit para cada Redistribuible de Visual C++ e incluye propiedades como la línea de comandos silenciosa de destino, la plataforma y la clave de desinstalación.</maml:para>
-      <maml:para>Usa Get-VcList y Save-VcRedist para descargar los redistribuibles y crear la matriz que se importará en MDT.</maml:para>
+      <maml:para>Crea un conjunto de aplicaciones de MDT cuyas dependencias son las aplicaciones existentes de Redistribuibles de Visual C++ en la carpeta seleccionada, ordenadas por versión.</maml:para>
+      <maml:para>Importa primero las aplicaciones con Import-VcMdtApplication. Usa -Force para reemplazar un conjunto existente; si el reemplazo falla, se restaura el conjunto anterior. Requiere Windows PowerShell 5.1 y el módulo Microsoft Deployment Toolkit.</maml:para>
+      <maml:para>Esta función está obsoleta porque Microsoft ya no admite MDT. Emite una advertencia y puede quitarse en una versión futura de VcRedist.</maml:para>
       <maml:para>El conjunto se importará en el recurso compartido de implementación de MDT con propiedades predeterminadas similares a las siguientes:</maml:para>
-      <maml:para>Location: Applications\VcRedists Name: Microsoft Visual C++ Redistributables Comments: Application bundle for installing Visual C++ Redistributables. Generated by New-VcMdtBundle Short name: Visual C++ Redistributables Version:2021-Mar-18 Publisher: Microsoft Language: en-US Dependencies: (VcRedists in the MDT share)</maml:para>
+      <maml:para>Location: Applications\VcRedists Name: Microsoft Visual C++ Redistributables Comments: Application bundle for installing Visual C++ Redistributables. Generated by New-VcMdtBundle Short name: Visual C++ Redistributables Version: (current culture's short date format) Publisher: Microsoft Language: en-US Dependencies: imported Visual C++ Redistributable applications</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
@@ -1903,7 +1836,7 @@ Install-VcRedist -VcList $VcRedists -Silent</dev:code>
             <maml:name>String</maml:name>
             <maml:uri />
           </dev:type>
-          <dev:defaultValue>DS001</dev:defaultValue>
+          <dev:defaultValue>DS099</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none">
           <maml:name>Publisher</maml:name>
@@ -1939,7 +1872,7 @@ Install-VcRedist -VcList $VcRedists -Silent</dev:code>
             <maml:name>String</maml:name>
             <maml:uri />
           </dev:type>
-          <dev:defaultValue>En-US</dev:defaultValue>
+          <dev:defaultValue>en-US</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>Force</maml:name>
@@ -2035,7 +1968,7 @@ Install-VcRedist -VcList $VcRedists -Silent</dev:code>
           <maml:name>String</maml:name>
           <maml:uri />
         </dev:type>
-        <dev:defaultValue>DS001</dev:defaultValue>
+        <dev:defaultValue>DS099</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none">
         <maml:name>Publisher</maml:name>
@@ -2071,7 +2004,7 @@ Install-VcRedist -VcList $VcRedists -Silent</dev:code>
           <maml:name>String</maml:name>
           <maml:uri />
         </dev:type>
-        <dev:defaultValue>En-US</dev:defaultValue>
+        <dev:defaultValue>en-US</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
         <maml:name>WhatIf</maml:name>
@@ -2129,25 +2062,23 @@ Install-VcRedist -VcList $VcRedists -Silent</dev:code>
     <command:examples>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
-        <dev:code>Get-VcList | Save-VcRedist -Path C:\Temp\VcRedist | Import-VcMdtApplication -Path C:\Temp\VcRedist -MdtPath \\server\deployment</dev:code>
+        <dev:code>Get-VcList | Save-VcRedist -Path C:\Temp\VcRedist | Import-VcMdtApplication -MdtPath \\server\deployment
+New-VcMdtBundle -MdtPath \\server\deployment</dev:code>
         <dev:remarks>
           <maml:para>Descripción: Obtiene la lista de Redistribuibles de Visual C++, los descarga en C:\Temp\VcRedist e importa cada redistribuible en el recurso compartido de implementación de MDT ubicado en \server\deployment.</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
-        <dev:code>$VcList = Get-VcList -ExportAll | Save-VcRedist -Path C:\Temp\VcRedist
-Import-VcMdtApplication -VcList $VcList -MdtPath \\server\deployment -Bundle</dev:code>
+        <dev:code>$VcList = Get-VcList -Export All | Save-VcRedist -Path C:\Temp\VcRedist
+Import-VcMdtApplication -VcList $VcList -MdtPath \\server\deployment
+New-VcMdtBundle -MdtPath \\server\deployment -Force</dev:code>
         <dev:remarks>
           <maml:para>Descripción: Obtiene la lista de Redistribuibles de Visual C++ compatibles y no compatibles en la variable $VcList, los descarga en C:\Temp\VcRedist, importa cada redistribuible en el recurso compartido de implementación de MDT ubicado en \server\deployment y crea un conjunto de aplicaciones.</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>
     <command:relatedLinks>
-      <maml:navigationLink>
-        <maml:linkText>Online Version:</maml:linkText>
-        <maml:uri>https://vcredist.com/import-vcmdtapplication/</maml:uri>
-      </maml:navigationLink>
       <maml:navigationLink>
         <maml:linkText>Crear un conjunto de redistribuibles en MDT:</maml:linkText>
         <maml:uri>https://vcredist.com/new-vcmdtbundle/</maml:uri>
@@ -2340,7 +2271,7 @@ Remove-VcIntuneApplication -VcList $VcList -Confirm:$false</dev:code>
             <maml:name>String</maml:name>
             <maml:uri />
           </dev:type>
-          <dev:defaultValue>(Resolve-Path -Path $PWD)</dev:defaultValue>
+          <dev:defaultValue>(Resolve-Path -LiteralPath $PWD)</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none">
           <maml:name>Proxy</maml:name>
@@ -2357,7 +2288,7 @@ Remove-VcIntuneApplication -VcList $VcList -Confirm:$false</dev:code>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="5" aliases="none">
           <maml:name>ProxyCredential</maml:name>
           <maml:description>
-            <maml:para>Especifica una cuenta de usuario con permiso para usar el servidor proxy indicado por el parámetro Proxy. De forma predeterminada, se usa el usuario actual.</maml:para>
+            <maml:para>Especifica una cuenta de usuario con permiso para usar el servidor proxy indicado por el parámetro Proxy. De forma predeterminada, no se proporcionan credenciales de proxy.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">PSCredential</command:parameterValue>
           <dev:type>
@@ -2365,29 +2296,6 @@ Remove-VcIntuneApplication -VcList $VcList -Confirm:$false</dev:code>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>[System.Management.Automation.PSCredential]::Empty</dev:defaultValue>
-        </command:parameter>
-        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
-          <maml:name>ForceWebRequest</maml:name>
-          <maml:description>
-            <maml:para>Fuerza el uso de Invoke-WebRequest en lugar de Start-BitsTransfer. Se incluye únicamente por compatibilidad con versiones anteriores.</maml:para>
-          </maml:description>
-          <dev:type>
-            <maml:name>SwitchParameter</maml:name>
-            <maml:uri />
-          </dev:type>
-          <dev:defaultValue>False</dev:defaultValue>
-        </command:parameter>
-        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
-          <maml:name>Priority</maml:name>
-          <maml:description>
-            <maml:para>Fuerza la prioridad al usar Start-BitsTransfer. Se incluye únicamente por compatibilidad con versiones anteriores.</maml:para>
-          </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
-          <dev:type>
-            <maml:name>String</maml:name>
-            <maml:uri />
-          </dev:type>
-          <dev:defaultValue>Foreground</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="wi">
           <maml:name>WhatIf</maml:name>
@@ -2437,7 +2345,7 @@ Remove-VcIntuneApplication -VcList $VcList -Confirm:$false</dev:code>
           <maml:name>UserAgent</maml:name>
           <maml:description>
             <maml:para>Especifica una cadena de agente de usuario para la solicitud web.</maml:para>
-            <maml:para>El agente de usuario predeterminado identifica el módulo; por ejemplo: VcRedist/5.0.0 (https://github.com/EUCPilots/vcredist; PowerShell 7.5.0; Win32NT 10.0.26100.0)</maml:para>
+            <maml:para>El agente de usuario predeterminado identifica el módulo; por ejemplo: VcRedist/&lt;versión del módulo&gt; (https://github.com/EUCPilots/vcredist; PowerShell &lt;versión&gt;; &lt;SO&gt; &lt;versión&gt;)</maml:para>
             <maml:para>Para usar en su lugar una cadena de agente de usuario de navegador, utiliza las propiedades de la clase PSUserAgent, como Chrome: Save-VcRedist -UserAgent ([Microsoft.PowerShell.Commands.PSUserAgent]::Chrome)</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
@@ -2445,7 +2353,7 @@ Remove-VcIntuneApplication -VcList $VcList -Confirm:$false</dev:code>
             <maml:name>String</maml:name>
             <maml:uri />
           </dev:type>
-          <dev:defaultValue>None</dev:defaultValue>
+          <dev:defaultValue>(Get-VcUserAgent)</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
           <maml:name>ProgressAction</maml:name>
@@ -2484,31 +2392,7 @@ Remove-VcIntuneApplication -VcList $VcList -Confirm:$false</dev:code>
           <maml:name>String</maml:name>
           <maml:uri />
         </dev:type>
-        <dev:defaultValue>(Resolve-Path -Path $PWD)</dev:defaultValue>
-      </command:parameter>
-      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
-        <maml:name>ForceWebRequest</maml:name>
-        <maml:description>
-          <maml:para>Fuerza el uso de Invoke-WebRequest en lugar de Start-BitsTransfer. Se incluye únicamente por compatibilidad con versiones anteriores.</maml:para>
-        </maml:description>
-        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
-        <dev:type>
-          <maml:name>SwitchParameter</maml:name>
-          <maml:uri />
-        </dev:type>
-        <dev:defaultValue>False</dev:defaultValue>
-      </command:parameter>
-      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
-        <maml:name>Priority</maml:name>
-        <maml:description>
-          <maml:para>Fuerza la prioridad al usar Start-BitsTransfer. Se incluye únicamente por compatibilidad con versiones anteriores.</maml:para>
-        </maml:description>
-        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
-        <dev:type>
-          <maml:name>String</maml:name>
-          <maml:uri />
-        </dev:type>
-        <dev:defaultValue>Foreground</dev:defaultValue>
+        <dev:defaultValue>(Resolve-Path -LiteralPath $PWD)</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none">
         <maml:name>Proxy</maml:name>
@@ -2525,7 +2409,7 @@ Remove-VcIntuneApplication -VcList $VcList -Confirm:$false</dev:code>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="5" aliases="none">
         <maml:name>ProxyCredential</maml:name>
         <maml:description>
-          <maml:para>Especifica una cuenta de usuario con permiso para usar el servidor proxy indicado por el parámetro Proxy. De forma predeterminada, se usa el usuario actual.</maml:para>
+          <maml:para>Especifica una cuenta de usuario con permiso para usar el servidor proxy indicado por el parámetro Proxy. De forma predeterminada, no se proporcionan credenciales de proxy.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">PSCredential</command:parameterValue>
         <dev:type>
@@ -2586,7 +2470,7 @@ Remove-VcIntuneApplication -VcList $VcList -Confirm:$false</dev:code>
         <maml:name>UserAgent</maml:name>
         <maml:description>
           <maml:para>Especifica una cadena de agente de usuario para la solicitud web.</maml:para>
-          <maml:para>El agente de usuario predeterminado identifica el módulo; por ejemplo: VcRedist/5.0.0 (https://github.com/EUCPilots/vcredist; PowerShell 7.5.0; Win32NT 10.0.26100.0)</maml:para>
+          <maml:para>El agente de usuario predeterminado identifica el módulo; por ejemplo: VcRedist/&lt;versión del módulo&gt; (https://github.com/EUCPilots/vcredist; PowerShell &lt;versión&gt;; &lt;SO&gt; &lt;versión&gt;)</maml:para>
           <maml:para>Para usar en su lugar una cadena de agente de usuario de navegador, utiliza las propiedades de la clase PSUserAgent, como Chrome: Save-VcRedist -UserAgent ([Microsoft.PowerShell.Commands.PSUserAgent]::Chrome)</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
@@ -2594,7 +2478,7 @@ Remove-VcIntuneApplication -VcList $VcList -Confirm:$false</dev:code>
           <maml:name>String</maml:name>
           <maml:uri />
         </dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>(Get-VcUserAgent)</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
         <maml:name>ProgressAction</maml:name>
@@ -2683,12 +2567,12 @@ Save-VcRedist -VcList $VcList -Path C:\Redist</dev:code>
       <command:verb>Test</command:verb>
       <command:noun>VcRedistUri</command:noun>
       <maml:description>
-        <maml:para>Comprueba que las descargas de los Redistribuibles de Visual C++ enumerados en el manifiesto devuelto por Get-VcList estén disponibles (es decir, que devuelvan una respuesta HTTP 200).</maml:para>
+        <maml:para>Comprueba si se puede acceder a la URI de descarga de cada Redistribuible de Visual C++.</maml:para>
       </maml:description>
     </command:details>
     <maml:description>
-      <maml:para>Comprueba que las descargas de los Redistribuibles de Visual C++ enumerados en el manifiesto devuelto por Get-VcList estén disponibles (es decir, que devuelvan una respuesta HTTP 200).</maml:para>
-      <maml:para>La función devuelve un valor verdadero o falso por cada Redistribuible de Visual C++ que se le pasa.</maml:para>
+      <maml:para>Para cada entrada, valida que la URI use HTTPS y un host permitido y, después, envía una solicitud HEAD con un tiempo de espera de 30 segundos.</maml:para>
+      <maml:para>Devuelve un objeto de resultado por cada entrada, con las propiedades Result, Release, Architecture, Version y URI. Result es true si la solicitud HTTPS HEAD se realiza correctamente y false si la URI no está permitida o la solicitud falla.</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
@@ -2705,7 +2589,7 @@ Save-VcRedist -VcList $VcList -Path C:\Redist</dev:code>
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none">
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
           <maml:name>Proxy</maml:name>
           <maml:description>
             <maml:para>Especifica un servidor proxy para la solicitud, en lugar de conectarse directamente al recurso de Internet. Introduce el URI de un servidor proxy de red.</maml:para>
@@ -2717,10 +2601,10 @@ Save-VcRedist -VcList $VcList -Path C:\Redist</dev:code>
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="5" aliases="none">
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none">
           <maml:name>ProxyCredential</maml:name>
           <maml:description>
-            <maml:para>Especifica una cuenta de usuario con permiso para usar el servidor proxy indicado por el parámetro Proxy. De forma predeterminada, se usa el usuario actual.</maml:para>
+            <maml:para>Especifica una cuenta de usuario con permiso para usar el servidor proxy indicado por el parámetro Proxy. De forma predeterminada, no se proporcionan credenciales de proxy.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">PSCredential</command:parameterValue>
           <dev:type>
@@ -2767,7 +2651,7 @@ Save-VcRedist -VcList $VcList -Path C:\Redist</dev:code>
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none">
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
         <maml:name>Proxy</maml:name>
         <maml:description>
           <maml:para>Especifica un servidor proxy para la solicitud, en lugar de conectarse directamente al recurso de Internet. Introduce el URI de un servidor proxy de red.</maml:para>
@@ -2779,10 +2663,10 @@ Save-VcRedist -VcList $VcList -Path C:\Redist</dev:code>
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="5" aliases="none">
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none">
         <maml:name>ProxyCredential</maml:name>
         <maml:description>
-          <maml:para>Especifica una cuenta de usuario con permiso para usar el servidor proxy indicado por el parámetro Proxy. De forma predeterminada, se usa el usuario actual.</maml:para>
+          <maml:para>Especifica una cuenta de usuario con permiso para usar el servidor proxy indicado por el parámetro Proxy. De forma predeterminada, no se proporcionan credenciales de proxy.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">PSCredential</command:parameterValue>
         <dev:type>
@@ -2857,7 +2741,7 @@ Test-VcRedistUri -VcList $VcList</dev:code>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 4 --------------------------</maml:title>
-        <dev:code>Test-VcRedistUri -VcList (Get-VcList -ExportAll)</dev:code>
+        <dev:code>Test-VcRedistUri -VcList (Get-VcList -Export All)</dev:code>
         <dev:remarks>
           <maml:para>Descripción: Exporta todos los Redistribuibles de Visual C++ compatibles y no compatibles, y comprueba las descargas para determinar si son válidas.</maml:para>
         </dev:remarks>
@@ -2865,12 +2749,8 @@ Test-VcRedistUri -VcList $VcList</dev:code>
     </command:examples>
     <command:relatedLinks>
       <maml:navigationLink>
-        <maml:linkText>Online Version:</maml:linkText>
-        <maml:uri>https://vcredist.com/test-vcredisturi/</maml:uri>
-      </maml:navigationLink>
-      <maml:navigationLink>
-        <maml:linkText>Descargar los Redistribuibles:</maml:linkText>
-        <maml:uri>https://vcredist.com/save-vcredist/</maml:uri>
+        <maml:linkText>Probar descargas de Redistribuibles:</maml:linkText>
+        <maml:uri>https://stealthpuppy.com/vcredist/test/</maml:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -3113,10 +2993,6 @@ Test-VcRedistUri -VcList $VcList</dev:code>
     </command:examples>
     <command:relatedLinks>
       <maml:navigationLink>
-        <maml:linkText>Online Version:</maml:linkText>
-        <maml:uri>https://vcredist.com/install-vcredist/</maml:uri>
-      </maml:navigationLink>
-      <maml:navigationLink>
         <maml:linkText>Desinstalar los Redistribuibles:</maml:linkText>
         <maml:uri>https://vcredist.com/uninstall-vcredist/</maml:uri>
       </maml:navigationLink>
@@ -3128,12 +3004,12 @@ Test-VcRedistUri -VcList $VcList</dev:code>
       <command:verb>Update</command:verb>
       <command:noun>VcMdtApplication</command:noun>
       <maml:description>
-        <maml:para>Crea aplicaciones de Redistribuibles de Visual C++ en un recurso compartido de Microsoft Deployment Toolkit.</maml:para>
+        <maml:para>Actualiza las aplicaciones existentes de Redistribuibles de Visual C++ en un recurso compartido de Microsoft Deployment Toolkit.</maml:para>
       </maml:description>
     </command:details>
     <maml:description>
-      <maml:para>Crea una aplicación en un recurso compartido de Microsoft Deployment Toolkit para cada Redistribuible de Visual C++ e incluye propiedades como la línea de comandos silenciosa de destino, la plataforma y la clave de desinstalación.</maml:para>
-      <maml:para>Usa Get-VcList y Save-VcRedist para descargar los redistribuibles y crear la matriz que se importará en MDT.</maml:para>
+      <maml:para>Busca aplicaciones existentes de MDT por su nombre corto y actualiza el contenido del instalador y las propiedades de la aplicación cuando cambia la versión del manifiesto, el código del producto o el comando de instalación. No crea aplicaciones que falten. Requiere Windows PowerShell 5.1 y el módulo Microsoft Deployment Toolkit.</maml:para>
+      <maml:para>Esta función está obsoleta porque Microsoft ya no admite MDT. Emite una advertencia y puede quitarse en una versión futura de VcRedist.</maml:para>
       <maml:para>Las aplicaciones se actualizarán en el recurso compartido de implementación de MDT con propiedades predeterminadas similares a las siguientes:</maml:para>
       <maml:para>Location: Applications\VcRedists Name: Visual C++ Redistributable 2019 x86 14.28.29913.0 Comments: Generated by Import-VcMdtApplication Short name: Visual C++ Redistributable for Visual Studio 2019 x86 Version: 14.28.29913.0 Publisher: Microsoft Language: en-US Source directory: .\Applications\Microsoft VcRedist\2019\14.28.29913.0\x86 Quiet install command: .\VC_redist.x86.exe /install /quiet /norestart Working directory: .\Applications\Microsoft VcRedist\2019\14.28.29913.0\x86 Uninstall registry key name: {03d1453c-7d5c-479c-afea-8482f406e036} Hide this application in the Deployment Wizard: Yes</maml:para>
     </maml:description>
@@ -3162,7 +3038,7 @@ Test-VcRedistUri -VcList $VcList</dev:code>
             <maml:name>String</maml:name>
             <maml:uri />
           </dev:type>
-          <dev:defaultValue>DS001</dev:defaultValue>
+          <dev:defaultValue>DS099</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none">
           <maml:name>Publisher</maml:name>
@@ -3232,18 +3108,6 @@ Test-VcRedistUri -VcList $VcList</dev:code>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>False</dev:defaultValue>
-        </command:parameter>
-        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
-          <maml:name>Path</maml:name>
-          <maml:description>
-            <maml:para>Este parámetro está obsoleto y se ignora. El objeto pasado a -VcList debe tener la propiedad Path.</maml:para>
-          </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
-          <dev:type>
-            <maml:name>String</maml:name>
-            <maml:uri />
-          </dev:type>
-          <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
           <maml:name>ProgressAction</maml:name>
@@ -3318,7 +3182,7 @@ Test-VcRedistUri -VcList $VcList</dev:code>
           <maml:name>String</maml:name>
           <maml:uri />
         </dev:type>
-        <dev:defaultValue>DS001</dev:defaultValue>
+        <dev:defaultValue>DS099</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none">
         <maml:name>Publisher</maml:name>
@@ -3356,18 +3220,6 @@ Test-VcRedistUri -VcList $VcList</dev:code>
         </dev:type>
         <dev:defaultValue>False</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
-        <maml:name>Path</maml:name>
-        <maml:description>
-          <maml:para>Este parámetro está obsoleto y se ignora. El objeto pasado a -VcList debe tener la propiedad Path.</maml:para>
-        </maml:description>
-        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
-        <dev:type>
-          <maml:name>String</maml:name>
-          <maml:uri />
-        </dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
-      </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
         <maml:name>ProgressAction</maml:name>
         <maml:description>
@@ -3400,18 +3252,19 @@ Test-VcRedistUri -VcList $VcList</dev:code>
     <command:examples>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
-        <dev:code>Get-VcList | Save-VcRedist -Path C:\Temp\VcRedist | Import-VcMdtApp -Path C:\Temp\VcRedist -MdtPath \\server\deployment</dev:code>
+        <dev:code>Get-VcList | Save-VcRedist -Path C:\Temp\VcRedist |
+    Update-VcMdtApplication -MdtPath \\server\deployment</dev:code>
         <dev:remarks>
-          <maml:para>Descripción: Obtiene la lista predeterminada de Redistribuibles de Visual C++ compatibles, los descarga en C:\Temp\VcRedist e importa cada redistribuible en el recurso compartido de implementación de MDT ubicado en \server\deployment.</maml:para>
+          <maml:para>Descripción: Obtiene y descarga la lista predeterminada de redistribuibles compatibles y actualiza las aplicaciones coincidentes en el recurso compartido de implementación de MDT.</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
         <dev:code>$VcList = Get-VcList -Export All
 Save-VcRedist -VcList $VcList -Path C:\Temp\VcRedist
-Import-VcMdtApp -VcList $VcList -Path C:\Temp\VcRedist -MdtPath \\server\deployment -Bundle</dev:code>
+Update-VcMdtApplication -VcList $VcList -MdtPath \\server\deployment -Silent</dev:code>
         <dev:remarks>
-          <maml:para>Descripción: Obtiene la lista de Redistribuibles de Visual C++ compatibles y no compatibles en la variable $VcList, los descarga en C:\Temp\VcRedist, importa cada redistribuible en el recurso compartido de implementación de MDT ubicado en \server\deployment y crea un conjunto de aplicaciones.</maml:para>
+          <maml:para>Descripción: Descarga redistribuibles compatibles y no compatibles y actualiza las aplicaciones coincidentes de MDT con comandos de instalación silenciosa.</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>
@@ -3432,9 +3285,10 @@ Import-VcMdtApp -VcList $VcList -Path C:\Temp\VcRedist -MdtPath \\server\deploym
       </maml:description>
     </command:details>
     <maml:description>
-      <maml:para>Después de importar o agregar aplicaciones de Redistribuibles de Visual C++ a un recurso compartido de Microsoft Deployment Toolkit, se puede actualizar un conjunto de aplicaciones existente con los GUID de las nuevas aplicaciones de Redistribuibles de Visual C++.</maml:para>
+      <maml:para>Después de importar o agregar aplicaciones de Redistribuibles de Visual C++ a un recurso compartido de Microsoft Deployment Toolkit, se puede actualizar un conjunto de aplicaciones existente con los GUID de las nuevas aplicaciones de Redistribuibles de Visual C++. La función actualiza las dependencias y la versión del conjunto, pero no importa aplicaciones. Requiere Windows PowerShell 5.1 y el módulo Microsoft Deployment Toolkit.</maml:para>
+      <maml:para>Esta función está obsoleta porque Microsoft ya no admite MDT. Emite una advertencia y puede quitarse en una versión futura de VcRedist.</maml:para>
       <maml:para>El conjunto se actualizará en el recurso compartido de implementación de MDT con propiedades predeterminadas similares a las siguientes:</maml:para>
-      <maml:para>Location: Applications\VcRedists Name: Microsoft Visual C++ Redistributables Comments: Application bundle for installing Visual C++ Redistributables. Generated by New-VcMdtBundle Short name: Visual C++ Redistributables Version:2021-Mar-18 Publisher: Microsoft Language: en-US Dependencies: (VcRedists in the MDT share)</maml:para>
+      <maml:para>Location: Applications\VcRedists Name: Microsoft Visual C++ Redistributables Comments: Application bundle for installing Visual C++ Redistributables. Generated by New-VcMdtBundle Short name: Visual C++ Redistributables Version: (current culture's short date format) Publisher: Microsoft Language: en-US Dependencies: imported Visual C++ Redistributable applications</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
@@ -3461,7 +3315,7 @@ Import-VcMdtApp -VcList $VcList -Path C:\Temp\VcRedist -MdtPath \\server\deploym
             <maml:name>String</maml:name>
             <maml:uri />
           </dev:type>
-          <dev:defaultValue>DS001</dev:defaultValue>
+          <dev:defaultValue>DS099</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none">
           <maml:name>Publisher</maml:name>
@@ -3570,7 +3424,7 @@ Import-VcMdtApp -VcList $VcList -Path C:\Temp\VcRedist -MdtPath \\server\deploym
           <maml:name>String</maml:name>
           <maml:uri />
         </dev:type>
-        <dev:defaultValue>DS001</dev:defaultValue>
+        <dev:defaultValue>DS099</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none">
         <maml:name>Publisher</maml:name>
@@ -3652,11 +3506,11 @@ Import-VcMdtApp -VcList $VcList -Path C:\Temp\VcRedist -MdtPath \\server\deploym
     <command:examples>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
-        <dev:code>Get-VcList | Save-VcRedist -Path C:\Temp\VcRedist
-Update-VcMdtApplication -VcList (Get-VcList) -Path C:\Temp\VcRedist -MdtPath \\server\deployment
+        <dev:code>Get-VcList | Save-VcRedist -Path C:\Temp\VcRedist |
+    Import-VcMdtApplication -MdtPath \\server\deployment
 Update-VcMdtBundle -MdtPath \\server\deployment</dev:code>
         <dev:remarks>
-          <maml:para>Descripción: Obtiene la lista de Redistribuibles de Visual C++, los descarga en C:\Temp\VcRedist y actualiza cada redistribuible en el recurso compartido de implementación de MDT ubicado en \server\deployment.</maml:para>
+          <maml:para>Descripción: Importa los redistribuibles compatibles predeterminados y actualiza las dependencias del conjunto existente con las aplicaciones importadas.</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>

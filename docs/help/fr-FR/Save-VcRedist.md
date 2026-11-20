@@ -15,7 +15,7 @@ Cette sortie peut ensuite être transmise aux autres fonctions qui nécessitent 
 ## SYNTAX
 
 ```
-Save-VcRedist [-VcList] <PSObject> [[-Path] <String>] [-ForceWebRequest] [-Priority <String>]
+Save-VcRedist [-VcList] <PSObject> [[-Path] <String>]
  [[-Proxy] <String>] [[-ProxyCredential] <PSCredential>] [-UserAgent <String>] [-ShowProgress] [-SkipAuthenticodeValidation]
  [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
@@ -103,39 +103,7 @@ Aliases:
 
 Required: False
 Position: 2
-Default value: (Resolve-Path -Path $PWD)
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ForceWebRequest
-Force l’utilisation de Invoke-WebRequest à la place de Start-BitsTransfer.
-Conservé uniquement pour assurer la compatibilité avec les versions précédentes.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Priority
-Force la priorité lors de l’utilisation de Start-BitsTransfer.
-Conservé uniquement pour assurer la compatibilité avec les versions précédentes.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: Foreground
+Default value: (Resolve-Path -LiteralPath $PWD)
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -158,7 +126,7 @@ Accept wildcard characters: False
 
 ### -ProxyCredential
 Spécifie un compte utilisateur autorisé à utiliser le serveur proxy indiqué par le paramètre Proxy.
-Par défaut, il s’agit de l’utilisateur actuel.
+Par défaut, aucun identifiant de proxy n’est fourni.
 
 ```yaml
 Type: PSCredential
@@ -236,7 +204,7 @@ Accept wildcard characters: False
 ### -UserAgent
 Spécifie la chaîne d’agent utilisateur de la requête Web.
 
-L’agent utilisateur par défaut identifie le module, par exemple : VcRedist/5.0.0 (https://github.com/EUCPilots/vcredist; PowerShell 7.5.0; Win32NT 10.0.26100.0)
+L’agent utilisateur par défaut identifie le module, par exemple : VcRedist/<version du module> (https://github.com/EUCPilots/vcredist; PowerShell <version> ; <OS> <version>)
 
 Pour utiliser plutôt une chaîne d’agent utilisateur de navigateur, utilisez les propriétés de la classe PSUserAgent, par exemple Chrome : Save-VcRedist -UserAgent ([Microsoft.PowerShell.Commands.PSUserAgent]::Chrome)
 
@@ -247,7 +215,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: (Get-VcUserAgent)
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

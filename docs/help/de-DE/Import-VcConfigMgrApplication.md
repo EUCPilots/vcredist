@@ -13,7 +13,7 @@ Erstellt Anwendungen für Visual C++ Redistributables an einem ConfigMgr-Standor
 ## SYNTAX
 
 ```
-Import-VcConfigMgrApplication [-VcList] <PSObject> [-Path <String>] [-CMPath] <String> [-SMSSiteCode] <String>
+Import-VcConfigMgrApplication [-VcList] <PSObject> [-CMPath] <String> [-SMSSiteCode] <String>
  [[-AppFolder] <String>] [-Silent] [-NoCopy] [[-Publisher] <String>] [[-Keyword] <String>]
  [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
@@ -192,21 +192,6 @@ Aliases: cf
 Required: False
 Position: Named
 Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Path
-Dieser Parameter ist veraltet und wird ignoriert. Das an -VcList übergebene Objekt muss die Eigenschaft Path enthalten.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

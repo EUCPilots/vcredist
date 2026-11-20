@@ -147,4 +147,4 @@ Author: Aaron Parker
 
 ## RELATED LINKS
 
-[Import Redistributables into MDT](https://vcredist.com/import-vcmdtapplication/)
+[Import Redistributables into Intune](https://vcredist.com/import-vcintuneapplication/)

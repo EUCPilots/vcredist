@@ -13,7 +13,7 @@ schema: 2.0.0
 ## SYNTAX
 
 ```
-Install-VcRedist [-VcList] <PSObject> [-Path <String>] [-Silent] [-Force] [-ProgressAction <ActionPreference>]
+Install-VcRedist [-VcList] <PSObject> [-Silent] [-Force] [-ProgressAction <ActionPreference>]
  [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
@@ -21,31 +21,35 @@ Install-VcRedist [-VcList] <PSObject> [-Path <String>] [-Silent] [-Force] [-Prog
 Get-VcList で作成された一覧を基に、Save-VcRedist でローカルのフォルダー構成にダウンロードした Microsoft Visual C++ Redistributable をインストールします。
 Redistributable のパッシブ インストールとサイレント インストールの両方をサポートします。
 HashiCorp Packer を使用したゴールド イメージの作成など、実行時に Redistributable をダウンロードしてインストールする Windows 展開に便利です。
-マニフェストの SupportedArchitecture リストにネイティブ Windows アーキテクチャが含まれないインストーラーは、-Force を指定していても警告とともにスキップされます。
+マニフェストの SupportedArchitecture リストにネイティブ Windows アーキテクチャが含まれないインストーラーは警告とともにスキップされます。Windows ARM64 では、-Force を指定すると x64 パッケージもインストールできます。
 各入力オブジェクトには、空でない SupportedArchitecture リストが必要です。
+インストールには、昇格された PowerShell セッションが必要です。
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 ```
-$VcRedists = Get-VcList -Release 2013, 2019 -Architecture x64
-Install-VcRedist -VcList $VcRedists -Path C:\Temp\VcRedists
+Get-VcList -Release 2013, 2019 -Architecture x64 |
+    Save-VcRedist -Path C:\Temp\VcRedists |
+    Install-VcRedist
 ```
 
 説明: $VcRedists に含まれ、C:\Temp\VcRedists にダウンロードされた 2013 および 2019 の 64 ビット Visual C++ Redistributable をインストールします。
 
 ### EXAMPLE 2
 ```
-$VcRedists = Get-VcList -Release "2012","2013","2017" -Architecture x64
-Install-VcRedist -VcList $VcRedists -Path C:\Temp\VcRedists
+Get-VcList -Release "2012","2013","2017" -Architecture x64 |
+    Save-VcRedist -Path C:\Temp\VcRedists |
+    Install-VcRedist
 ```
 
 説明: $VcRedists に含まれ、C:\Temp\VcRedists にダウンロードされた 64 ビットの 2012、2013、2017 Visual C++ Redistributable のみをインストールします。
 
 ### EXAMPLE 3
 ```
-$VcRedists = Get-VcList -Release "2012","2013","2017" -Architecture x64 | Save-VcRedist -Path C:\Temp\VcRedists
-Install-VcRedist -VcList $VcRedists -Silent
+Get-VcList -Release "2012","2013","2017" -Architecture x64 |
+    Save-VcRedist -Path C:\Temp\VcRedists |
+    Install-VcRedist -Silent
 ```
 
 説明: サポート対象のすべての Visual C++ Redistributable を完全なサイレント インストールでインストールします。
@@ -126,21 +130,6 @@ Aliases: cf
 Required: False
 Position: Named
 Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Path
-このパラメーターは廃止され、無視されます。-VcList に渡すオブジェクトに Path プロパティが必要です。
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

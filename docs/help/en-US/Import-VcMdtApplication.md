@@ -8,12 +8,12 @@ schema: 2.0.0
 # Import-VcMdtApplication
 
 ## SYNOPSIS
-Creates Visual C++ Redistributable applications in a Microsoft Deployment Toolkit share.
+Imports Visual C++ Redistributable applications into a Microsoft Deployment Toolkit share.
 
 ## SYNTAX
 
 ```
-Import-VcMdtApplication [-VcList] <PSObject> [-Path <String>] [-MdtPath] <String> [[-AppFolder] <String>]
+Import-VcMdtApplication [-VcList] <PSObject> [-MdtPath] <String> [[-AppFolder] <String>]
  [-Silent] [-DontHide] [-Force] [[-MdtDrive] <String>] [[-Publisher] <String>] [[-Language] <String>]
  [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
@@ -22,7 +22,10 @@ Import-VcMdtApplication [-VcList] <PSObject> [-Path <String>] [-MdtPath] <String
 Creates an application in a Microsoft Deployment Toolkit share for each Visual C++ Redistributable and includes properties such as target Silent command line, Platform and Uninstall key.
 Supported platforms are derived from the manifest. ARM64-only packages are skipped with a warning because MDT does not support ARM64 deployment.
 
-Use Get-VcList and Save-VcRedist to download the Redistributables and create the array for importing into MDT.
+Use Get-VcList and Save-VcRedist to download the Redistributables and pass the resulting objects to this function.
+The function requires Windows PowerShell 5.1 and the Microsoft Deployment Toolkit module.
+
+This function is deprecated because Microsoft no longer supports MDT. It emits a warning and may be removed in a future release of VcRedist.
 
 Applications will be imported into the MDT Deployment share with the default properties similar to the following:
 
@@ -32,18 +35,18 @@ Location: Applications\VcRedists Name: Visual C++ Redistributable 2019 x86 14.28
 
 ### EXAMPLE 1
 ```
-Get-VcList | Save-VcRedist -Path C:\Temp\VcRedist | Import-VcMdtApplication -Path C:\Temp\VcRedist -MdtPath \\server\deployment
+Get-VcList | Save-VcRedist -Path C:\Temp\VcRedist | Import-VcMdtApplication -MdtPath \\server\deployment
 ```
 
-Description: Retrieves the list of Visual C++ Redistributables, downloads them to C:\Temp\VcRedist and imports each Redistributable into the MDT deployment share at \server\deployment.
+Description: Retrieves the default list of supported Visual C++ Redistributables, downloads them to C:\Temp\VcRedist and imports each Redistributable into the MDT deployment share at \\server\deployment.
 
 ### EXAMPLE 2
 ```
-$VcList = Get-VcList -ExportAll | Save-VcRedist -Path C:\Temp\VcRedist
-Import-VcMdtApplication -VcList $VcList -MdtPath \\server\deployment -Bundle
+$VcList = Get-VcList -Export All | Save-VcRedist -Path C:\Temp\VcRedist
+Import-VcMdtApplication -VcList $VcList -MdtPath \\server\deployment -Force
 ```
 
-Description: Retrieves the list of supported and unsupported Visual C++ Redistributables in the variable $VcList, downloads them to C:\Temp\VcRedist, imports each Redistributable into the MDT deployment share at \server\deployment and creates an application bundle.
+Description: Retrieves supported and unsupported Redistributables, downloads them, and imports them into the MDT deployment share. Use New-VcMdtBundle separately to create a bundle.
 
 ## PARAMETERS
 
@@ -150,7 +153,7 @@ Aliases:
 
 Required: False
 Position: 5
-Default value: DS001
+Default value: DS099
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -180,7 +183,7 @@ Aliases:
 
 Required: False
 Position: 7
-Default value: En-US
+Default value: en-US
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -212,21 +215,6 @@ Aliases: cf
 Required: False
 Position: Named
 Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Path
-This parameter is obsolete and ignored. The Path property must be on the object passed to -VcList.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

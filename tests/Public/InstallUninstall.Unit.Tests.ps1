@@ -32,6 +32,21 @@ InModuleScope VcRedist {
             Should -Invoke Start-Process -Times 1
         }
 
+        It "Uses the expected install arguments when Silent is <Silent>" -ForEach @(
+            @{ Silent = $true; Arguments = "/quiet" }
+            @{ Silent = $false; Arguments = "/install" }
+        ) {
+            Mock Start-Process { [PSCustomObject]@{ ExitCode = 0 } }
+            if ($Silent) { $Item | Install-VcRedist -Silent | Out-Null }
+            else { $Item | Install-VcRedist | Out-Null }
+
+            Should -Invoke Start-Process -Times 1 -Exactly -ParameterFilter {
+                $FilePath -eq $Item.Path -and
+                $ArgumentList -eq $Arguments -and
+                $PassThru -and $Wait -and $NoNewWindow
+            }
+        }
+
         It "Warns that a restart is required for exit code <Code>" -ForEach @(@{ Code = 3010 }, @{ Code = 1641 }) {
             Mock Start-Process { [PSCustomObject]@{ ExitCode = $Code } }
             $Item | Install-VcRedist -Silent -WarningVariable "W" -WarningAction "SilentlyContinue" | Out-Null
@@ -48,6 +63,17 @@ InModuleScope VcRedist {
             Mock Start-Process { [PSCustomObject]@{ ExitCode = 0 } }
             { $Item | Install-VcRedist -Silent | Out-Null } | Should -Throw
             Should -Invoke Start-Process -Times 0
+        }
+
+        It "Warns and skips an installer file that is missing" {
+            Mock Start-Process { [PSCustomObject]@{ ExitCode = 0 } }
+            $Missing = $Item.PSObject.Copy()
+            $Missing.Path = Join-Path -Path $TestDrive -ChildPath "missing.exe"
+
+            $Missing | Install-VcRedist -WarningVariable "W" -WarningAction "SilentlyContinue" | Out-Null
+
+            ($W -join " ") | Should -Match "Cannot find"
+            Should -Invoke Start-Process -Times 0 -Exactly
         }
 
         It "Throws when not elevated" {
@@ -128,6 +154,16 @@ InModuleScope VcRedist {
             $Item | Install-VcRedist -Force | Out-Null
 
             Should -Invoke Start-Process -Times 1 -Exactly
+        }
+
+        It "Skips an already installed VcRedist unless Force is specified" {
+            Mock Get-InstalledVcRedist { @($Item) }
+            Mock Start-Process { [PSCustomObject]@{ ExitCode = 0 } }
+
+            $Item | Install-VcRedist -InformationVariable "Information" -InformationAction "Continue" | Out-Null
+
+            Should -Invoke Start-Process -Times 0 -Exactly
+            ($Information.MessageData -join " ") | Should -Match "already installed"
         }
 
         It "Uses manifest support for <Package> on <System>" -ForEach @(
@@ -222,11 +258,150 @@ InModuleScope VcRedist {
             Mock Test-Elevated { $true }
         }
 
-        It "Reports Uninstalled for exit code <Code>" -ForEach @(@{ Code = 0 }, @{ Code = 1605 }, @{ Code = 3010 }) {
+        It "Reports Uninstalled for exit code <Code>" -ForEach @(@{ Code = 0 }, @{ Code = 1641 }, @{ Code = 3010 }) {
             Mock Start-Process { [PSCustomObject]@{ ExitCode = $Code } }
             $Result = Uninstall-VcRedist -VcList $Item -Confirm:$false
             $Result.State | Should -Be "Uninstalled"
             $Result.ExitCode | Should -Be $Code
+        }
+
+        It "Reports Not installed for MSI exit code 1605" {
+            Mock Start-Process { [PSCustomObject]@{ ExitCode = 1605 } }
+            $Result = Uninstall-VcRedist -VcList $Item -Confirm:$false
+            $Result.State | Should -Be "Not installed"
+            $Result.ExitCode | Should -Be 1605
+        }
+
+        It "Builds the expected msiexec command for a valid product code" {
+            Mock Start-Process { [PSCustomObject]@{ ExitCode = 0 } }
+
+            $Result = Uninstall-VcRedist -VcList $Item -Confirm:$false
+
+            $Result.State | Should -Be "Uninstalled"
+            Should -Invoke Start-Process -Times 1 -Exactly -ParameterFilter {
+                $FilePath -like "*\System32\msiexec.exe" -and
+                $ArgumentList -eq "/uninstall {11111111-1111-1111-1111-111111111111} /quiet /norestart" -and
+                $PassThru -and $Wait -and $NoNewWindow
+            }
+        }
+
+        It "Builds the expected command for a quoted executable uninstall string" {
+            $Executable = Join-Path -Path $TestDrive -ChildPath "vendor uninstaller.exe"
+            Set-Content -LiteralPath $Executable -Value "x"
+            $ExeItem = $Item.PSObject.Copy()
+            $ExeItem | Add-Member -NotePropertyName "UninstallString" -NotePropertyValue "`"$Executable`" /custom"
+            Mock Start-Process { [PSCustomObject]@{ ExitCode = 0 } }
+
+            $Result = Uninstall-VcRedist -VcList $ExeItem -Confirm:$false
+
+            $Result.State | Should -Be "Uninstalled"
+            Should -Invoke Start-Process -Times 1 -Exactly -ParameterFilter {
+                $FilePath -eq $Executable -and
+                $ArgumentList -eq "/uninstall /quiet /norestart"
+            }
+        }
+
+        It "Filters manually selected installed redistributables by release and architecture" {
+            $Selected = $Item.PSObject.Copy()
+            $Selected.Name = "Selected"
+            $Selected.Release = "2019"
+            $Selected.Architecture = "x86"
+            $Selected.ProductCode = "{22222222-2222-2222-2222-222222222222}"
+            $Selected.SilentUninstall = "msiexec.exe /X$($Selected.ProductCode) /quiet"
+            $WrongArchitecture = $Selected.PSObject.Copy()
+            $WrongArchitecture.Name = "Wrong architecture"
+            $WrongArchitecture.Architecture = "x64"
+            $WrongRelease = $Selected.PSObject.Copy()
+            $WrongRelease.Name = "Wrong release"
+            $WrongRelease.Release = "14"
+            Mock Get-InstalledVcRedist { @($Selected, $WrongArchitecture, $WrongRelease) }
+            Mock Start-Process { [PSCustomObject]@{ ExitCode = 0 } }
+
+            $Results = @(Uninstall-VcRedist -Release "2019" -Architecture "x86" -Confirm:$false)
+
+            $Results.Count | Should -Be 1
+            $Results[0].Name | Should -Be "Selected"
+            Should -Invoke Start-Process -Times 1 -Exactly -ParameterFilter {
+                $ArgumentList -eq "/uninstall {22222222-2222-2222-2222-222222222222} /quiet /norestart"
+            }
+        }
+
+        It "Reports Not installed for a manifest entry whose product is absent" {
+            $Missing = $Item.PSObject.Copy()
+            $Missing.SilentUninstall = "`"$TestDrive/missing.exe`" /uninstall"
+            Mock Get-InstalledVcRedist { @() }
+            Mock Start-Process { [PSCustomObject]@{ ExitCode = 0 } }
+
+            $Result = $Missing | Uninstall-VcRedist -WarningAction "SilentlyContinue" -Confirm:$false
+
+            $Result.State | Should -Be "Not installed"
+            $Result.ExitCode | Should -BeNullOrEmpty
+            Should -Invoke Start-Process -Times 0 -Exactly
+        }
+
+        It "Reports each explicitly selected missing release and architecture" {
+            $Selected = $Item.PSObject.Copy()
+            $Selected.Release = "2019"
+            $Selected.Architecture = "x86"
+            Mock Get-InstalledVcRedist { @($Selected) }
+            Mock Start-Process { [PSCustomObject]@{ ExitCode = 0 } }
+
+            $Results = @(Uninstall-VcRedist -Release @("2019", "14") -Architecture @("x86", "x64") -Confirm:$false)
+
+            @($Results | Where-Object { $_.State -eq "Uninstalled" }).Count | Should -Be 1
+            $Missing = @($Results | Where-Object { $_.State -eq "Not installed" })
+            $Missing.Count | Should -Be 3
+            @($Missing | Where-Object { $_.Release -eq "2019" -and $_.Architecture -eq "x64" }).Count | Should -Be 1
+            @($Missing | Where-Object { $_.Release -eq "14" -and $_.Architecture -eq "x86" }).Count | Should -Be 1
+            @($Missing | Where-Object { $_.Release -eq "14" -and $_.Architecture -eq "x64" }).Count | Should -Be 1
+            foreach ($Entry in $Missing) {
+                $Entry.Name | Should -BeNullOrEmpty
+                $Entry.Version | Should -BeNullOrEmpty
+                $Entry.ExitCode | Should -BeNullOrEmpty
+            }
+            Should -Invoke Start-Process -Times 1 -Exactly
+        }
+
+        It "Does not report missing combinations from default selections" {
+            Mock Get-InstalledVcRedist { @() }
+            Mock Start-Process { [PSCustomObject]@{ ExitCode = 0 } }
+
+            @(Uninstall-VcRedist -Confirm:$false).Count | Should -Be 0
+            @(Uninstall-VcRedist -Release "14" -Confirm:$false).Count | Should -Be 0
+            @(Uninstall-VcRedist -Architecture "x64" -Confirm:$false).Count | Should -Be 0
+            Should -Invoke Start-Process -Times 0 -Exactly
+        }
+
+        It "Does not report an absent product when the input has no product code" {
+            $Missing = $Item.PSObject.Copy()
+            $Missing.ProductCode = $null
+            $Missing.SilentUninstall = "`"$TestDrive/missing.exe`" /uninstall"
+            Mock Get-InstalledVcRedist { @() }
+
+            $Result = $Missing | Uninstall-VcRedist -WarningAction "SilentlyContinue" -Confirm:$false
+
+            $Result.State | Should -Be "Failed"
+            Should -Invoke Get-InstalledVcRedist -Times 0 -Exactly
+        }
+
+        It "Reports Failed when the product is installed but its cached uninstaller is missing" {
+            $Missing = $Item.PSObject.Copy()
+            $Missing.SilentUninstall = "`"$TestDrive/missing.exe`" /uninstall"
+            Mock Get-InstalledVcRedist { @($Missing) }
+            Mock Start-Process { [PSCustomObject]@{ ExitCode = 0 } }
+
+            $Result = $Missing | Uninstall-VcRedist -WarningAction "SilentlyContinue" -Confirm:$false
+
+            $Result.State | Should -Be "Failed"
+            Should -Invoke Start-Process -Times 0 -Exactly
+        }
+
+        It "Surfaces an installed product query failure rather than reporting Not installed" {
+            $Missing = $Item.PSObject.Copy()
+            $Missing.SilentUninstall = "`"$TestDrive/missing.exe`" /uninstall"
+            Mock Get-InstalledVcRedist { throw "Registry unavailable" }
+
+            { $Missing | Uninstall-VcRedist -Confirm:$false } | Should -Throw "*Registry unavailable*"
         }
 
         It "Reports Failed for a failing exit code" {
@@ -243,9 +418,27 @@ InModuleScope VcRedist {
         It "Does not carry a previous exit code into the next item" {
             Mock Start-Process { [PSCustomObject]@{ ExitCode = 0 } }
             $Missing = [PSCustomObject]@{ Name = "Gone"; Release = "14"; Version = "1"; Architecture = "x64"; ProductCode = "x"; SilentUninstall = "`"$TestDrive/missing.exe`" /x" }
+            Mock Get-InstalledVcRedist { @($Missing) }
             $Results = Uninstall-VcRedist -VcList @($Item, $Missing) -WarningAction "SilentlyContinue" -Confirm:$false
             ($Results | Where-Object { $_.Name -eq "Gone" }).State | Should -Be "Failed"
             ($Results | Where-Object { $_.Name -eq "Gone" }).ExitCode | Should -BeNullOrEmpty
+        }
+
+        It "Does not start an uninstaller with WhatIf" {
+            Mock Start-Process { [PSCustomObject]@{ ExitCode = 0 } }
+
+            $Result = @(Uninstall-VcRedist -VcList $Item -Confirm:$false -WhatIf)
+
+            $Result | Should -BeNullOrEmpty
+            Should -Invoke Start-Process -Times 0 -Exactly
+        }
+
+        It "Throws when the input object has no uninstall command" {
+            $Invalid = $Item.PSObject.Copy()
+            $Invalid.PSObject.Properties.Remove("SilentUninstall")
+
+            { Uninstall-VcRedist -VcList $Invalid -Confirm:$false } |
+                Should -Throw "*Cannot find uninstall string*"
         }
 
         It "Skips msiexec uninstall with an invalid product code" {

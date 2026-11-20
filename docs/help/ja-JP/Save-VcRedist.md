@@ -15,7 +15,7 @@ Get-VcList の出力に Redistributable インストーラーのパスを Path �
 ## SYNTAX
 
 ```
-Save-VcRedist [-VcList] <PSObject> [[-Path] <String>] [-ForceWebRequest] [-Priority <String>]
+Save-VcRedist [-VcList] <PSObject> [[-Path] <String>]
  [[-Proxy] <String>] [[-ProxyCredential] <PSCredential>] [-UserAgent <String>] [-ShowProgress] [-SkipAuthenticodeValidation]
  [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
@@ -103,39 +103,7 @@ Aliases:
 
 Required: False
 Position: 2
-Default value: (Resolve-Path -Path $PWD)
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ForceWebRequest
-Start-BitsTransfer の代わりに Invoke-WebRequest を強制的に使用します。
-下位互換性のためにのみ含まれています。
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Priority
-Start-BitsTransfer の使用時に優先度を強制します。
-下位互換性のためにのみ含まれています。
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: Foreground
+Default value: (Resolve-Path -LiteralPath $PWD)
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -158,7 +126,7 @@ Accept wildcard characters: False
 
 ### -ProxyCredential
 Proxy パラメーターで指定したプロキシ サーバーを使用する権限を持つユーザー アカウントを指定します。
-既定では現在のユーザーが使用されます。
+既定では、プロキシ資格情報は指定されません。
 
 ```yaml
 Type: PSCredential
@@ -236,7 +204,7 @@ Accept wildcard characters: False
 ### -UserAgent
 Web 要求に使用するユーザー エージェント文字列を指定します。
 
-既定のユーザー エージェントはモジュールを識別します。例: VcRedist/5.0.0 (https://github.com/EUCPilots/vcredist; PowerShell 7.5.0; Win32NT 10.0.26100.0)
+既定のユーザー エージェントはモジュールを識別します。例: VcRedist/<module version> (https://github.com/EUCPilots/vcredist; PowerShell <version>; <OS> <version>)
 
 代わりにブラウザーのユーザー エージェント文字列を使用するには、PSUserAgent クラスのプロパティ (Chrome など) を指定します: Save-VcRedist -UserAgent ([Microsoft.PowerShell.Commands.PSUserAgent]::Chrome)
 
@@ -247,7 +215,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: (Get-VcUserAgent)
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

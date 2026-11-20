@@ -8,7 +8,7 @@ schema: 2.0.0
 # Save-VcRedist
 
 ## SYNOPSIS
-Downloads the Visual C++ Redistributables from an manifest returned by Get-VcList.
+Downloads the Visual C++ Redistributables from a manifest returned by Get-VcList.
 The output from Get-VcList is modified by adding the path to the Redistributable installer in the Path property.
 This output can then be passed to other functions that require the downloaded installer.
 
@@ -21,7 +21,7 @@ Save-VcRedist [-VcList] <PSObject> [[-Path] <String>]
 ```
 
 ## DESCRIPTION
-Downloads the Visual C++ Redistributables from an manifest returned by Get-VcList into a folder structure that represents release, version and processor architecture.
+Downloads the Visual C++ Redistributables from a manifest returned by Get-VcList into a folder structure that represents release, version and processor architecture.
 If the redistributable exists in the specified path, it will not be re-downloaded.
 
 By default, downloaded and reused installers are checked for a valid Microsoft Authenticode signature.
@@ -103,7 +103,7 @@ Aliases:
 
 Required: False
 Position: 2
-Default value: (Resolve-Path -Path $PWD)
+Default value: (Resolve-Path -LiteralPath $PWD)
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -126,7 +126,7 @@ Accept wildcard characters: False
 
 ### -ProxyCredential
 Specifies a user account that has permission to use the proxy server that is specified by the Proxy parameter.
-The default is the current user.
+By default, no proxy credentials are supplied.
 
 ```yaml
 Type: PSCredential
@@ -204,7 +204,7 @@ Accept wildcard characters: False
 ### -UserAgent
 Specifies a user agent string for the web request.
 
-The default user agent identifies the module, for example: VcRedist/5.0.0 (https://github.com/EUCPilots/vcredist; PowerShell 7.5.0; Win32NT 10.0.26100.0)
+The default user agent identifies the module, for example: VcRedist/<module version> (https://github.com/EUCPilots/vcredist; PowerShell <version>; <OS> <version>)
 
 To use a browser user agent string instead, use the properties of the PSUserAgent class, such as Chrome: Save-VcRedist -UserAgent ([Microsoft.PowerShell.Commands.PSUserAgent]::Chrome)
 
@@ -215,7 +215,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: (Get-VcUserAgent)
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

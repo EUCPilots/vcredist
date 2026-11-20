@@ -2,7 +2,7 @@ function New-VcMdtBundle {
     <#
         .EXTERNALHELP VcRedist-help.xml
     #>
-    [CmdletBinding(SupportsShouldProcess = $true, HelpURI = "https://vcredist.com/import-vcmdtapplication/")]
+    [CmdletBinding(SupportsShouldProcess = $true, HelpURI = "https://vcredist.com/new-vcmdtbundle/")]
     [OutputType([System.Management.Automation.PSObject])]
     param (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline)]
