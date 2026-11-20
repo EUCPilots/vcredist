@@ -1,6 +1,6 @@
 # Changelog
 
-## VERSION
+## 5.0.6-rc2
 
 * Adds manifest-defined install ordering, validates manifest release coverage, and preserves install order when exporting
 * Installs redistributables in the declared order, validates releases before starting installers, and supports forcing x64 installation on ARM64
