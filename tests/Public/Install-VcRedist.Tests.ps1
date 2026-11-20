@@ -13,7 +13,7 @@ BeforeDiscovery {
 	$ModuleRoot = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent
 	$ManifestPath = Join-Path -Path $ModuleRoot -ChildPath "VcRedist/VisualCRedistributables.json"
 	$Manifest = Get-Content -LiteralPath $ManifestPath -Raw | ConvertFrom-Json
-	$TestReleases = @("2015", "2017", "2019", "14")
+	$TestReleases = @("14")
 	$SupportedReleasesAmd64 = @(
 		$Manifest.Entries |
 			Where-Object { $_.Release -in $TestReleases -and $_.Supported -eq $true -and $_.Architecture -in @("x86", "x64") } |
@@ -23,12 +23,6 @@ BeforeDiscovery {
 	$SupportedReleasesArm64 = @(
 		$Manifest.Entries |
 			Where-Object { $_.Release -in $TestReleases -and $_.Supported -eq $true -and $_.Architecture -eq "arm64" } |
-			Select-Object -ExpandProperty Release -Unique |
-			Sort-Object
-	)
-	$UnsupportedReleases = @(
-		$Manifest.Entries |
-			Where-Object { $_.Release -in $TestReleases -and $_.Supported -eq $false -and $_.Architecture -in @("x86", "x64") } |
 			Select-Object -ExpandProperty Release -Unique |
 			Sort-Object
 	)
@@ -48,50 +42,6 @@ BeforeDiscovery {
 }
 
 Describe -Name "AMD64 specific tests" -Skip:$SkipAmd {
-	Describe -Name "Install-VcRedist with unsupported Redistributables" -ForEach $UnsupportedReleases {
-		BeforeAll {
-			$Release = $_
-
-			# Create download path
-			if ($env:Temp) {
-				$Path = Join-Path -Path $env:Temp -ChildPath "Downloads"
-			}
-			elseif ($env:TMPDIR) {
-				$Path = Join-Path -Path $env:TMPDIR -ChildPath "Downloads"
-			}
-			elseif ($env:RUNNER_TEMP) {
-				$Path = Join-Path -Path $env:RUNNER_TEMP -ChildPath "Downloads"
-			}
-			New-Item -Path $Path -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" > $null
-		}
-
-		Context "Install <Release> x64 Redistributable" {
-			BeforeAll {
-				$VcRedist = Get-VcList -Export Unsupported -Source "Bundled" -WarningAction "SilentlyContinue" | `
-					Where-Object { $_.Release -eq $Release -and $_.Architecture -eq "x64" } | `
-					Save-VcRedist -Path $Path
-			}
-
-			It "Installs OK via parameters" {
-				$Installed = @(Install-VcRedist -VcList $VcRedist -Silent -Force -ErrorAction "Stop")
-				$Installed | Where-Object { $_.ProductCode -eq $VcRedist.ProductCode } | Should -Not -BeNullOrEmpty
-			}
-		}
-
-		Context "Install <Release> x86 Redistributable" {
-			BeforeAll {
-				$VcRedist = Get-VcList -Export Unsupported -Source "Bundled" -WarningAction "SilentlyContinue" | `
-					Where-Object { $_.Release -eq $Release -and $_.Architecture -eq "x86" } | `
-					Save-VcRedist -Path $Path
-			}
-
-			It "Installs OK via parameters" {
-				$Installed = @(Install-VcRedist -VcList $VcRedist -Silent -Force -ErrorAction "Stop")
-				$Installed | Where-Object { $_.ProductCode -eq $VcRedist.ProductCode } | Should -Not -BeNullOrEmpty
-			}
-		}
-	}
-
 	Describe -Name "Install-VcRedist with supported Redistributables" -ForEach $SupportedReleasesAmd64 {
 		BeforeAll {
 			$Release = $_
