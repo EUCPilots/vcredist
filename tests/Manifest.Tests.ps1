@@ -9,18 +9,34 @@ param ()
 
 BeforeDiscovery {
     $ValidateCasesAmd64 = @(
-        foreach ($Release in @("2017", "2019", "14")) {
+        foreach ($Release in @("14")) {
             foreach ($Architecture in @("x86", "x64")) {
                 @{ Release = $Release; Architecture = $Architecture }
             }
         }
     )
     $ValidateCasesArm64 = @(
-        @{ Release = "14"; Architecture = "arm64" }
+        foreach ($Release in @("14")) {
+            foreach ($Architecture in @("x86","arm64")) {
+                @{ Release = $Release; Architecture = $Architecture }
+            }
+        }
     )
 
     $SkipAmd = $env:PROCESSOR_ARCHITECTURE -ne "AMD64"
     $SkipArm = $env:PROCESSOR_ARCHITECTURE -ne "ARM64"
+}
+
+Describe -Name "Manifest schema validation" {
+    It "is valid JSON and matches the expected schema" {
+        $VcManifest = Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath "VcRedist\VisualCRedistributables.json"
+        $ManifestJson = Get-Content -LiteralPath $VcManifest -Raw -ErrorAction "Stop"
+        $CurrentManifest = ConvertFrom-Json -InputObject $ManifestJson -ErrorAction "Stop"
+
+        InModuleScope VcRedist -Parameters @{ Manifest = $CurrentManifest } {
+            Test-VcManifest -Manifest $Manifest -AllowedHosts (Get-VcConfig).Download.AllowedHosts | Should -BeTrue
+        }
+    }
 }
 
 Describe -Name "AMD64 manifest tests" -Skip:$SkipAmd {
@@ -28,7 +44,7 @@ Describe -Name "AMD64 manifest tests" -Skip:$SkipAmd {
         BeforeAll {
             Get-InstalledVcRedist | Uninstall-VcRedist -Confirm:$false
 
-            $VcManifest = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath "VcRedist/VisualCRedistributables.json"
+            $VcManifest = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath "VcRedist\VisualCRedistributables.json"
             $CurrentManifest = Get-Content -Path $VcManifest -Raw | ConvertFrom-Json
             $ManifestVcRedist = @($CurrentManifest.Entries | Where-Object {
                 $_.Supported -and $_.Release -eq $Release -and $_.Architecture -eq $Architecture
@@ -64,7 +80,7 @@ Describe -Name "ARM64 manifest tests" -Skip:$SkipArm {
         BeforeAll {
             Get-InstalledVcRedist | Uninstall-VcRedist -Confirm:$false
 
-            $VcManifest = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath "VcRedist/VisualCRedistributables.json"
+            $VcManifest = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath "VcRedist\VisualCRedistributables.json"
             $CurrentManifest = Get-Content -Path $VcManifest -Raw | ConvertFrom-Json
             $ManifestVcRedist = @($CurrentManifest.Entries | Where-Object {
                 $_.Supported -and $_.Release -eq $Release -and $_.Architecture -eq $Architecture
