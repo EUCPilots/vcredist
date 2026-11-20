@@ -1,15 +1,14 @@
 ---
 external help file: VcRedist-help.xml
 Module Name: VcRedist
-online version: https://vcredist.com/test-vcredisturi/
+online version: https://stealthpuppy.com/vcredist/test/
 schema: 2.0.0
 ---
 
 # Test-VcRedistUri
 
 ## SYNOPSIS
-Tests that the downloads for the Visual C++ Redistributables as listed in the manifest returned by Get-VcList are available (i.e.
-return a HTTP 200 response).
+Tests whether the download URI for each Visual C++ Redistributable can be reached.
 
 ## SYNTAX
 
@@ -19,10 +18,9 @@ Test-VcRedistUri [-VcList] <PSObject> [[-Proxy] <String>] [[-ProxyCredential] <P
 ```
 
 ## DESCRIPTION
-Tests that the downloads for the Visual C++ Redistributables as listed in the manifest returned by Get-VcList are available (i.e.
-return a HTTP 200 response).
+For each input entry, validates that the URI uses HTTPS and an allowed host, then sends a HEAD request with a 30-second timeout.
 
-A true or false value is returned for each Visual C++ Redistributables passed to the function.
+Returns one result object per input entry. Each object includes Result, Release, Architecture, Version, and URI properties. Result is true when the HTTPS HEAD request succeeds and false when the URI is not allowed or the request fails.
 
 ## EXAMPLES
 
@@ -50,10 +48,10 @@ Description: Tests the list of 2013 and 2019 x86 supported Visual C++ Redistribu
 
 ### EXAMPLE 4
 ```
-Test-VcRedistUri -VcList (Get-VcList -ExportAll)
+Test-VcRedistUri -VcList (Get-VcList -Export All)
 ```
 
-Description: Exports all supported and unsupported Visual C++ Redistributables and tests the downloads to determine whether they are valid.
+Description: Tests the download URIs for all supported and unsupported manifest entries.
 
 ## PARAMETERS
 
@@ -82,7 +80,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 4
+Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -90,7 +88,7 @@ Accept wildcard characters: False
 
 ### -ProxyCredential
 Specifies a user account that has permission to use the proxy server that is specified by the Proxy parameter.
-The default is the current user.
+By default, no proxy credentials are supplied.
 
 ```yaml
 Type: PSCredential
@@ -98,7 +96,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 5
+Position: 3
 Default value: [System.Management.Automation.PSCredential]::Empty
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -147,5 +145,5 @@ Author: Aaron Parker
 
 ## RELATED LINKS
 
-[Download the Redistributables:](https://vcredist.com/save-vcredist/)
+[Test Redistributable downloads:](https://stealthpuppy.com/vcredist/test/)
 

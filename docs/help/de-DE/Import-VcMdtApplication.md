@@ -13,7 +13,7 @@ Erstellt Anwendungen für Visual C++ Redistributables in einer Freigabe des Micr
 ## SYNTAX
 
 ```
-Import-VcMdtApplication [-VcList] <PSObject> [-Path <String>] [-MdtPath] <String> [[-AppFolder] <String>]
+Import-VcMdtApplication [-VcList] <PSObject> [-MdtPath] <String> [[-AppFolder] <String>]
  [-Silent] [-DontHide] [-Force] [[-MdtDrive] <String>] [[-Publisher] <String>] [[-Language] <String>]
  [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
@@ -22,7 +22,9 @@ Import-VcMdtApplication [-VcList] <PSObject> [-Path <String>] [-MdtPath] <String
 Erstellt für jedes Visual C++ Redistributable eine Anwendung in einer Freigabe des Microsoft Deployment Toolkit. Die Anwendung enthält Eigenschaften wie die Silent-Zielbefehlszeile, die Plattform und den Deinstallationsschlüssel.
 Die unterstützten Plattformen werden aus dem Manifest abgeleitet. Pakete ausschließlich für ARM64 werden mit einer Warnung übersprungen, da MDT keine ARM64-Bereitstellung unterstützt.
 
-Verwenden Sie Get-VcList und Save-VcRedist, um die Redistributables herunterzuladen und das Array für den Import in MDT zu erstellen.
+Verwenden Sie Get-VcList und Save-VcRedist, um die Redistributables herunterzuladen und die resultierenden Objekte an diese Funktion zu übergeben.
+
+Diese Funktion ist veraltet, da Microsoft MDT nicht mehr unterstützt. Sie gibt eine Warnung aus und kann in einer zukünftigen VcRedist-Version entfernt werden. Erforderlich sind Windows PowerShell 5.1 und das Microsoft Deployment Toolkit-Modul.
 
 Die Anwendungen werden mit den folgenden oder ähnlichen Standardeigenschaften in die MDT-Bereitstellungsfreigabe importiert:
 
@@ -32,18 +34,18 @@ Location: Applications\VcRedists Name: Visual C++ Redistributable 2019 x86 14.28
 
 ### EXAMPLE 1
 ```
-Get-VcList | Save-VcRedist -Path C:\Temp\VcRedist | Import-VcMdtApplication -Path C:\Temp\VcRedist -MdtPath \\server\deployment
+Get-VcList | Save-VcRedist -Path C:\Temp\VcRedist | Import-VcMdtApplication -MdtPath \\server\deployment
 ```
 
-Description: Ruft die Liste der Visual C++ Redistributables ab, lädt sie nach C:\Temp\VcRedist herunter und importiert jedes Redistributable in die MDT-Bereitstellungsfreigabe unter \server\deployment.
+Description: Ruft die standardmäßige Liste unterstützter Visual C++ Redistributables ab, lädt sie nach C:\Temp\VcRedist herunter und importiert sie in die MDT-Bereitstellungsfreigabe.
 
 ### EXAMPLE 2
 ```
-$VcList = Get-VcList -ExportAll | Save-VcRedist -Path C:\Temp\VcRedist
-Import-VcMdtApplication -VcList $VcList -MdtPath \\server\deployment -Bundle
+$VcList = Get-VcList -Export All | Save-VcRedist -Path C:\Temp\VcRedist
+Import-VcMdtApplication -VcList $VcList -MdtPath \\server\deployment -Force
 ```
 
-Description: Ruft die Liste der unterstützten und nicht unterstützten Visual C++ Redistributables in der Variablen $VcList ab, lädt sie nach C:\Temp\VcRedist herunter, importiert jedes Redistributable in die MDT-Bereitstellungsfreigabe unter \server\deployment und erstellt ein Anwendungspaket.
+Description: Ruft unterstützte und nicht unterstützte Redistributables ab, lädt sie herunter und importiert sie in die MDT-Bereitstellungsfreigabe. Verwenden Sie New-VcMdtBundle separat, um ein Anwendungspaket zu erstellen.
 
 ## PARAMETERS
 
@@ -150,7 +152,7 @@ Aliases:
 
 Required: False
 Position: 5
-Default value: DS001
+Default value: DS099
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -180,7 +182,7 @@ Aliases:
 
 Required: False
 Position: 7
-Default value: En-US
+Default value: en-US
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -212,21 +214,6 @@ Aliases: cf
 Required: False
 Position: Named
 Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Path
-Dieser Parameter ist veraltet und wird ignoriert. Das an -VcList übergebene Objekt muss die Eigenschaft Path enthalten.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

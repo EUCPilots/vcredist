@@ -13,7 +13,7 @@ Crée des applications de redistribuables Visual C++ dans un partage Microsoft D
 ## SYNTAX
 
 ```
-Import-VcMdtApplication [-VcList] <PSObject> [-Path <String>] [-MdtPath] <String> [[-AppFolder] <String>]
+Import-VcMdtApplication [-VcList] <PSObject> [-MdtPath] <String> [[-AppFolder] <String>]
  [-Silent] [-DontHide] [-Force] [[-MdtDrive] <String>] [[-Publisher] <String>] [[-Language] <String>]
  [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
@@ -22,7 +22,9 @@ Import-VcMdtApplication [-VcList] <PSObject> [-Path <String>] [-MdtPath] <String
 Crée une application dans un partage Microsoft Deployment Toolkit pour chaque redistribuable Visual C++, avec notamment la ligne de commande silencieuse cible, la plateforme et la clé de désinstallation.
 Les plateformes prises en charge sont déterminées à partir du manifeste. Les packages uniquement ARM64 sont ignorés avec un avertissement, car MDT ne prend pas en charge les déploiements ARM64.
 
-Utilisez Get-VcList et Save-VcRedist pour télécharger les redistribuables et créer le tableau à importer dans MDT.
+Utilisez Get-VcList et Save-VcRedist pour télécharger les redistribuables et transmettre les objets obtenus à cette fonction.
+
+Cette fonction est déconseillée, car Microsoft ne prend plus en charge MDT. Elle affiche un avertissement et peut être supprimée dans une prochaine version de VcRedist. Elle nécessite Windows PowerShell 5.1 et le module Microsoft Deployment Toolkit.
 
 Les applications seront importées dans le partage de déploiement MDT avec des propriétés par défaut similaires aux suivantes :
 
@@ -32,18 +34,18 @@ Location: Applications\VcRedists Name: Visual C++ Redistributable 2019 x86 14.28
 
 ### EXAMPLE 1
 ```
-Get-VcList | Save-VcRedist -Path C:\Temp\VcRedist | Import-VcMdtApplication -Path C:\Temp\VcRedist -MdtPath \\server\deployment
+Get-VcList | Save-VcRedist -Path C:\Temp\VcRedist | Import-VcMdtApplication -MdtPath \\server\deployment
 ```
 
-Description : Récupère la liste des redistribuables Visual C++, les télécharge dans C:\Temp\VcRedist et importe chaque redistribuable dans le partage de déploiement MDT situé à \server\deployment.
+Description : Récupère la liste par défaut des redistribuables Visual C++ pris en charge, les télécharge dans C:\Temp\VcRedist et les importe dans le partage de déploiement MDT.
 
 ### EXAMPLE 2
 ```
-$VcList = Get-VcList -ExportAll | Save-VcRedist -Path C:\Temp\VcRedist
-Import-VcMdtApplication -VcList $VcList -MdtPath \\server\deployment -Bundle
+$VcList = Get-VcList -Export All | Save-VcRedist -Path C:\Temp\VcRedist
+Import-VcMdtApplication -VcList $VcList -MdtPath \\server\deployment -Force
 ```
 
-Description : Récupère dans la variable $VcList la liste des redistribuables Visual C++ pris en charge ou non, les télécharge dans C:\Temp\VcRedist, importe chaque redistribuable dans le partage de déploiement MDT situé à \server\deployment et crée un lot d’applications.
+Description : Récupère les redistribuables pris en charge et non pris en charge, les télécharge et les importe dans le partage MDT. Utilisez séparément New-VcMdtBundle pour créer un lot d’applications.
 
 ## PARAMETERS
 
@@ -150,7 +152,7 @@ Aliases:
 
 Required: False
 Position: 5
-Default value: DS001
+Default value: DS099
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -180,7 +182,7 @@ Aliases:
 
 Required: False
 Position: 7
-Default value: En-US
+Default value: en-US
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -212,21 +214,6 @@ Aliases: cf
 Required: False
 Position: Named
 Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Path
-Ce paramètre est obsolète et ignoré. La propriété Path doit figurer dans l’objet transmis à -VcList.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

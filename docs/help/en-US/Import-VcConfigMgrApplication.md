@@ -13,7 +13,7 @@ Creates Visual C++ Redistributable applications in a ConfigMgr site.
 ## SYNTAX
 
 ```
-Import-VcConfigMgrApplication [-VcList] <PSObject> [-Path <String>] [-CMPath] <String> [-SMSSiteCode] <String>
+Import-VcConfigMgrApplication [-VcList] <PSObject> [-CMPath] <String> [-SMSSiteCode] <String>
  [[-AppFolder] <String>] [-Silent] [-NoCopy] [[-Publisher] <String>] [[-Keyword] <String>]
  [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
@@ -59,7 +59,7 @@ Accept wildcard characters: False
 ```
 
 ### -CMPath
-Specify a UNC path where the Visual C++ Redistributables will be distributed from
+Specify an existing UNC directory where the Visual C++ Redistributable installers will be stored for distribution.
 
 ```yaml
 Type: String
@@ -192,21 +192,6 @@ Aliases: cf
 Required: False
 Position: Named
 Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Path
-This parameter is obsolete and ignored. The Path property must be on the object passed to -VcList.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

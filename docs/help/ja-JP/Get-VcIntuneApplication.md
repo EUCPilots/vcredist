@@ -1,7 +1,7 @@
 ---
 external help file: VcRedist-help.xml
 Module Name: VcRedist
-online version: https://vcredist.com/Get-VcIntuneApplication/
+online version: https://vcredist.com/get-vcintuneapplication/
 schema: 2.0.0
 ---
 

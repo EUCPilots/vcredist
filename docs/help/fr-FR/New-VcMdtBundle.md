@@ -1,14 +1,14 @@
 ---
 external help file: VcRedist-help.xml
 Module Name: VcRedist
-online version: https://vcredist.com/import-vcmdtapplication/
+online version: https://vcredist.com/new-vcmdtbundle/
 schema: 2.0.0
 ---
 
 # New-VcMdtBundle
 
 ## SYNOPSIS
-Crée des applications de redistribuables Visual C++ dans un partage Microsoft Deployment Toolkit.
+Crée ou remplace un lot d’applications MDT pour les redistribuables Visual C++ importés.
 
 ## SYNTAX
 
@@ -19,28 +19,32 @@ New-VcMdtBundle [-MdtPath] <String> [[-AppFolder] <String>] [-Force] [[-MdtDrive
 ```
 
 ## DESCRIPTION
-Crée une application dans un partage Microsoft Deployment Toolkit pour chaque redistribuable Visual C++, avec notamment la ligne de commande silencieuse cible, la plateforme et la clé de désinstallation.
+Crée un lot MDT dont les dépendances sont les applications de redistribuables Visual C++ existantes dans le dossier sélectionné, triées par version.
 
-Utilisez Get-VcList et Save-VcRedist pour télécharger les redistribuables et créer le tableau à importer dans MDT.
+Importez d’abord les applications avec Import-VcMdtApplication. Utilisez -Force pour remplacer un lot existant ; en cas d’échec, le lot précédent est restauré. Cette fonction nécessite Windows PowerShell 5.1 et le module Microsoft Deployment Toolkit.
+
+Cette fonction est déconseillée, car Microsoft ne prend plus en charge MDT. Elle affiche un avertissement et peut être supprimée dans une prochaine version de VcRedist.
 
 Le lot sera importé dans le partage de déploiement MDT avec des propriétés par défaut similaires aux suivantes :
 
 Location: Applications\VcRedists Name: Microsoft Visual C++ Redistributables Comments: Lot d’applications destiné à installer les redistribuables Visual C++.
-Généré par New-VcMdtBundle Short name: Visual C++ Redistributables Version:2021-Mar-18 Publisher: Microsoft Language: en-US Dependencies: (VcRedists in the MDT share)
+Généré par New-VcMdtBundle Short name: Visual C++ Redistributables Version: (current culture's short date format) Publisher: Microsoft Language: en-US Dependencies: imported Visual C++ Redistributable applications
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 ```
-Get-VcList | Save-VcRedist -Path C:\Temp\VcRedist | Import-VcMdtApplication -Path C:\Temp\VcRedist -MdtPath \\server\deployment
+Get-VcList | Save-VcRedist -Path C:\Temp\VcRedist | Import-VcMdtApplication -MdtPath \\server\deployment
+New-VcMdtBundle -MdtPath \\server\deployment
 ```
 
 Description : Récupère la liste des redistribuables Visual C++, les télécharge dans C:\Temp\VcRedist et importe chaque redistribuable dans le partage de déploiement MDT situé à \server\deployment.
 
 ### EXAMPLE 2
 ```
-$VcList = Get-VcList -ExportAll | Save-VcRedist -Path C:\Temp\VcRedist
-Import-VcMdtApplication -VcList $VcList -MdtPath \\server\deployment -Bundle
+$VcList = Get-VcList -Export All | Save-VcRedist -Path C:\Temp\VcRedist
+Import-VcMdtApplication -VcList $VcList -MdtPath \\server\deployment
+New-VcMdtBundle -MdtPath \\server\deployment -Force
 ```
 
 Description : Récupère dans la variable $VcList la liste des redistribuables Visual C++ pris en charge ou non, les télécharge dans C:\Temp\VcRedist, importe chaque redistribuable dans le partage de déploiement MDT situé à \server\deployment et crée un lot d’applications.
@@ -103,7 +107,7 @@ Aliases:
 
 Required: False
 Position: 3
-Default value: DS001
+Default value: DS099
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -148,7 +152,7 @@ Aliases:
 
 Required: False
 Position: 6
-Default value: En-US
+Default value: en-US
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

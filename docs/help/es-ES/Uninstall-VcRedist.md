@@ -1,7 +1,7 @@
 ---
 external help file: VcRedist-help.xml
 Module Name: VcRedist
-online version: https://vcredist.com/install-vcredist/
+online version: https://vcredist.com/uninstall-vcredist/
 schema: 2.0.0
 ---
 

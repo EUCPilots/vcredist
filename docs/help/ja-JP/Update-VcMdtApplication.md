@@ -8,20 +8,20 @@ schema: 2.0.0
 # Update-VcMdtApplication
 
 ## SYNOPSIS
-Microsoft Deployment Toolkit 共有に Visual C++ Redistributable アプリケーションを作成します。
+Microsoft Deployment Toolkit 共有にある既存の Visual C++ Redistributable アプリケーションを更新します。
 
 ## SYNTAX
 
 ```
-Update-VcMdtApplication [-VcList] <PSObject> [-Path <String>] -MdtPath <String> [-AppFolder <String>] [-Silent]
+Update-VcMdtApplication [-VcList] <PSObject> -MdtPath <String> [-AppFolder <String>] [-Silent]
  [[-MdtDrive] <String>] [[-Publisher] <String>] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm]
  [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-各 Visual C++ Redistributable について Microsoft Deployment Toolkit 共有にアプリケーションを作成し、対象のサイレント コマンド ライン、プラットフォーム、アンインストール キーなどのプロパティを設定します。
+短い名前で既存の MDT アプリケーションを検索し、マニフェスト バージョン、製品コード、またはインストール コマンドが変更された場合にインストーラーの内容とアプリケーション プロパティを更新します。存在しないアプリケーションは作成しません。Windows PowerShell 5.1 と Microsoft Deployment Toolkit モジュールが必要です。
 
-Get-VcList と Save-VcRedist を使用して Redistributable をダウンロードし、MDT にインポートする配列を作成します。
+Microsoft が MDT をサポートしなくなったため、この関数は非推奨です。呼び出すと警告が表示され、今後の VcRedist リリースで削除される可能性があります。
 
 アプリケーションは、次のような既定のプロパティで MDT 展開共有内で更新されます。
 
@@ -31,19 +31,20 @@ Location: Applications\VcRedists Name: Visual C++ Redistributable 2019 x86 14.28
 
 ### EXAMPLE 1
 ```
-Get-VcList | Save-VcRedist -Path C:\Temp\VcRedist | Import-VcMdtApp -Path C:\Temp\VcRedist -MdtPath \\server\deployment
+Get-VcList | Save-VcRedist -Path C:\Temp\VcRedist |
+    Update-VcMdtApplication -MdtPath \\server\deployment
 ```
 
-説明: サポート対象の Visual C++ Redistributable の既定の一覧を取得し、C:\Temp\VcRedist にダウンロードして、各 Redistributable を \server\deployment の MDT 展開共有にインポートします。
+説明: サポート対象の Redistributable の既定一覧を取得してダウンロードし、MDT 展開共有内の一致するアプリケーションを更新します。
 
 ### EXAMPLE 2
 ```
 $VcList = Get-VcList -Export All
 Save-VcRedist -VcList $VcList -Path C:\Temp\VcRedist
-Import-VcMdtApp -VcList $VcList -Path C:\Temp\VcRedist -MdtPath \\server\deployment -Bundle
+Update-VcMdtApplication -VcList $VcList -MdtPath \\server\deployment -Silent
 ```
 
-説明: サポート対象および対象外の Visual C++ Redistributable の一覧を変数 $VcList に取得し、C:\Temp\VcRedist にダウンロードします。各 Redistributable を \server\deployment の MDT 展開共有にインポートし、アプリケーション バンドルを作成します。
+説明: サポート対象および対象外の Redistributable をダウンロードし、一致する MDT アプリケーションをサイレント インストール コマンドで更新します。
 
 ## PARAMETERS
 
@@ -120,7 +121,7 @@ Aliases:
 
 Required: False
 Position: 3
-Default value: DS001
+Default value: DS099
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -167,21 +168,6 @@ Aliases: cf
 Required: False
 Position: Named
 Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Path
-このパラメーターは廃止され、無視されます。-VcList に渡すオブジェクトに Path プロパティが必要です。
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
