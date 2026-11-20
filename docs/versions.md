@@ -1,6 +1,6 @@
 # Included Redistributables
 
-VcRedist `5.0.6-rc2` includes the following Redistributables (supported and unsupported):
+VcRedist `5.0.10` includes the following Redistributables (supported and unsupported):
 
 | Version | Architecture | Name |
 | --- | --- | --- |

@@ -12,7 +12,7 @@
 RootModule = 'VcRedist.psm1'
 
 # Version number of this module.
-ModuleVersion = '5.0.6'
+ModuleVersion = '5.0.10'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -119,7 +119,6 @@ PrivateData = @{
         ReleaseNotes = 'https://vcredist.com/changelog/'
 
         # Prerelease string of this module
-        Prerelease = 'rc2'
 
         # Flag to indicate whether the module requires explicit user acceptance for install/update/save
         # RequireLicenseAcceptance = $false

@@ -1,6 +1,6 @@
 # Changelog
 
-## VERSION
+## 5.0.10
 
 * Uses a remote VcRedist manifest by default [VisualCRedistributables.json](https://raw.githubusercontent.com/EUCPilots/vcredist/refs/heads/main/VcRedist/VisualCRedistributables.json) to enable the manifest to be updated without having to update the module
 * Update public and private functions for robustness and hardening
