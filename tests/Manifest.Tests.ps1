@@ -8,97 +8,89 @@
 param ()
 
 BeforeDiscovery {
-    $ValidateReleasesAmd64 = @("2017", "2019", "14")
-    $ValidateReleasesArm64 = @("14")
+    $ValidateCasesAmd64 = @(
+        foreach ($Release in @("2017", "2019", "14")) {
+            foreach ($Architecture in @("x86", "x64")) {
+                @{ Release = $Release; Architecture = $Architecture }
+            }
+        }
+    )
+    $ValidateCasesArm64 = @(
+        @{ Release = "14"; Architecture = "arm64" }
+    )
 
-    if ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") {
-        $SkipAmd = $false
-    }
-    else {
-        $SkipAmd = $true
-    }
-    if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") {
-        $SkipArm = $false
-    }
-    else {
-        $SkipArm = $true
-    }
+    $SkipAmd = $env:PROCESSOR_ARCHITECTURE -ne "AMD64"
+    $SkipArm = $env:PROCESSOR_ARCHITECTURE -ne "ARM64"
 }
 
-Describe -Name "AMD64 specific tests" -Skip:$SkipAmd {
-    Describe -Name "VcRedist manifest tests" -ForEach $ValidateReleasesAmd64 {
+Describe -Name "AMD64 manifest tests" -Skip:$SkipAmd {
+    Describe -Name "Manifest entry <Release> <Architecture>" -ForEach $ValidateCasesAmd64 {
         BeforeAll {
             Get-InstalledVcRedist | Uninstall-VcRedist -Confirm:$false
+
+            $VcManifest = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath "VcRedist/VisualCRedistributables.json"
+            $CurrentManifest = Get-Content -Path $VcManifest -Raw | ConvertFrom-Json
+            $ManifestVcRedist = @($CurrentManifest.Entries | Where-Object {
+                $_.Supported -and $_.Release -eq $Release -and $_.Architecture -eq $Architecture
+            })
+            if ($ManifestVcRedist.Count -ne 1) {
+                throw "Expected one supported manifest entry for release $Release, architecture $Architecture; found $($ManifestVcRedist.Count)."
+            }
+            $ManifestVcRedist = $ManifestVcRedist[0]
+
+            $Path = Join-Path -Path $env:RUNNER_TEMP -ChildPath "Downloads"
+            New-Item -Path $Path -ItemType "Directory" -Force | Out-Null
+            Get-VcList -Release $Release -Architecture $Architecture -Source "Bundled" |
+                Where-Object { $_.Supported } |
+                Save-VcRedist -Path $Path |
+                Install-VcRedist -Silent | Out-Null
+
+            $InstalledItem = Get-InstalledVcRedist |
+                    Where-Object { $_.ProductCode -eq $ManifestVcRedist.ProductCode -and $_.Architecture -eq $Architecture } |
+                Sort-Object -Property { [System.Version]$_.Version } -Descending |
+                Select-Object -First 1
         }
 
-        Context "Validate manifest" {
-            BeforeAll {
-                $VcManifest = "$env:GITHUB_WORKSPACE\VcRedist\VisualCRedistributables.json"
-                Write-Host -ForegroundColor "Cyan" "`tGetting manifest from: $VcManifest."
-                $CurrentManifest = Get-Content -Path $VcManifest | ConvertFrom-Json
-                $VcRedist = $_
-
-                $Path = $([System.IO.Path]::Combine($env:RUNNER_TEMP, "Downloads"))
-                New-Item -Path $Path -ItemType "Directory" -ErrorAction "SilentlyContinue" > $null
-                Save-VcRedist -VcList (Get-VcList -Release $VcRedist) -Path $Path
-
-                $Architectures = @("x86", "x64")
-            }
-
-            Context "Compare manifest version against installed version for <VcRedist>" -ForEach $Architectures {
-                BeforeEach {
-                    $VcList = Get-VcList -Release $VcRedist | Save-VcRedist -Path $([System.IO.Path]::Combine($env:RUNNER_TEMP, "Downloads"))
-                    Install-VcRedist -VcList $VcList -Silent
-                    $InstalledVcRedists = Get-InstalledVcRedist
-
-                    $ManifestVcRedist = $CurrentManifest.Entries | Where-Object { $_.Supported -and $_.Release -eq $VcRedist }
-                    $InstalledItem = $InstalledVcRedists | Where-Object { ($VcRedist -eq $ManifestVcRedist.Release) -and ($_ -eq $ManifestVcRedist.Architecture) }
-                }
-
-                # If the manifest version of the VcRedist is lower than the installed version, the manifest is out of date
-                It "$($ManifestVcRedist.Release) $($ManifestVcRedist.Architecture) version should be current" {
-                    [System.Version]$InstalledItem.Version -gt [System.Version]$ManifestVcRedist.Version | Should -Be $false
-                }
-            }
+        It "installs a current redistributable matching the manifest" {
+            $InstalledItem | Should -Not -BeNullOrEmpty
+            ([System.Version]$InstalledItem.Version -gt [System.Version]$ManifestVcRedist.Version) | Should -BeFalse
+            $InstalledItem.ProductCode | Should -Be $ManifestVcRedist.ProductCode
         }
     }
 }
 
-Describe -Name "ARM64 specific tests" -Skip:$SkipArm {
-    Describe -Name "VcRedist manifest tests" -ForEach $ValidateReleasesArm64 {
+Describe -Name "ARM64 manifest tests" -Skip:$SkipArm {
+    Describe -Name "Manifest entry <Release> <Architecture>" -ForEach $ValidateCasesArm64 {
         BeforeAll {
             Get-InstalledVcRedist | Uninstall-VcRedist -Confirm:$false
+
+            $VcManifest = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath "VcRedist/VisualCRedistributables.json"
+            $CurrentManifest = Get-Content -Path $VcManifest -Raw | ConvertFrom-Json
+            $ManifestVcRedist = @($CurrentManifest.Entries | Where-Object {
+                $_.Supported -and $_.Release -eq $Release -and $_.Architecture -eq $Architecture
+            })
+            if ($ManifestVcRedist.Count -ne 1) {
+                throw "Expected one supported manifest entry for release $Release, architecture $Architecture; found $($ManifestVcRedist.Count)."
+            }
+            $ManifestVcRedist = $ManifestVcRedist[0]
+
+            $Path = Join-Path -Path $env:RUNNER_TEMP -ChildPath "Downloads"
+            New-Item -Path $Path -ItemType "Directory" -Force | Out-Null
+            Get-VcList -Release $Release -Architecture $Architecture -Source "Bundled" |
+                Where-Object { $_.Supported } |
+                Save-VcRedist -Path $Path |
+                Install-VcRedist -Silent | Out-Null
+
+            $InstalledItem = Get-InstalledVcRedist |
+                    Where-Object { $_.ProductCode -eq $ManifestVcRedist.ProductCode -and $_.Architecture -eq $Architecture } |
+                Sort-Object -Property { [System.Version]$_.Version } -Descending |
+                Select-Object -First 1
         }
 
-        Context "Validate manifest" {
-            BeforeAll {
-                $VcManifest = "$env:GITHUB_WORKSPACE\VcRedist\VisualCRedistributables.json"
-                Write-Host -ForegroundColor "Cyan" "`tGetting manifest from: $VcManifest."
-                $CurrentManifest = Get-Content -Path $VcManifest | ConvertFrom-Json
-                $VcRedist = $_
-
-                $Path = $([System.IO.Path]::Combine($env:RUNNER_TEMP, "Downloads"))
-                New-Item -Path $Path -ItemType "Directory" -ErrorAction "SilentlyContinue" > $null
-                Save-VcRedist -VcList (Get-VcList -Release $VcRedist) -Path $Path
-
-                $Architectures = @("arm64")
-            }
-
-            Context "Compare manifest version against installed version for <VcRedist>" -ForEach $Architectures {
-                BeforeEach {
-                    $VcList = Get-VcList -Release $VcRedist | Save-VcRedist -Path $([System.IO.Path]::Combine($env:RUNNER_TEMP, "Downloads"))
-                    Install-VcRedist -VcList $VcList -Silent
-                    $InstalledVcRedists = Get-InstalledVcRedist
-
-                    $ManifestVcRedist = $CurrentManifest.Entries | Where-Object { $_.Supported -and $_.Release -eq $VcRedist }
-                    $InstalledItem = $InstalledVcRedists | Where-Object { ($VcRedist -eq $ManifestVcRedist.Release) -and ($_ -eq $ManifestVcRedist.Architecture) }
-                }
-
-                # If the manifest version of the VcRedist is lower than the installed version, the manifest is out of date
-                It "$($ManifestVcRedist.Release) $($ManifestVcRedist.Architecture) version should be current" {
-                    [System.Version]$InstalledItem.Version -gt [System.Version]$ManifestVcRedist.Version | Should -Be $false
-                }
-            }
+        It "installs a current redistributable matching the manifest" {
+            $InstalledItem | Should -Not -BeNullOrEmpty
+            ([System.Version]$InstalledItem.Version -gt [System.Version]$ManifestVcRedist.Version) | Should -BeFalse
+            $InstalledItem.ProductCode | Should -Be $ManifestVcRedist.ProductCode
         }
     }
 }

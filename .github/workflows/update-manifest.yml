@@ -181,6 +181,9 @@ jobs:
       - update-manifest-amd64
       - update-manifest
     if: needs.update-manifest-amd64.outputs.changes_detected == 'true' || needs.update-manifest.outputs.changes_detected == 'true'
+    outputs:
+      pr_number: ${{ steps.manage_pr.outputs.pr_number }}
+      head_sha: ${{ steps.manage_pr.outputs.head_sha }}
 
     steps:
       - uses: actions/checkout@v7
@@ -228,12 +231,15 @@ jobs:
           TITLE="Automated manifest update (${GITHUB_RUN_NUMBER})"
           EXISTING_PR_NUMBER=$(gh pr list --base main --head manifest-update --state open --json number --jq '.[0].number')
           CREATED_PR_URL=""
+          PR_NUMBER=""
 
           if [[ -n "$EXISTING_PR_NUMBER" ]]; then
             gh pr edit "$EXISTING_PR_NUMBER" --title "$TITLE" --body-file pr-body.md
             echo "Updated PR #$EXISTING_PR_NUMBER"
+            PR_NUMBER="$EXISTING_PR_NUMBER"
           elif [[ -n "$PR_CREATE_TOKEN" ]]; then
             CREATED_PR_URL=$(GH_TOKEN="$PR_CREATE_TOKEN" gh pr create --base main --head manifest-update --title "$TITLE" --body-file pr-body.md)
+            PR_NUMBER=$(gh pr view "$CREATED_PR_URL" --json number --jq '.number')
             echo "created_pr=true" >> "$GITHUB_OUTPUT"
             echo "created_pr_url=$CREATED_PR_URL" >> "$GITHUB_OUTPUT"
           else
@@ -241,8 +247,58 @@ jobs:
             echo "::warning::No open pull request exists from manifest-update to main, and repository secret PAT is not configured. GitHub Actions is not permitted to create pull requests with GITHUB_TOKEN in this repository. To enable automatic PR creation, configure a PAT secret named PAT with repository contents and pull request write access."
           fi
 
+          if [[ -n "$PR_NUMBER" ]]; then
+            PR_HEAD_SHA=$(gh pr view "$PR_NUMBER" --json headRefOid --jq '.headRefOid')
+            echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+            echo "head_sha=$PR_HEAD_SHA" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Notify when PR is created
         if: steps.manage_pr.outputs.created_pr == 'true'
         shell: bash
         run: |
           echo "::notice title=Pull request created::Created pull request: ${{ steps.manage_pr.outputs.created_pr_url }}"
+
+  validate-manifest-update:
+    name: Validate manifest update
+    needs: create-pull-request
+    if: needs.create-pull-request.outputs.pr_number != ''
+    uses: ./.github/workflows/validate-module.yml
+    with:
+      ref: ${{ needs.create-pull-request.outputs.head_sha }}
+      run_intune: false
+
+  merge-or-request-review:
+    name: Merge or request review
+    needs:
+      - create-pull-request
+      - validate-manifest-update
+    if: always() && needs.create-pull-request.result == 'success' && needs.create-pull-request.outputs.pr_number != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Merge validated update or request review
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ needs.create-pull-request.outputs.pr_number }}
+          VALIDATION_RESULT: ${{ needs.validate-manifest-update.result }}
+          VALIDATED_HEAD_SHA: ${{ needs.create-pull-request.outputs.head_sha }}
+        shell: bash
+        run: |
+          CURRENT_HEAD_SHA=$(gh pr view "$PR_NUMBER" --json headRefOid --jq '.headRefOid')
+          CHANGED_FILES=$(gh pr view "$PR_NUMBER" --json files --jq '[.files[].path] | join("\n")')
+
+          if [[ "$VALIDATION_RESULT" == "success" && "$CURRENT_HEAD_SHA" == "$VALIDATED_HEAD_SHA" && "$CHANGED_FILES" == "VcRedist/VisualCRedistributables.json" ]]; then
+            if gh pr merge "$PR_NUMBER" --squash; then
+              echo "Merged manifest update PR #$PR_NUMBER after validation passed."
+            else
+              echo "::warning::Automatic merge was blocked; requesting review from aaronparker."
+              gh pr edit "$PR_NUMBER" --add-reviewer "aaronparker"
+              exit 1
+            fi
+          else
+            echo "::warning::Validation, change scope, or PR head did not match the validated manifest; requesting review from aaronparker."
+            gh pr edit "$PR_NUMBER" --add-reviewer "aaronparker"
+          fi

@@ -263,9 +263,12 @@ When beta testing is complete:
   **18:00 UTC**, on pushes changing `ci/Update-Manifest.ps1`, or manually with no
   custom inputs. It checks redistributables, commits detected JSON changes on
   `manifest-update`, and creates/updates a PR when possible (`PAT` is required for
-  new PR creation). Review/merge and ensure validation runs; its `GITHUB_TOKEN`
-  pushes do not themselves trigger further workflows. This updates redistributable
-  data, **not** the module's release version, tag, or Gallery package.
+  new PR creation). It runs the full module validation matrix against the proposed
+  bundled manifest, merges when validation passes, and requests review from
+  `aaronparker` if validation fails or branch protections block merging. The
+  workflow explicitly invokes validation because its `GITHUB_TOKEN` pushes do not
+  themselves trigger further workflows. This updates redistributable data, **not**
+  the module's release version, tag, or Gallery package.
 * A pushed `v*` tag also triggers publishing, but cannot bypass ancestry,
   metadata, tests, or environment approval. Prefer manual publishing and let it
   create the tag after validation.
