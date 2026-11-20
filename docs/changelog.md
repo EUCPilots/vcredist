@@ -1,27 +1,24 @@
 # Changelog
 
-## 5.0.6-rc2
+## VERSION
 
-* Adds manifest-defined install ordering, validates manifest release coverage, and preserves install order when exporting
-* Installs redistributables in the declared order, validates releases before starting installers, and supports forcing x64 installation on ARM64
-* Updates manifest maintenance for ARM64 and adds a manual clean uninstall/download update workflow
-* Separates read-only module validation, release PR preparation, and approved Gallery publishing
-* Tests release artifacts on Windows PowerShell 5.1 and PowerShell 7, on x64 and ARM64
-* Validates release versions, tags, documentation and Gallery package contents; supports safe publication retries
-* Fixes module test discovery and custom analyzer keyword detection
+* Uses a remote VcRedist manifest by default [VisualCRedistributables.json](https://raw.githubusercontent.com/EUCPilots/vcredist/refs/heads/main/VcRedist/VisualCRedistributables.json) to enable the manifest to be updated without having to update the module
+* Update public and private functions for robustness and hardening
 
 ### Breaking changes
 
 * Minimum PowerShell version is now 5.1; TLS 1.2 is enforced for web requests
 * The manifest is now a flat schema: `{ SchemaVersion, Updated, Entries[] }`, each entry has a `Supported` boolean
-* Removes the `-Path` parameter from `Get-VcList` and `Export-VcManifest`; the manifest source can't be overridden
-* Removes the exported `$VcManifest` variable
 * `Get-VcList -Export` filters by `Supported`, `Unsupported` or `All`; the default is `Supported`
 * `Save-VcRedist` and `Install-VcRedist` require installers to be downloaded over HTTPS from an allowed Microsoft host and to carry a valid Microsoft Authenticode signature
-* v4 of the module no longer receives manifest updates
+* Removes the `-Path` parameter from `Get-VcList` and `Export-VcManifest`; the manifest source can't be overridden
+* Removes the exported `$VcManifest` variable
 
 ### New and improved
 
+* The manifest is read from the repository and falls back to the bundled manifest on any failure; use `-Source Auto|Remote|Bundled`. The bundled manifest is used if the remote one is older
+* Adds manifest-defined install ordering, validates manifest release coverage, and preserves install order when exporting
+* Installs redistributables in the declared order, validates releases before starting installers, and supports forcing x64 installation on ARM64
 * Adds architecture-aware manifest validation and filtering, including native AMD64 and ARM64 handling across deployment integrations
 * Hardens web requests with HTTPS and redirect validation, proxy handling, and improved TLS behavior
 * Improves process execution with argument quoting, timeouts, output limits, and exit-code handling
@@ -29,7 +26,6 @@
 * Improves Intune, ConfigMgr, and MDT imports with architecture-aware requirements, detection rules, `-WhatIf` support, and error handling
 * Updates CI test selection and manifest-update workflows; removes Codecov configuration
 * Adds translated help documentation and expands test coverage
-* The manifest is read from the repository and falls back to the bundled manifest on any failure; use `-Source Auto|Remote|Bundled`. The bundled manifest is used if the remote one is older
 * `VcRedist.psm1` now verifies that the `Public` and `Private` function directories exist before loading, throws an error if duplicate function file names are found, and sorts function files for consistent loading. Only explicitly declared functions and selected aliases are exported.
 * Adds `-Proxy` and `-ProxyCredential` to every function that fetches or downloads content
 * `Install-VcRedist` and `Uninstall-VcRedist` check installer exit codes; `Uninstall-VcRedist` expands environment variables in uninstall commands
@@ -42,6 +38,11 @@
 * Fixes `Import-VcIntuneApplication` requirement rule architecture: `All` is no longer valid, x86 packages now use `x64x86`, and ARM64 packages use `arm64` (#207)
 * Fixes `New-VcMdtBundle` and `Update-VcMdtBundle` `-WhatIf` target, and the ConfigMgr location restore in `Import-VcConfigMgrApplication`
 * MDT tests now use stubs and mocks; `tests/Install-Mdt.ps1` is removed
+* Updates manifest maintenance for ARM64 and adds a manual clean uninstall/download update workflow
+* Separates read-only module validation, release PR preparation, and approved Gallery publishing
+* Tests release artifacts on Windows PowerShell 5.1 and PowerShell 7, on x64 and ARM64
+* Validates release versions, tags, documentation and Gallery package contents; supports safe publication retries
+* Fixes module test discovery and custom analyzer keyword detection
 
 ### Deprecated
 
