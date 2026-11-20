@@ -7,6 +7,9 @@
 param ()
 
 BeforeDiscovery {
+	# Uninstall all currently installed Visual C++ Redistributables to ensure a clean test environment.
+	Get-InstalledVcRedist | Uninstall-VcRedist -Confirm:$false
+
 	$ModuleRoot = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent
 	$ManifestPath = Join-Path -Path $ModuleRoot -ChildPath "VcRedist/VisualCRedistributables.json"
 	$Manifest = Get-Content -LiteralPath $ManifestPath -Raw | ConvertFrom-Json
