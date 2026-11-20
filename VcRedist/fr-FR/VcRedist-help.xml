@@ -412,9 +412,9 @@
       </maml:description>
     </command:details>
     <maml:description>
-      <maml:para>Cette fonction lit les redistribuables Visual C++ répertoriés dans un manifeste interne et les place dans un objet qui peut être transmis aux autres fonctions de VcRedist.</maml:para>
-      <maml:para>Le manifeste est lu depuis le dépôt VcRedist ; les mises à jour du manifeste ne nécessitent donc pas de mise à jour du module. Si le manifeste distant est indisponible, invalide ou plus ancien que le manifeste intégré, le manifeste inclus dans le module est utilisé.</maml:para>
-      <maml:para>Le module contient la liste complète des redistribuables pris en charge et de tous ceux qui sont connus. Par défaut, Get-VcList renvoie uniquement la liste des redistribuables Visual C++ pris en charge. Pour renvoyer les redistribuables non pris en charge, le paramètre -Export est requis ; filtrez ensuite la sortie avec Where-Object.</maml:para>
+      <maml:para>Cette fonction lit les redistribuables Visual C++ répertoriés dans un manifeste interne et les place dans un objet qui peut être transmis aux autres fonctions de VcRedist. Elle ne vérifie pas quels redistribuables sont installés ; utilisez Get-InstalledVcRedist à cette fin.</maml:para>
+      <maml:para>Avec Auto, le manifeste intégré est lu en premier, puis le manifeste distant est vérifié. Si celui-ci est indisponible, invalide ou plus ancien, le manifeste intégré est utilisé. Si le manifeste intégré est invalide ou illisible, une erreur est renvoyée.</maml:para>
+      <maml:para>Release et Architecture sélectionnent les entrées correspondantes, qu'elles soient prises en charge ou non. Un avertissement est émis si une entrée sélectionnée n'est pas prise en charge. Sans ces paramètres, la version 14 est sélectionnée pour x86, x64 et arm64. Utilisez -Export Supported, Unsupported ou All pour sélectionner les entrées de toutes les versions selon leur prise en charge ou pour toutes les renvoyer. Export ne peut pas être combiné avec Release ou Architecture. All et Unsupported émettent toujours un avertissement, même si toutes les entrées sont prises en charge. Dans SilentUninstall, #Installer et #ProductCode sont remplacés par le nom du programme d'installation extrait de URI et le code produit de l'entrée.</maml:para>
       <maml:para>Le manifeste interne peut être exporté avec Export-VcManifest.</maml:para>
     </maml:description>
     <command:syntax>
@@ -423,26 +423,26 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
           <maml:name>Release</maml:name>
           <maml:description>
-            <maml:para>Spécifie la version des redistribuables à renvoyer.</maml:para>
+            <maml:para>Spécifie la version des redistribuables à renvoyer. Chaque valeur doit contenir deux à quatre chiffres ; les numéros de version complets ne sont pas acceptés.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
           <dev:type>
             <maml:name>String[]</maml:name>
             <maml:uri />
           </dev:type>
-          <dev:defaultValue>@("2012", "2013", "2022")</dev:defaultValue>
+          <dev:defaultValue>@("14")</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
           <maml:name>Architecture</maml:name>
           <maml:description>
-            <maml:para>Spécifie l’architecture du processeur des redistribuables à renvoyer. Peut être x86 ou x64.</maml:para>
+            <maml:para>Spécifie l’architecture du processeur des redistribuables à renvoyer. Peut être x86, x64 ou arm64.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
           <dev:type>
             <maml:name>String[]</maml:name>
             <maml:uri />
           </dev:type>
-          <dev:defaultValue>@("x86", "x64")</dev:defaultValue>
+          <dev:defaultValue>@("x86", "x64", "arm64")</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
           <maml:name>ProgressAction</maml:name>
@@ -459,7 +459,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>Proxy</maml:name>
           <maml:description>
-            <maml:para>Spécifie un serveur proxy pour les requêtes de récupération du manifeste ou de téléchargement du contenu.</maml:para>
+            <maml:para>Spécifie un URI proxy HTTP ou HTTPS absolu, sans informations d'identification intégrées, pour récupérer le manifeste distant. Si ProxyCredential est omis, les informations d'identification proxy par défaut sont utilisées.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -471,7 +471,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>ProxyCredential</maml:name>
           <maml:description>
-            <maml:para>Spécifie un compte utilisateur autorisé à utiliser le serveur proxy indiqué par -Proxy. Si cette valeur n’est pas spécifiée, les informations d’identification proxy par défaut sont utilisées.</maml:para>
+            <maml:para>Spécifie les informations d'identification du serveur proxy indiqué par -Proxy. Des informations d'identification non vides nécessitent -Proxy.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">PSCredential</command:parameterValue>
           <dev:type>
@@ -483,14 +483,14 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>Source</maml:name>
           <maml:description>
-            <maml:para>Sélectionne la source du manifeste. `Auto` (valeur par défaut) utilise le manifeste distant hébergé dans le dépôt VcRedist et revient au manifeste intégré en cas d’échec ou si le manifeste distant est plus ancien. `Remote` échoue si le manifeste distant n’est pas disponible. `Bundled` utilise uniquement le manifeste inclus dans le module.</maml:para>
+            <maml:para>Sélectionne la source du manifeste. `Auto` (valeur par défaut) lit le manifeste intégré et utilise le manifeste distant s'il est valide et au moins aussi récent. `Remote` utilise uniquement le manifeste distant. `Bundled` utilise uniquement le manifeste intégré.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
           </dev:type>
-          <dev:defaultValue>None</dev:defaultValue>
+          <dev:defaultValue>Auto</dev:defaultValue>
         </command:parameter>
       </command:syntaxItem>
       <command:syntaxItem>
@@ -498,7 +498,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
           <maml:name>Export</maml:name>
           <maml:description>
-            <maml:para>Définit la liste des redistribuables Visual C++ à exporter : tous, ceux pris en charge ou ceux non pris en charge. Par défaut, les redistribuables pris en charge sont exportés.</maml:para>
+            <maml:para>Définit la liste des redistribuables Visual C++ à exporter : tous, ceux pris en charge ou ceux non pris en charge. Export ne peut pas être combiné avec Release ou Architecture. All et Unsupported émettent un avertissement.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -522,7 +522,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>Proxy</maml:name>
           <maml:description>
-            <maml:para>Spécifie un serveur proxy pour les requêtes de récupération du manifeste ou de téléchargement du contenu.</maml:para>
+            <maml:para>Spécifie un URI proxy HTTP ou HTTPS absolu, sans informations d'identification intégrées, pour récupérer le manifeste distant. Si ProxyCredential est omis, les informations d'identification proxy par défaut sont utilisées.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -534,7 +534,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>ProxyCredential</maml:name>
           <maml:description>
-            <maml:para>Spécifie un compte utilisateur autorisé à utiliser le serveur proxy indiqué par -Proxy. Si cette valeur n’est pas spécifiée, les informations d’identification proxy par défaut sont utilisées.</maml:para>
+            <maml:para>Spécifie les informations d'identification du serveur proxy indiqué par -Proxy. Des informations d'identification non vides nécessitent -Proxy.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">PSCredential</command:parameterValue>
           <dev:type>
@@ -546,14 +546,14 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>Source</maml:name>
           <maml:description>
-            <maml:para>Sélectionne la source du manifeste. `Auto` (valeur par défaut) utilise le manifeste distant hébergé dans le dépôt VcRedist et revient au manifeste intégré en cas d’échec ou si le manifeste distant est plus ancien. `Remote` échoue si le manifeste distant n’est pas disponible. `Bundled` utilise uniquement le manifeste inclus dans le module.</maml:para>
+            <maml:para>Sélectionne la source du manifeste. `Auto` (valeur par défaut) lit le manifeste intégré et utilise le manifeste distant s'il est valide et au moins aussi récent. `Remote` utilise uniquement le manifeste distant. `Bundled` utilise uniquement le manifeste intégré.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
           </dev:type>
-          <dev:defaultValue>None</dev:defaultValue>
+          <dev:defaultValue>Auto</dev:defaultValue>
         </command:parameter>
       </command:syntaxItem>
     </command:syntax>
@@ -561,31 +561,31 @@
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
         <maml:name>Release</maml:name>
         <maml:description>
-          <maml:para>Spécifie la version des redistribuables à renvoyer.</maml:para>
+          <maml:para>Spécifie la version des redistribuables à renvoyer. Chaque valeur doit contenir deux à quatre chiffres ; les numéros de version complets ne sont pas acceptés.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
           <maml:name>String[]</maml:name>
           <maml:uri />
         </dev:type>
-        <dev:defaultValue>@("2012", "2013", "2022")</dev:defaultValue>
+        <dev:defaultValue>@("14")</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
         <maml:name>Architecture</maml:name>
         <maml:description>
-          <maml:para>Spécifie l’architecture du processeur des redistribuables à renvoyer. Peut être x86 ou x64.</maml:para>
+          <maml:para>Spécifie l’architecture du processeur des redistribuables à renvoyer. Peut être x86, x64 ou arm64.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
           <maml:name>String[]</maml:name>
           <maml:uri />
         </dev:type>
-        <dev:defaultValue>@("x86", "x64")</dev:defaultValue>
+        <dev:defaultValue>@("x86", "x64", "arm64")</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
         <maml:name>Export</maml:name>
         <maml:description>
-          <maml:para>Définit la liste des redistribuables Visual C++ à exporter : tous, ceux pris en charge ou ceux non pris en charge. Par défaut, les redistribuables pris en charge sont exportés.</maml:para>
+          <maml:para>Définit la liste des redistribuables Visual C++ à exporter : tous, ceux pris en charge ou ceux non pris en charge. Export ne peut pas être combiné avec Release ou Architecture. All et Unsupported émettent un avertissement.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -609,7 +609,7 @@
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
         <maml:name>Proxy</maml:name>
         <maml:description>
-          <maml:para>Spécifie un serveur proxy pour les requêtes de récupération du manifeste ou de téléchargement du contenu.</maml:para>
+          <maml:para>Spécifie un URI proxy HTTP ou HTTPS absolu, sans informations d'identification intégrées, pour récupérer le manifeste distant. Si ProxyCredential est omis, les informations d'identification proxy par défaut sont utilisées.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -621,7 +621,7 @@
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
         <maml:name>ProxyCredential</maml:name>
         <maml:description>
-          <maml:para>Spécifie un compte utilisateur autorisé à utiliser le serveur proxy indiqué par -Proxy. Si cette valeur n’est pas spécifiée, les informations d’identification proxy par défaut sont utilisées.</maml:para>
+          <maml:para>Spécifie les informations d'identification du serveur proxy indiqué par -Proxy. Des informations d'identification non vides nécessitent -Proxy.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">PSCredential</command:parameterValue>
         <dev:type>
@@ -633,14 +633,14 @@
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
         <maml:name>Source</maml:name>
         <maml:description>
-          <maml:para>Sélectionne la source du manifeste. `Auto` (valeur par défaut) utilise le manifeste distant hébergé dans le dépôt VcRedist et revient au manifeste intégré en cas d’échec ou si le manifeste distant est plus ancien. `Remote` échoue si le manifeste distant n’est pas disponible. `Bundled` utilise uniquement le manifeste inclus dans le module.</maml:para>
+          <maml:para>Sélectionne la source du manifeste. `Auto` (valeur par défaut) lit le manifeste intégré et utilise le manifeste distant s'il est valide et au moins aussi récent. `Remote` utilise uniquement le manifeste distant. `Bundled` utilise uniquement le manifeste intégré.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
           <maml:uri />
         </dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>Auto</dev:defaultValue>
       </command:parameter>
     </command:parameters>
     <command:inputTypes />
@@ -664,49 +664,49 @@
         <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
         <dev:code>Get-VcList</dev:code>
         <dev:remarks>
-          <maml:para>Description : Renvoie un objet contenant les redistribuables Visual C++ pris en charge à partir du manifeste intégré.</maml:para>
+          <maml:para>Description : Renvoie les redistribuables de la version 14 pour x86, x64 et arm64 à partir du manifeste sélectionné.</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
-        <dev:code>Get-VcList</dev:code>
+        <dev:code>Get-VcList -Release 2015 -Architecture x86</dev:code>
         <dev:remarks>
-          <maml:para>Description : Renvoie, à partir du manifeste intégré, les versions 2012, 2013 et 2022 prises en charge des redistribuables Visual C++ pour x86 et x64.</maml:para>
+          <maml:para>Description : Renvoie les redistribuables 2015 pour x86 et avertit si les entrées sélectionnées ne sont pas prises en charge.</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 3 --------------------------</maml:title>
         <dev:code>Get-VcList -Export All</dev:code>
         <dev:remarks>
-          <maml:para>Description : Renvoie la liste de tous les redistribuables Visual C++ du manifeste intégré, y compris les versions non prises en charge.</maml:para>
+          <maml:para>Description : Renvoie tous les redistribuables Visual C++ du manifeste sélectionné et émet un avertissement.</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 4 --------------------------</maml:title>
         <dev:code>Get-VcList -Export Supported</dev:code>
         <dev:remarks>
-          <maml:para>Description : Renvoie la liste complète des redistribuables Visual C++ pris en charge à partir du manifeste intégré. Cela équivaut à exécuter Get-VcList sans paramètre.</maml:para>
+          <maml:para>Description : Renvoie les redistribuables pris en charge de toutes les versions du manifeste sélectionné.</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 5 --------------------------</maml:title>
         <dev:code>Get-VcList -Export Unsupported | Where-Object { $_.Release -eq "2008" }</dev:code>
         <dev:remarks>
-          <maml:para>Description : Renvoie la liste complète des redistribuables Visual C++ non pris en charge du manifeste intégré, puis filtre les versions 2008.</maml:para>
+          <maml:para>Description : Renvoie les redistribuables non pris en charge du manifeste sélectionné, puis filtre les versions 2008.</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 6 --------------------------</maml:title>
         <dev:code>Get-VcList -Release 2013, 2019 -Architecture x86</dev:code>
         <dev:remarks>
-          <maml:para>Description : Renvoie les redistribuables Visual C++ 2013 et 2019 pour x86 à partir de la liste des redistribuables pris en charge du manifeste intégré.</maml:para>
+          <maml:para>Description : Renvoie les redistribuables Visual C++ 2013 et 2019 pour x86 à partir du manifeste sélectionné.</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 7 --------------------------</maml:title>
         <dev:code>Get-VcList -Source Bundled</dev:code>
         <dev:remarks>
-          <maml:para>Description : Renvoie les redistribuables Visual C++ pris en charge en utilisant uniquement le manifeste inclus dans le module, sans contacter le manifeste distant.</maml:para>
+          <maml:para>Description : Renvoie les redistribuables de la version 14 en utilisant uniquement le manifeste inclus dans le module.</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>

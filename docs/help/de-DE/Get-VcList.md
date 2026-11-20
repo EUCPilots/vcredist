@@ -26,12 +26,15 @@ Get-VcList [[-Export] <String>] [-Source <String>] [-Proxy <String>] [-ProxyCred
 
 ## DESCRIPTION
 Diese Funktion liest die in einem internen Manifest aufgeführten Visual C++ Redistributables in ein Objekt ein, das an andere VcRedist-Funktionen übergeben werden kann.
+Sie prüft nicht, welche Redistributables installiert sind; verwenden Sie dafür Get-InstalledVcRedist.
 
-Das Manifest wird aus dem VcRedist-Repository gelesen, sodass Manifestaktualisierungen keine Modulaktualisierung erfordern. Ist das Remotemanifest nicht verfügbar, ungültig oder älter als das gebündelte Manifest, wird das im Modul enthaltene Manifest verwendet.
+Bei Auto wird zuerst das gebündelte Manifest gelesen und anschließend das Remotemanifest geprüft. Ist das Remotemanifest nicht verfügbar, ungültig oder älter, wird das gebündelte Manifest verwendet. Ein ungültiges oder nicht lesbares gebündeltes Manifest führt zu einem Fehler.
 
-Das Modul enthält eine vollständige Liste der unterstützten und aller bekannten Redistributables.
-Standardmäßig gibt Get-VcList nur eine Liste der unterstützten Visual C++ Redistributables zurück.
-Um nicht unterstützte Redistributables zurückzugeben, muss der Parameter -Export verwendet und die Ausgabe mit Where-Object gefiltert werden.
+Release und Architecture wählen passende Einträge unabhängig vom Unterstützungsstatus aus. Sind darunter nicht unterstützte Einträge, wird eine Warnung ausgegeben.
+Ohne diese Parameter wird Release 14 für x86, x64 und arm64 ausgewählt.
+Mit -Export Supported, Unsupported oder All werden Einträge über alle Releases nach Unterstützungsstatus beziehungsweise alle Einträge ausgewählt. Export kann nicht mit Release oder Architecture kombiniert werden.
+All und Unsupported geben immer eine Warnung aus, auch wenn keine nicht unterstützten Einträge vorhanden sind.
+In SilentUninstall werden #Installer und #ProductCode durch den Installationsdateinamen aus URI und den Produktcode des Eintrags ersetzt.
 
 Das interne Manifest kann mit Export-VcManifest exportiert werden.
 
@@ -42,55 +45,55 @@ Das interne Manifest kann mit Export-VcManifest exportiert werden.
 Get-VcList
 ```
 
-Description: Gibt ein Objekt mit den unterstützten Visual C++ Redistributables aus dem eingebetteten Manifest zurück.
+Description: Gibt Redistributables für Release 14 und die Architekturen x86, x64 und arm64 aus dem ausgewählten Manifest zurück.
 
 ### EXAMPLE 2
 ```
-Get-VcList
+Get-VcList -Release 2015 -Architecture x86
 ```
 
-Description: Gibt die unterstützten Visual C++ Redistributables der Versionen 2012, 2013 und 2022 für x86 und x64 aus dem eingebetteten Manifest zurück.
+Description: Gibt die Redistributables für 2015 und x86 zurück und warnt bei nicht unterstützten Einträgen.
 
 ### EXAMPLE 3
 ```
 Get-VcList -Export All
 ```
 
-Description: Gibt eine Liste aller Visual C++ Redistributables aus dem eingebetteten Manifest zurück, einschließlich nicht unterstützter Versionen.
+Description: Gibt alle Visual C++ Redistributables aus dem ausgewählten Manifest zurück und gibt eine Warnung aus.
 
 ### EXAMPLE 4
 ```
 Get-VcList -Export Supported
 ```
 
-Description: Gibt die vollständige Liste der unterstützten Visual C++ Redistributables aus dem eingebetteten Manifest zurück.
-Dies entspricht der Ausführung von Get-VcList ohne Parameter.
+Description: Gibt die unterstützten Visual C++ Redistributables aller Releases aus dem ausgewählten Manifest zurück.
 
 ### EXAMPLE 5
 ```
 Get-VcList -Export Unsupported | Where-Object { $_.Release -eq "2008" }
 ```
 
-Description: Gibt die vollständige Liste der nicht unterstützten Visual C++ Redistributables aus dem eingebetteten Manifest zurück und filtert sie auf die Versionen aus dem Jahr 2008.
+Description: Gibt die nicht unterstützten Visual C++ Redistributables aus dem ausgewählten Manifest zurück und filtert sie auf Release 2008.
 
 ### EXAMPLE 6
 ```
 Get-VcList -Release 2013, 2019 -Architecture x86
 ```
 
-Description: Gibt die Visual C++ Redistributables für 2013 und 2019 in der x86-Architektur aus der Liste der unterstützten Redistributables im eingebetteten Manifest zurück.
+Description: Gibt die Visual C++ Redistributables für 2013 und 2019 in der x86-Architektur aus dem ausgewählten Manifest zurück.
 
 ### EXAMPLE 7
 ```
 Get-VcList -Source Bundled
 ```
 
-Description: Gibt die unterstützten Visual C++ Redistributables ausschließlich anhand des im Modul enthaltenen Manifests zurück, ohne das Remotemanifest abzufragen.
+Description: Gibt die Redistributables für Release 14 ausschließlich anhand des im Modul enthaltenen Manifests zurück.
 
 ## PARAMETERS
 
 ### -Release
 Gibt das Release (oder die Version) der zurückzugebenden Redistributables an.
+Jeder Wert muss aus zwei bis vier Ziffern bestehen; vollständige Versionsnummern sind nicht zulässig.
 
 ```yaml
 Type: String[]
@@ -99,14 +102,14 @@ Aliases:
 
 Required: False
 Position: 1
-Default value: @("2012", "2013", "2022")
+Default value: @("14")
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -Architecture
 Gibt die Prozessorarchitektur der zurückzugebenden Redistributables an.
-Mögliche Werte sind x86 und x64.
+Mögliche Werte sind x86, x64 und arm64.
 
 ```yaml
 Type: String[]
@@ -115,14 +118,14 @@ Aliases:
 
 Required: False
 Position: 2
-Default value: @("x86", "x64")
+Default value: @("x86", "x64", "arm64")
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -Export
 Legt fest, welche Visual C++ Redistributables exportiert werden: alle, unterstützte oder nicht unterstützte Redistributables.
-Standardmäßig werden die unterstützten Redistributables exportiert.
+Export kann nicht mit Release oder Architecture kombiniert werden. All und Unsupported geben eine Warnung aus.
 
 ```yaml
 Type: String
@@ -152,7 +155,7 @@ Accept wildcard characters: False
 ```
 
 ### -Proxy
-Gibt einen Proxyserver für Anforderungen zum Abrufen des Manifests oder zum Herunterladen von Inhalten an.
+Gibt einen absoluten HTTP- oder HTTPS-Proxy-URI ohne eingebettete Anmeldeinformationen für Remotemanifest-Anforderungen an. Ohne ProxyCredential werden die Standardanmeldeinformationen verwendet.
 
 ```yaml
 Type: String
@@ -167,7 +170,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProxyCredential
-Gibt ein Benutzerkonto an, das zur Verwendung des mit -Proxy angegebenen Proxyservers berechtigt ist. Wenn keine Anmeldeinformationen angegeben werden, werden die Standardanmeldeinformationen für den Proxy verwendet.
+Gibt Anmeldeinformationen für den mit -Proxy angegebenen Proxyserver an. Nicht leere Anmeldeinformationen erfordern -Proxy.
 
 ```yaml
 Type: PSCredential
@@ -182,7 +185,7 @@ Accept wildcard characters: False
 ```
 
 ### -Source
-Wählt die Quelle des Manifests aus. `Auto` (Standard) verwendet das im VcRedist-Repository gehostete Remotemanifest und greift bei jedem Fehler oder bei einem älteren Remotemanifest auf das gebündelte Manifest zurück. `Remote` schlägt fehl, wenn das Remotemanifest nicht verfügbar ist. `Bundled` verwendet ausschließlich das im Modul enthaltene Manifest.
+Wählt die Quelle des Manifests aus. `Auto` (Standard) liest das gebündelte Manifest und verwendet das Remotemanifest, wenn es gültig und mindestens ebenso aktuell ist. `Remote` verwendet nur das Remotemanifest. `Bundled` verwendet nur das gebündelte Manifest.
 
 ```yaml
 Type: String
@@ -191,7 +194,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: Auto
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

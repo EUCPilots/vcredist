@@ -26,12 +26,15 @@ Get-VcList [[-Export] <String>] [-Source <String>] [-Proxy <String>] [-ProxyCred
 
 ## DESCRIPTION
 Cette fonction lit les redistribuables Visual C++ répertoriés dans un manifeste interne et les place dans un objet qui peut être transmis aux autres fonctions de VcRedist.
+Elle ne vérifie pas quels redistribuables sont installés ; utilisez Get-InstalledVcRedist à cette fin.
 
-Le manifeste est lu depuis le dépôt VcRedist ; les mises à jour du manifeste ne nécessitent donc pas de mise à jour du module. Si le manifeste distant est indisponible, invalide ou plus ancien que le manifeste intégré, le manifeste inclus dans le module est utilisé.
+Avec Auto, le manifeste intégré est lu en premier, puis le manifeste distant est vérifié. Si celui-ci est indisponible, invalide ou plus ancien, le manifeste intégré est utilisé. Si le manifeste intégré est invalide ou illisible, une erreur est renvoyée.
 
-Le module contient la liste complète des redistribuables pris en charge et de tous ceux qui sont connus.
-Par défaut, Get-VcList renvoie uniquement la liste des redistribuables Visual C++ pris en charge.
-Pour renvoyer les redistribuables non pris en charge, le paramètre -Export est requis ; filtrez ensuite la sortie avec Where-Object.
+Release et Architecture sélectionnent les entrées correspondantes, qu'elles soient prises en charge ou non. Un avertissement est émis si une entrée sélectionnée n'est pas prise en charge.
+Sans ces paramètres, la version 14 est sélectionnée pour x86, x64 et arm64.
+Utilisez -Export Supported, Unsupported ou All pour sélectionner les entrées de toutes les versions selon leur prise en charge ou pour toutes les renvoyer. Export ne peut pas être combiné avec Release ou Architecture.
+All et Unsupported émettent toujours un avertissement, même si toutes les entrées sont prises en charge.
+Dans SilentUninstall, #Installer et #ProductCode sont remplacés par le nom du programme d'installation extrait de URI et le code produit de l'entrée.
 
 Le manifeste interne peut être exporté avec Export-VcManifest.
 
@@ -42,55 +45,55 @@ Le manifeste interne peut être exporté avec Export-VcManifest.
 Get-VcList
 ```
 
-Description : Renvoie un objet contenant les redistribuables Visual C++ pris en charge à partir du manifeste intégré.
+Description : Renvoie les redistribuables de la version 14 pour x86, x64 et arm64 à partir du manifeste sélectionné.
 
 ### EXAMPLE 2
 ```
-Get-VcList
+Get-VcList -Release 2015 -Architecture x86
 ```
 
-Description : Renvoie, à partir du manifeste intégré, les versions 2012, 2013 et 2022 prises en charge des redistribuables Visual C++ pour x86 et x64.
+Description : Renvoie les redistribuables 2015 pour x86 et avertit si les entrées sélectionnées ne sont pas prises en charge.
 
 ### EXAMPLE 3
 ```
 Get-VcList -Export All
 ```
 
-Description : Renvoie la liste de tous les redistribuables Visual C++ du manifeste intégré, y compris les versions non prises en charge.
+Description : Renvoie tous les redistribuables Visual C++ du manifeste sélectionné et émet un avertissement.
 
 ### EXAMPLE 4
 ```
 Get-VcList -Export Supported
 ```
 
-Description : Renvoie la liste complète des redistribuables Visual C++ pris en charge à partir du manifeste intégré.
-Cela équivaut à exécuter Get-VcList sans paramètre.
+Description : Renvoie les redistribuables pris en charge de toutes les versions du manifeste sélectionné.
 
 ### EXAMPLE 5
 ```
 Get-VcList -Export Unsupported | Where-Object { $_.Release -eq "2008" }
 ```
 
-Description : Renvoie la liste complète des redistribuables Visual C++ non pris en charge du manifeste intégré, puis filtre les versions 2008.
+Description : Renvoie les redistribuables non pris en charge du manifeste sélectionné, puis filtre les versions 2008.
 
 ### EXAMPLE 6
 ```
 Get-VcList -Release 2013, 2019 -Architecture x86
 ```
 
-Description : Renvoie les redistribuables Visual C++ 2013 et 2019 pour x86 à partir de la liste des redistribuables pris en charge du manifeste intégré.
+Description : Renvoie les redistribuables Visual C++ 2013 et 2019 pour x86 à partir du manifeste sélectionné.
 
 ### EXAMPLE 7
 ```
 Get-VcList -Source Bundled
 ```
 
-Description : Renvoie les redistribuables Visual C++ pris en charge en utilisant uniquement le manifeste inclus dans le module, sans contacter le manifeste distant.
+Description : Renvoie les redistribuables de la version 14 en utilisant uniquement le manifeste inclus dans le module.
 
 ## PARAMETERS
 
 ### -Release
 Spécifie la version des redistribuables à renvoyer.
+Chaque valeur doit contenir deux à quatre chiffres ; les numéros de version complets ne sont pas acceptés.
 
 ```yaml
 Type: String[]
@@ -99,14 +102,14 @@ Aliases:
 
 Required: False
 Position: 1
-Default value: @("2012", "2013", "2022")
+Default value: @("14")
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -Architecture
 Spécifie l’architecture du processeur des redistribuables à renvoyer.
-Peut être x86 ou x64.
+Peut être x86, x64 ou arm64.
 
 ```yaml
 Type: String[]
@@ -115,14 +118,14 @@ Aliases:
 
 Required: False
 Position: 2
-Default value: @("x86", "x64")
+Default value: @("x86", "x64", "arm64")
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -Export
 Définit la liste des redistribuables Visual C++ à exporter : tous, ceux pris en charge ou ceux non pris en charge.
-Par défaut, les redistribuables pris en charge sont exportés.
+Export ne peut pas être combiné avec Release ou Architecture. All et Unsupported émettent un avertissement.
 
 ```yaml
 Type: String
@@ -152,7 +155,7 @@ Accept wildcard characters: False
 ```
 
 ### -Proxy
-Spécifie un serveur proxy pour les requêtes de récupération du manifeste ou de téléchargement du contenu.
+Spécifie un URI proxy HTTP ou HTTPS absolu, sans informations d'identification intégrées, pour récupérer le manifeste distant. Si ProxyCredential est omis, les informations d'identification proxy par défaut sont utilisées.
 
 ```yaml
 Type: String
@@ -167,7 +170,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProxyCredential
-Spécifie un compte utilisateur autorisé à utiliser le serveur proxy indiqué par -Proxy. Si cette valeur n’est pas spécifiée, les informations d’identification proxy par défaut sont utilisées.
+Spécifie les informations d'identification du serveur proxy indiqué par -Proxy. Des informations d'identification non vides nécessitent -Proxy.
 
 ```yaml
 Type: PSCredential
@@ -182,7 +185,7 @@ Accept wildcard characters: False
 ```
 
 ### -Source
-Sélectionne la source du manifeste. `Auto` (valeur par défaut) utilise le manifeste distant hébergé dans le dépôt VcRedist et revient au manifeste intégré en cas d’échec ou si le manifeste distant est plus ancien. `Remote` échoue si le manifeste distant n’est pas disponible. `Bundled` utilise uniquement le manifeste inclus dans le module.
+Sélectionne la source du manifeste. `Auto` (valeur par défaut) lit le manifeste intégré et utilise le manifeste distant s'il est valide et au moins aussi récent. `Remote` utilise uniquement le manifeste distant. `Bundled` utilise uniquement le manifeste intégré.
 
 ```yaml
 Type: String
@@ -191,7 +194,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: Auto
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

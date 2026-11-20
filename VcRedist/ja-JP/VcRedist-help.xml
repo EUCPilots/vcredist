@@ -412,9 +412,9 @@
       </maml:description>
     </command:details>
     <maml:description>
-      <maml:para>この関数は、内部マニフェストに記載された Visual C++ Redistributable を読み込み、他の VcRedist 関数に渡せるオブジェクトにします。</maml:para>
-      <maml:para>マニフェストは VcRedist リポジトリから読み込まれるため、マニフェストを更新する際にモジュールを更新する必要はありません。リモート マニフェストを利用できない場合、無効な場合、またはバンドルされたマニフェストより古い場合は、モジュールに含まれるマニフェストが使用されます。</maml:para>
-      <maml:para>サポート対象および既知のすべての再頒布可能パッケージの一覧がモジュールに含まれています。 既定では、Get-VcList はサポート対象の Visual C++ Redistributable の一覧のみを返します。 サポート対象外の Redistributable を返すには、-Export パラメーターを指定し、Where-Object で出力をフィルターする必要があります。</maml:para>
+      <maml:para>この関数は、内部マニフェストに記載された Visual C++ Redistributable を読み込み、他の VcRedist 関数に渡せるオブジェクトにします。 インストール済みの Redistributable は確認しません。確認には Get-InstalledVcRedist を使用してください。</maml:para>
+      <maml:para>Auto では、最初にバンドルされたマニフェストを読み込み、次にリモート マニフェストを確認します。リモートが利用できない、無効、または古い場合は、バンドルされたマニフェストを使用します。バンドルされたマニフェストが無効または読み込み不能な場合はエラーになります。</maml:para>
+      <maml:para>Release と Architecture は、サポート状況に関係なく一致するエントリを選択します。選択されたエントリにサポート対象外のものがある場合は警告が表示されます。 これらのパラメーターを指定しない場合、x86、x64、arm64 のリリース 14 が選択されます。 -Export Supported、Unsupported、または All を使用すると、すべてのリリースからサポート状況に応じて選択するか、すべてのエントリを返すことができます。Export は Release または Architecture と併用できません。 All と Unsupported は、サポート対象外のエントリがない場合でも常に警告を表示します。 SilentUninstall の #Installer と #ProductCode は、URI のインストーラー ファイル名とエントリの製品コードに置き換えられます。</maml:para>
       <maml:para>内部マニフェストは Export-VcManifest でエクスポートできます。</maml:para>
     </maml:description>
     <command:syntax>
@@ -423,26 +423,26 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
           <maml:name>Release</maml:name>
           <maml:description>
-            <maml:para>返す Redistributable のリリース (またはバージョン) を指定します。</maml:para>
+            <maml:para>返す Redistributable のリリース (またはバージョン) を指定します。 各値は 2 桁から 4 桁の数字で指定します。完全なバージョン番号は使用できません。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
           <dev:type>
             <maml:name>String[]</maml:name>
             <maml:uri />
           </dev:type>
-          <dev:defaultValue>@("2012", "2013", "2022")</dev:defaultValue>
+          <dev:defaultValue>@("14")</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
           <maml:name>Architecture</maml:name>
           <maml:description>
-            <maml:para>返す Redistributable のプロセッサ アーキテクチャを指定します。 x86 または x64 を指定できます。</maml:para>
+            <maml:para>返す Redistributable のプロセッサ アーキテクチャを指定します。 x86、x64、または arm64 を指定できます。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
           <dev:type>
             <maml:name>String[]</maml:name>
             <maml:uri />
           </dev:type>
-          <dev:defaultValue>@("x86", "x64")</dev:defaultValue>
+          <dev:defaultValue>@("x86", "x64", "arm64")</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="proga">
           <maml:name>ProgressAction</maml:name>
@@ -459,7 +459,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>Proxy</maml:name>
           <maml:description>
-            <maml:para>マニフェストの取得またはコンテンツのダウンロードに使用するプロキシ サーバーを指定します。</maml:para>
+            <maml:para>リモート マニフェストの取得に使用する、資格情報を含まない絶対 HTTP または HTTPS プロキシ URI を指定します。ProxyCredential を省略した場合は既定のプロキシ資格情報を使用します。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -471,7 +471,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>ProxyCredential</maml:name>
           <maml:description>
-            <maml:para>-Proxy で指定したプロキシ サーバーを使用する権限を持つユーザー アカウントを指定します。省略した場合は、既定のプロキシ資格情報が使用されます。</maml:para>
+            <maml:para>-Proxy で指定したプロキシ サーバーの資格情報を指定します。空でない資格情報には -Proxy が必要です。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">PSCredential</command:parameterValue>
           <dev:type>
@@ -483,14 +483,14 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>Source</maml:name>
           <maml:description>
-            <maml:para>マニフェストのソースを選択します。`Auto` (既定) は VcRedist リポジトリでホストされるリモート マニフェストを使用し、何らかのエラーが発生した場合、またはリモート マニフェストが古い場合はバンドルされたマニフェストにフォールバックします。`Remote` はリモート マニフェストを利用できない場合に失敗します。`Bundled` はモジュールに含まれるマニフェストのみを使用します。</maml:para>
+            <maml:para>マニフェストのソースを選択します。`Auto` (既定) はバンドルされたマニフェストを読み込み、リモートが有効で同じかそれ以上に新しい場合はリモートを使用します。`Remote` はリモートのみ、`Bundled` はバンドルされたマニフェストのみを使用します。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
           </dev:type>
-          <dev:defaultValue>None</dev:defaultValue>
+          <dev:defaultValue>Auto</dev:defaultValue>
         </command:parameter>
       </command:syntaxItem>
       <command:syntaxItem>
@@ -498,7 +498,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
           <maml:name>Export</maml:name>
           <maml:description>
-            <maml:para>エクスポートする Visual C++ Redistributable の一覧を指定します。All、Supported、または Unsupported を選択できます。 既定では、サポート対象の Redistributable がエクスポートされます。</maml:para>
+            <maml:para>エクスポートする Visual C++ Redistributable の一覧を指定します。All、Supported、または Unsupported を選択できます。 Export は Release または Architecture と併用できません。All と Unsupported は警告を表示します。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -522,7 +522,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>Proxy</maml:name>
           <maml:description>
-            <maml:para>マニフェストの取得またはコンテンツのダウンロードに使用するプロキシ サーバーを指定します。</maml:para>
+            <maml:para>リモート マニフェストの取得に使用する、資格情報を含まない絶対 HTTP または HTTPS プロキシ URI を指定します。ProxyCredential を省略した場合は既定のプロキシ資格情報を使用します。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -534,7 +534,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>ProxyCredential</maml:name>
           <maml:description>
-            <maml:para>-Proxy で指定したプロキシ サーバーを使用する権限を持つユーザー アカウントを指定します。省略した場合は、既定のプロキシ資格情報が使用されます。</maml:para>
+            <maml:para>-Proxy で指定したプロキシ サーバーの資格情報を指定します。空でない資格情報には -Proxy が必要です。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">PSCredential</command:parameterValue>
           <dev:type>
@@ -546,14 +546,14 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>Source</maml:name>
           <maml:description>
-            <maml:para>マニフェストのソースを選択します。`Auto` (既定) は VcRedist リポジトリでホストされるリモート マニフェストを使用し、何らかのエラーが発生した場合、またはリモート マニフェストが古い場合はバンドルされたマニフェストにフォールバックします。`Remote` はリモート マニフェストを利用できない場合に失敗します。`Bundled` はモジュールに含まれるマニフェストのみを使用します。</maml:para>
+            <maml:para>マニフェストのソースを選択します。`Auto` (既定) はバンドルされたマニフェストを読み込み、リモートが有効で同じかそれ以上に新しい場合はリモートを使用します。`Remote` はリモートのみ、`Bundled` はバンドルされたマニフェストのみを使用します。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
           </dev:type>
-          <dev:defaultValue>None</dev:defaultValue>
+          <dev:defaultValue>Auto</dev:defaultValue>
         </command:parameter>
       </command:syntaxItem>
     </command:syntax>
@@ -561,31 +561,31 @@
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
         <maml:name>Release</maml:name>
         <maml:description>
-          <maml:para>返す Redistributable のリリース (またはバージョン) を指定します。</maml:para>
+          <maml:para>返す Redistributable のリリース (またはバージョン) を指定します。 各値は 2 桁から 4 桁の数字で指定します。完全なバージョン番号は使用できません。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
           <maml:name>String[]</maml:name>
           <maml:uri />
         </dev:type>
-        <dev:defaultValue>@("2012", "2013", "2022")</dev:defaultValue>
+        <dev:defaultValue>@("14")</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none">
         <maml:name>Architecture</maml:name>
         <maml:description>
-          <maml:para>返す Redistributable のプロセッサ アーキテクチャを指定します。 x86 または x64 を指定できます。</maml:para>
+          <maml:para>返す Redistributable のプロセッサ アーキテクチャを指定します。 x86、x64、または arm64 を指定できます。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
           <maml:name>String[]</maml:name>
           <maml:uri />
         </dev:type>
-        <dev:defaultValue>@("x86", "x64")</dev:defaultValue>
+        <dev:defaultValue>@("x86", "x64", "arm64")</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none">
         <maml:name>Export</maml:name>
         <maml:description>
-          <maml:para>エクスポートする Visual C++ Redistributable の一覧を指定します。All、Supported、または Unsupported を選択できます。 既定では、サポート対象の Redistributable がエクスポートされます。</maml:para>
+          <maml:para>エクスポートする Visual C++ Redistributable の一覧を指定します。All、Supported、または Unsupported を選択できます。 Export は Release または Architecture と併用できません。All と Unsupported は警告を表示します。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -609,7 +609,7 @@
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
         <maml:name>Proxy</maml:name>
         <maml:description>
-          <maml:para>マニフェストの取得またはコンテンツのダウンロードに使用するプロキシ サーバーを指定します。</maml:para>
+          <maml:para>リモート マニフェストの取得に使用する、資格情報を含まない絶対 HTTP または HTTPS プロキシ URI を指定します。ProxyCredential を省略した場合は既定のプロキシ資格情報を使用します。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -621,7 +621,7 @@
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
         <maml:name>ProxyCredential</maml:name>
         <maml:description>
-          <maml:para>-Proxy で指定したプロキシ サーバーを使用する権限を持つユーザー アカウントを指定します。省略した場合は、既定のプロキシ資格情報が使用されます。</maml:para>
+          <maml:para>-Proxy で指定したプロキシ サーバーの資格情報を指定します。空でない資格情報には -Proxy が必要です。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">PSCredential</command:parameterValue>
         <dev:type>
@@ -633,14 +633,14 @@
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
         <maml:name>Source</maml:name>
         <maml:description>
-          <maml:para>マニフェストのソースを選択します。`Auto` (既定) は VcRedist リポジトリでホストされるリモート マニフェストを使用し、何らかのエラーが発生した場合、またはリモート マニフェストが古い場合はバンドルされたマニフェストにフォールバックします。`Remote` はリモート マニフェストを利用できない場合に失敗します。`Bundled` はモジュールに含まれるマニフェストのみを使用します。</maml:para>
+          <maml:para>マニフェストのソースを選択します。`Auto` (既定) はバンドルされたマニフェストを読み込み、リモートが有効で同じかそれ以上に新しい場合はリモートを使用します。`Remote` はリモートのみ、`Bundled` はバンドルされたマニフェストのみを使用します。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
           <maml:uri />
         </dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>Auto</dev:defaultValue>
       </command:parameter>
     </command:parameters>
     <command:inputTypes />
@@ -664,49 +664,49 @@
         <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
         <dev:code>Get-VcList</dev:code>
         <dev:remarks>
-          <maml:para>説明: 埋め込みマニフェストからサポート対象の Visual C++ Redistributable のオブジェクトを返します。</maml:para>
+          <maml:para>説明: 選択されたマニフェストから、x86、x64、arm64 のリリース 14 を返します。</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
-        <dev:code>Get-VcList</dev:code>
+        <dev:code>Get-VcList -Release 2015 -Architecture x86</dev:code>
         <dev:remarks>
-          <maml:para>説明: 埋め込みマニフェストから、サポート対象の Visual C++ Redistributable のうち、2012、2013、2022 の x86 および x64 バージョンを返します。</maml:para>
+          <maml:para>説明: 2015 の x86 Redistributable を返し、選択されたエントリがサポート対象外の場合は警告します。</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 3 --------------------------</maml:title>
         <dev:code>Get-VcList -Export All</dev:code>
         <dev:remarks>
-          <maml:para>説明: サポート対象外のバージョンを含む、埋め込みマニフェスト内のすべての Visual C++ Redistributable の一覧を返します。</maml:para>
+          <maml:para>説明: 選択されたマニフェスト内のすべての Visual C++ Redistributable を返し、警告を表示します。</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 4 --------------------------</maml:title>
         <dev:code>Get-VcList -Export Supported</dev:code>
         <dev:remarks>
-          <maml:para>説明: 埋め込みマニフェストからサポート対象の Visual C++ Redistributable の完全な一覧を返します。 これは、パラメーターを指定せずに Get-VcList を実行する場合と同じです。</maml:para>
+          <maml:para>説明: 選択されたマニフェストから、すべてのリリースのサポート対象 Redistributable を返します。</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 5 --------------------------</maml:title>
         <dev:code>Get-VcList -Export Unsupported | Where-Object { $_.Release -eq "2008" }</dev:code>
         <dev:remarks>
-          <maml:para>説明: 埋め込みマニフェストからサポート対象外の Visual C++ Redistributable の完全な一覧を取得し、そのうち 2008 バージョンをフィルターします。</maml:para>
+          <maml:para>説明: 選択されたマニフェストからサポート対象外の Redistributable を取得し、そのうち 2008 バージョンをフィルターします。</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 6 --------------------------</maml:title>
         <dev:code>Get-VcList -Release 2013, 2019 -Architecture x86</dev:code>
         <dev:remarks>
-          <maml:para>説明: 埋め込みマニフェストのサポート対象 Redistributable 一覧から、2013 および 2019 の x86 Visual C++ Redistributable を返します。</maml:para>
+          <maml:para>説明: 選択されたマニフェストから、2013 および 2019 の x86 Visual C++ Redistributable を返します。</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 7 --------------------------</maml:title>
         <dev:code>Get-VcList -Source Bundled</dev:code>
         <dev:remarks>
-          <maml:para>説明: リモート マニフェストに接続せず、モジュールに含まれるマニフェストのみを使用して、サポート対象の Visual C++ Redistributable を返します。</maml:para>
+          <maml:para>説明: モジュールに含まれるマニフェストのみを使用して、リリース 14 の Redistributable を返します。</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>

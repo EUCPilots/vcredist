@@ -26,12 +26,15 @@ Get-VcList [[-Export] <String>] [-Source <String>] [-Proxy <String>] [-ProxyCred
 
 ## DESCRIPTION
 Esta función lee los Redistribuibles de Visual C++ incluidos en un manifiesto interno y los convierte en un objeto que se puede pasar a otras funciones de VcRedist.
+No comprueba qué Redistribuibles están instalados; use Get-InstalledVcRedist para ello.
 
-El manifiesto se lee del repositorio de VcRedist, por lo que sus actualizaciones no requieren actualizar el módulo. Si el manifiesto remoto no está disponible, no es válido o es más antiguo que el manifiesto incluido, se usa el manifiesto del módulo.
+Con Auto se lee primero el manifiesto incluido y después se comprueba el remoto. Si el remoto no está disponible, no es válido o es más antiguo, se usa el incluido. Si el manifiesto incluido no se puede leer o no es válido, se produce un error.
 
-El módulo incluye una lista completa de los redistribuibles compatibles y de todos los que se conocen.
-De forma predeterminada, Get-VcList solo devuelve una lista de los Redistribuibles de Visual C++ compatibles.
-Para devolver redistribuibles no compatibles, se requiere el parámetro -Export y filtrar la salida con Where-Object.
+Release y Architecture seleccionan las entradas coincidentes, sean compatibles o no. Si alguna entrada seleccionada no es compatible, se emite una advertencia.
+Sin estos parámetros, se selecciona la versión 14 para x86, x64 y arm64.
+Use -Export Supported, Unsupported o All para seleccionar entradas de todas las versiones por compatibilidad o devolver todas las entradas. Export no se puede combinar con Release ni Architecture.
+All y Unsupported siempre emiten una advertencia, incluso si no hay entradas no compatibles.
+En SilentUninstall, #Installer y #ProductCode se sustituyen por el nombre del instalador de URI y el código de producto de la entrada.
 
 El manifiesto interno se puede exportar con Export-VcManifest.
 
@@ -42,55 +45,55 @@ El manifiesto interno se puede exportar con Export-VcManifest.
 Get-VcList
 ```
 
-Descripción: Devuelve un objeto con los Redistribuibles de Visual C++ compatibles del manifiesto incluido.
+Descripción: Devuelve los Redistribuibles de la versión 14 para x86, x64 y arm64 del manifiesto seleccionado.
 
 ### EXAMPLE 2
 ```
-Get-VcList
+Get-VcList -Release 2015 -Architecture x86
 ```
 
-Descripción: Devuelve las versiones x86 y x64 de 2012, 2013 y 2022 de los Redistribuibles de Visual C++ compatibles del manifiesto incluido.
+Descripción: Devuelve los Redistribuibles x86 de 2015 y advierte si las entradas seleccionadas no son compatibles.
 
 ### EXAMPLE 3
 ```
 Get-VcList -Export All
 ```
 
-Descripción: Devuelve una lista de todos los Redistribuibles de Visual C++ del manifiesto incluido, incluidas las versiones no compatibles.
+Descripción: Devuelve todos los Redistribuibles de Visual C++ del manifiesto seleccionado y emite una advertencia.
 
 ### EXAMPLE 4
 ```
 Get-VcList -Export Supported
 ```
 
-Descripción: Devuelve la lista completa de los Redistribuibles de Visual C++ compatibles del manifiesto incluido.
-Es lo mismo que ejecutar Get-VcList sin parámetros.
+Descripción: Devuelve los Redistribuibles compatibles de todas las versiones del manifiesto seleccionado.
 
 ### EXAMPLE 5
 ```
 Get-VcList -Export Unsupported | Where-Object { $_.Release -eq "2008" }
 ```
 
-Descripción: Devuelve la lista completa de los Redistribuibles de Visual C++ no compatibles del manifiesto incluido y filtra las versiones de 2008.
+Descripción: Devuelve los Redistribuibles no compatibles del manifiesto seleccionado y filtra las versiones de 2008.
 
 ### EXAMPLE 6
 ```
 Get-VcList -Release 2013, 2019 -Architecture x86
 ```
 
-Descripción: Devuelve los Redistribuibles de Visual C++ x86 de 2013 y 2019 de la lista de redistribuibles compatibles del manifiesto incluido.
+Descripción: Devuelve los Redistribuibles de Visual C++ x86 de 2013 y 2019 del manifiesto seleccionado.
 
 ### EXAMPLE 7
 ```
 Get-VcList -Source Bundled
 ```
 
-Descripción: Devuelve los Redistribuibles de Visual C++ compatibles usando únicamente el manifiesto incluido en el módulo, sin contactar con el manifiesto remoto.
+Descripción: Devuelve los Redistribuibles de la versión 14 usando únicamente el manifiesto incluido en el módulo.
 
 ## PARAMETERS
 
 ### -Release
 Especifica la versión de los redistribuibles que se devolverán.
+Cada valor debe contener de dos a cuatro dígitos; no se aceptan números de versión completos.
 
 ```yaml
 Type: String[]
@@ -99,14 +102,14 @@ Aliases:
 
 Required: False
 Position: 1
-Default value: @("2012", "2013", "2022")
+Default value: @("14")
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -Architecture
 Especifica la arquitectura del procesador de los redistribuibles que se devolverán.
-Puede ser x86 o x64.
+Puede ser x86, x64 o arm64.
 
 ```yaml
 Type: String[]
@@ -115,14 +118,14 @@ Aliases:
 
 Required: False
 Position: 2
-Default value: @("x86", "x64")
+Default value: @("x86", "x64", "arm64")
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -Export
 Define la lista de Redistribuibles de Visual C++ que se exportará: todos, los compatibles o los no compatibles.
-De forma predeterminada, se exportan los redistribuibles compatibles.
+Export no se puede combinar con Release ni Architecture. All y Unsupported emiten una advertencia.
 
 ```yaml
 Type: String
@@ -152,7 +155,7 @@ Accept wildcard characters: False
 ```
 
 ### -Proxy
-Especifica un servidor proxy para obtener el manifiesto o descargar contenido.
+Especifica un URI de proxy HTTP o HTTPS absoluto, sin credenciales integradas, para obtener el manifiesto remoto. Si se omite ProxyCredential, se usan las credenciales de proxy predeterminadas.
 
 ```yaml
 Type: String
@@ -167,7 +170,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProxyCredential
-Especifica una cuenta de usuario con permiso para usar el servidor proxy indicado por -Proxy. Si no se especifica, se usan las credenciales de proxy predeterminadas.
+Especifica las credenciales del servidor proxy indicado por -Proxy. Las credenciales no vacías requieren -Proxy.
 
 ```yaml
 Type: PSCredential
@@ -182,7 +185,7 @@ Accept wildcard characters: False
 ```
 
 ### -Source
-Selecciona el origen del manifiesto. `Auto` (predeterminado) usa el manifiesto remoto alojado en el repositorio de VcRedist y recurre al manifiesto incluido si se produce un error o si el remoto es más antiguo. `Remote` produce un error si el manifiesto remoto no está disponible. `Bundled` usa únicamente el manifiesto incluido en el módulo.
+Selecciona el origen del manifiesto. `Auto` (predeterminado) lee el manifiesto incluido y usa el remoto si es válido y al menos igual de reciente. `Remote` usa solo el manifiesto remoto. `Bundled` usa solo el manifiesto incluido.
 
 ```yaml
 Type: String
@@ -191,7 +194,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: Auto
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

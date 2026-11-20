@@ -25,13 +25,22 @@ Get-VcList [[-Export] <String>] [-Source <String>] [-Proxy <String>] [-ProxyCred
 ```
 
 ## DESCRIPTION
-This function reads the Visual C++ Redistributables listed in an internal manifest into an object that can be passed to other VcRedist functions.
+This function returns Visual C++ Redistributable entries from a manifest as objects that can be passed to other VcRedist functions.
+It does not check which Redistributables are installed; use Get-InstalledVcRedist for that.
 
-By default, `-Source Auto` tries to read the manifest from the VcRedist repository, so manifest updates do not require a module update. If the remote manifest is unavailable, invalid or older than the bundled manifest, the manifest included in the module is used. Because the remote manifest may change independently of the installed module, use `-Source Bundled` for repeatable offline runs.
+By default, `-Source Auto` reads the bundled manifest and tries the remote manifest from the VcRedist repository.
+It uses the remote manifest if valid and at least as recent as the bundled manifest; otherwise it uses the bundled manifest.
+An unavailable or invalid remote manifest produces a warning; an unreadable or invalid bundled manifest causes an error.
+Use `-Source Bundled` for repeatable offline runs.
 
-A complete listing of the supported and all known redistributables is included in the module.
-By default, Get-VcList will only return a list of the supported Visual C++ Redistributables.
-To return any of the unsupported Redistributables, the -Export parameter is required with the output filtered with Where-Object.
+The Release and Architecture parameters select matching entries regardless of support status; a warning is emitted if any selected entries are unsupported.
+Without these parameters, the command selects release 14 for x86, x64, and arm64.
+Use `-Export Supported` or `-Export Unsupported` to select entries across releases by support status, or `-Export All` to return all entries.
+The Export parameter cannot be combined with Release or Architecture.
+The All and Unsupported export modes always emit a warning, even if the selected manifest contains no unsupported entries.
+
+The returned objects include the manifest properties, including Supported, URI, and SupportedArchitecture.
+In SilentUninstall, the #Installer and #ProductCode placeholders are replaced with the installer filename from URI and the entry's product code.
 
 The internal manifest can be exported with Export-VcManifest.
 
@@ -42,55 +51,56 @@ The internal manifest can be exported with Export-VcManifest.
 Get-VcList
 ```
 
-Description: Return an object of the supported Visual C++ Redistributables from the embedded manifest.
+Description: Returns release 14 Redistributables for x86, x64, and arm64 from the selected manifest.
 
 ### EXAMPLE 2
 ```
-Get-VcList
+Get-VcList -Release 2015 -Architecture x86
 ```
 
-Description: Returns the supported 2012, 2013 and 2022, x86 and x64 versions of the supported Visual C++ Redistributables from the embedded manifest.
+Description: Returns the x86 2015 Redistributables and warns if the selected entries are unsupported.
 
 ### EXAMPLE 3
 ```
 Get-VcList -Export All
 ```
 
-Description: Returns a list of the all Visual C++ Redistributables from the embedded manifest, including unsupported versions.
+Description: Returns all Visual C++ Redistributables from the selected manifest, including unsupported versions, and emits a warning.
 
 ### EXAMPLE 4
 ```
 Get-VcList -Export Supported
 ```
 
-Description: Returns the full list of supported Visual C++ Redistributables from the embedded manifest.
-This is the same as running Get-VcList with no parameters.
+Description: Returns the full list of supported Visual C++ Redistributables from the selected manifest.
+This includes supported entries from all releases, not just the default release 14.
 
 ### EXAMPLE 5
 ```
 Get-VcList -Export Unsupported | Where-Object { $_.Release -eq "2008" }
 ```
 
-Description: Returns the full list of unsupported Visual C++ Redistributables from the embedded manifest and filters for the 2008 versions of the Redistributables.
+Description: Returns unsupported Redistributables from the selected manifest and filters for the 2008 versions.
 
 ### EXAMPLE 6
 ```
 Get-VcList -Release 2013, 2019 -Architecture x86
 ```
 
-Description: Returns the 2013 and 2019 x86 Visual C++ Redistributables from the list of supported Redistributables in the embedded manifest.
+Description: Returns the 2013 and 2019 x86 Visual C++ Redistributables from the selected manifest.
 
 ### EXAMPLE 7
 ```
 Get-VcList -Source Bundled
 ```
 
-Description: Returns the supported Visual C++ Redistributables using only the manifest included in the module, without contacting the remote manifest.
+Description: Returns the release 14 Redistributables using only the manifest included in the module, without contacting the remote manifest.
 
 ## PARAMETERS
 
 ### -Release
-Specifies the release (or version) of the redistributables to return.
+Specifies one or more release labels to match, such as `14` or `2015`.
+Each value must contain two to four digits; full version numbers are not accepted.
 
 ```yaml
 Type: String[]
@@ -99,14 +109,13 @@ Aliases:
 
 Required: False
 Position: 1
-Default value: @("2012", "2013", "2022")
+Default value: @("14")
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -Architecture
-Specifies the processor architecture to of the redistributables to return.
-Can be x86 or x64.
+Specifies the processor architectures of the Redistributables to return: x86, x64, or arm64.
 
 ```yaml
 Type: String[]
@@ -115,14 +124,15 @@ Aliases:
 
 Required: False
 Position: 2
-Default value: @("x86", "x64")
+Default value: @("x86", "x64", "arm64")
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -Export
 Defines the list of Visual C++ Redistributables to export - All, Supported or Unsupported Redistributables.
-Defaults to exporting the Supported Redistributables.
+This parameter selects the Export parameter set and cannot be combined with Release or Architecture.
+All and Unsupported emit a warning.
 
 ```yaml
 Type: String
@@ -152,7 +162,8 @@ Accept wildcard characters: False
 ```
 
 ### -Proxy
-Specifies a proxy server for requests to fetch the manifest or download content.
+Specifies an absolute HTTP or HTTPS proxy URI, without embedded credentials, for remote manifest requests.
+If ProxyCredential is omitted, default proxy credentials are used.
 
 ```yaml
 Type: String
@@ -167,7 +178,8 @@ Accept wildcard characters: False
 ```
 
 ### -ProxyCredential
-Specifies a user account that has permission to use the proxy server specified by -Proxy. If not specified, default proxy credentials are used.
+Specifies credentials for the proxy server specified by -Proxy.
+Non-empty credentials require -Proxy.
 
 ```yaml
 Type: PSCredential
@@ -182,7 +194,10 @@ Accept wildcard characters: False
 ```
 
 ### -Source
-Selects the manifest source. `Auto` (default) tries the remote manifest hosted in the VcRedist repository and falls back to the bundled manifest on any failure, or when the remote manifest is older. `Remote` fails if the remote manifest is unavailable. `Bundled` uses only the manifest included in the module and is recommended for repeatable offline runs.
+Selects the manifest source.
+`Auto` (default) reads the bundled manifest, then selects the remote manifest if it is valid and at least as recent; otherwise it uses the bundled manifest.
+`Remote` uses only the remote manifest and fails if it cannot be used.
+`Bundled` uses only the bundled manifest.
 
 ```yaml
 Type: String
@@ -191,7 +206,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: Auto
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -204,6 +219,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## OUTPUTS
 
 ### System.Management.Automation.PSObject
+One object per matching manifest entry. No objects are returned when there are no matches.
 ## NOTES
 Author: Aaron Parker
 
