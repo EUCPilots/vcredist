@@ -15,6 +15,47 @@ Describe -Name "Get-VcList" {
             $List | ForEach-Object { $_.Supported | Should -BeTrue }
         }
 
+        InModuleScope VcRedist {
+            Describe "Get-VcList unsupported release warnings" {
+                BeforeEach {
+                    Mock Get-VcManifest {
+                        [PSCustomObject]@{
+                            Entries = @(
+                                [PSCustomObject]@{ Name = "Supported"; Release = "2013"; Architecture = "x86"; Supported = $true; URI = "https://example.com/a.exe"; SilentUninstall = "#Installer"; ProductCode = "a" }
+                                [PSCustomObject]@{ Name = "Unsupported 1"; Release = "2015"; Architecture = "x86"; Supported = $false; URI = "https://example.com/b.exe"; SilentUninstall = "#Installer"; ProductCode = "b" }
+                                [PSCustomObject]@{ Name = "Unsupported 2"; Release = "2015"; Architecture = "x86"; Supported = $false; URI = "https://example.com/c.exe"; SilentUninstall = "#Installer"; ProductCode = "c" }
+                                [PSCustomObject]@{ Name = "Supported x64"; Release = "2015"; Architecture = "x64"; Supported = $true; URI = "https://example.com/d.exe"; SilentUninstall = "#Installer"; ProductCode = "d" }
+                            )
+                        }
+                    }
+                }
+
+                It "Warns once while returning supported and unsupported matches" {
+                    $Results = @(Get-VcList -Release @("2013", "2015") -Architecture "x86" -Source "Bundled" -WarningVariable "Warnings" -WarningAction "SilentlyContinue")
+
+                    $Results.Count | Should -Be 3
+                    @($Results | Where-Object { $_.Supported -eq $false }).Count | Should -Be 2
+                    @($Warnings).Count | Should -Be 1
+                    $Warnings[0].Message | Should -Be "This list includes unsupported Visual C++ Redistributables."
+                }
+
+                It "Does not warn for supported matches when unsupported entries are filtered out" {
+                    $Results = @(Get-VcList -Release "2015" -Architecture "x64" -Source "Bundled" -WarningVariable "Warnings" -WarningAction "SilentlyContinue")
+
+                    $Results.Count | Should -Be 1
+                    $Results[0].Supported | Should -BeTrue
+                    $Warnings | Should -BeNullOrEmpty
+                }
+
+                It "Does not warn when there are no matches" {
+                    $Results = @(Get-VcList -Release "2099" -Source "Bundled" -WarningVariable "Warnings" -WarningAction "SilentlyContinue")
+
+                    $Results.Count | Should -Be 0
+                    $Warnings | Should -BeNullOrEmpty
+                }
+            }
+        }
+
         It "Returns more entries for All than for Supported or Unsupported" {
             $All = @(Get-VcList -Export "All" -Source "Bundled" -WarningAction "SilentlyContinue")
             $Supported = @(Get-VcList -Export "Supported" -Source "Bundled")
@@ -32,6 +73,36 @@ Describe -Name "Get-VcList" {
                 $_.Architecture | Should -Be "x64"
                 $_.Supported | Should -BeTrue
             }
+        }
+
+        It "Reports the active filters and selected entries with Verbose" {
+            $Records = @(Get-VcList -Release "14" -Architecture "x64" -Source "Bundled" -Verbose 4>&1)
+            $List = @($Records | Where-Object { $_ -isnot [System.Management.Automation.VerboseRecord] })
+            $Messages = @($Records | Where-Object { $_ -is [System.Management.Automation.VerboseRecord] })
+
+            ($Messages.Message -join "`n") | Should -Match "release '14' and architecture 'x64'"
+            ($Messages.Message -join "`n") | Should -Match "Selected $($List.Count) Visual C\+\+ Redistributables\."
+            foreach ($Item in $List) {
+                ($Messages.Message -join "`n") | Should -Match ([System.Text.RegularExpressions.Regex]::Escape("Preparing: '$($Item.Name) $($Item.Version) $($Item.Architecture)' (release $($Item.Release))."))
+            }
+        }
+
+        It "Reports zero selected entries with Verbose" {
+            $Records = @(Get-VcList -Release "2099" -Source "Bundled" -Verbose 4>&1)
+            $List = @($Records | Where-Object { $_ -isnot [System.Management.Automation.VerboseRecord] })
+            $Messages = @($Records | Where-Object { $_ -is [System.Management.Automation.VerboseRecord] })
+
+            $List.Count | Should -Be 0
+            ($Messages.Message -join "`n") | Should -Match "Selected 0 Visual C\+\+ Redistributables\."
+        }
+
+        It "Reports the selected export mode with Verbose" {
+            $Records = @(Get-VcList -Export "Unsupported" -Source "Bundled" -WarningAction "SilentlyContinue" -Verbose 4>&1)
+            $List = @($Records | Where-Object { $_ -isnot [System.Management.Automation.VerboseRecord] })
+            $Messages = @($Records | Where-Object { $_ -is [System.Management.Automation.VerboseRecord] })
+
+            ($Messages.Message -join "`n") | Should -Match "export mode 'Unsupported'"
+            ($Messages.Message -join "`n") | Should -Match "Selected $($List.Count) Visual C\+\+ Redistributables\."
         }
 
         It "Returns objects with the required properties" {

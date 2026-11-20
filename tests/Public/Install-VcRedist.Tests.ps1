@@ -10,21 +10,22 @@ BeforeDiscovery {
 	$ModuleRoot = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent
 	$ManifestPath = Join-Path -Path $ModuleRoot -ChildPath "VcRedist/VisualCRedistributables.json"
 	$Manifest = Get-Content -LiteralPath $ManifestPath -Raw | ConvertFrom-Json
+	$TestReleases = @("2015", "2017", "2019", "14")
 	$SupportedReleasesAmd64 = @(
 		$Manifest.Entries |
-			Where-Object { $_.Supported -eq $true -and $_.Architecture -in @("x86", "x64") } |
+			Where-Object { $_.Release -in $TestReleases -and $_.Supported -eq $true -and $_.Architecture -in @("x86", "x64") } |
 			Select-Object -ExpandProperty Release -Unique |
 			Sort-Object
 	)
 	$SupportedReleasesArm64 = @(
 		$Manifest.Entries |
-			Where-Object { $_.Supported -eq $true -and $_.Architecture -eq "arm64" } |
+			Where-Object { $_.Release -in $TestReleases -and $_.Supported -eq $true -and $_.Architecture -eq "arm64" } |
 			Select-Object -ExpandProperty Release -Unique |
 			Sort-Object
 	)
 	$UnsupportedReleases = @(
 		$Manifest.Entries |
-			Where-Object { $_.Supported -eq $false -and $_.Architecture -in @("x86", "x64") } |
+			Where-Object { $_.Release -in $TestReleases -and $_.Supported -eq $false -and $_.Architecture -in @("x86", "x64") } |
 			Select-Object -ExpandProperty Release -Unique |
 			Sort-Object
 	)
